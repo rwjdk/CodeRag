@@ -1,11 +1,13 @@
 ﻿using Blazor.Shared;
 using Blazored.LocalStorage;
-using CodeRag.Shared;
+using CodeRag.Shared.BusinessLogic.Ai.Models;
+using CodeRag.Shared.BusinessLogic.VectorStore.Models;
+using CodeRag.Shared.Models;
 using Microsoft.AspNetCore.Components;
 
 namespace Workbench.Components.Layout.Components;
 
-public partial class MainLayoutProjectSelector(ILocalStorageService localStorage)
+public partial class MainLayoutProjectSelector(ILocalStorageService localStorage, IConfiguration configuration)
 {
     [CascadingParameter]
     public required BlazorUtils Utils { get; set; }
@@ -28,12 +30,38 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                 new Project
                 {
                     Id = Guid.Parse("9928f9e2-970d-487d-be15-e90b873db0e0"),
-                    Name = "TrelloDotNet"
-                },
-                new Project
-                {
-                    Id = Guid.Parse("a785e913-23ce-461e-a139-a1379b2cf5e1"),
-                    Name = "SemanticKernel"
+                    Name = "TrelloDotNet",
+                    Description = "An API for the Trello Rest API in C#",
+                    RepoUrl = "https://github.com/rwjdk/TrelloDotNet",
+                    AzureOpenAiCredentials = new AzureOpenAiCredentials("https://sensum365ai.openai.azure.com/", configuration["AzureOpenAiKey"]!),
+                    ChatModels =
+                    [
+                        new ChatModel
+                        {
+                            DeploymentName = "gpt-4o-mini",
+                            IsO3ReasonModel = false
+                        },
+                        new ChatModel
+                        {
+                            DeploymentName = "gpt-4o",
+                            IsO3ReasonModel = false
+                        },
+                        new ChatModel
+                        {
+                            DeploymentName = "o3-mini",
+                            IsO3ReasonModel = true
+                        },
+                    ],
+                    SourceCodeVectorSettings = new VectorStoreSettings
+                    {
+                        Type = VectorStoreType.AzureSql,
+                        AzureSqlConnectionString = configuration["SqlServerConnectionString"]!,
+#if DEBUG
+                        CollectionName = "debug_trellodotnet_source_code",
+#else
+                CollectionName = "trellodotnet_source_code",
+#endif
+                    }
                 }
             ];
 

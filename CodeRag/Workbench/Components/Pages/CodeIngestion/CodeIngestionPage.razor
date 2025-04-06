@@ -1,0 +1,11 @@
+﻿@page "/CodeIngestion"
+
+<RButton OnClick="IngestCode">Ingest Code</RButton>
+
+<h2>Progress</h2>
+<MudDataGrid Items="_messages.OrderByDescending(x=> x.Timestamp)" Virtualize Height="500px">
+    <Columns>
+        <PropertyColumn Property="x => x.Timestamp"/>
+        <PropertyColumn Property="x => x.Message"/>
+    </Columns>
+</MudDataGrid>

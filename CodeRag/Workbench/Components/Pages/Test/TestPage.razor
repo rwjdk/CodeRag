@@ -1,0 +1,69 @@
+﻿@page "/Test"
+@using CodeRag.Shared.BusinessLogic.Ai.Models
+@using Microsoft.SemanticKernel.ChatCompletion
+<div>
+    <MudGrid Class="align-items-center">
+        <MudItem Style="margin-left: 0">
+            <RIconButton Icon="@Icons.Material.Filled.DriveFileRenameOutline" ToolTip="New Chat" OnClick="NewChat" />
+        </MudItem>
+        <MudItem>
+            <RSelect T="ChatModel" Items="Project.ChatModels" @bind-Value="_chatModel" ToStringFunc="@(x=> x?.DeploymentName ?? "???")"  Style="width: 200px" />
+        </MudItem>
+    </MudGrid>
+    @if(_chatModel == null)
+    {
+        <div>No Chat-models defined in settings ☹️</div>
+    }
+    else
+    {
+        <div style="height: calc(100vh - 200px); overflow-y: scroll; padding-left: 0; padding-right: 50px; margin-top: 10px">
+
+
+            @foreach (var message in _converstation)
+            {
+                <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == AuthorRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
+                    <MudChatBubble>
+                        @ConvertToMarkdown(message.Content)
+                    </MudChatBubble>
+                </MudChat>
+            }
+            @if (_currentMessageIsProcessing)
+            {
+                <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="ChatBubblePosition.Start">
+                    <MudChatBubble>
+                        @if (_chatModel.IsO3ReasonModel)
+                        {
+                            <span>Thinking... (o3-mini is quite slow 🐢💤)</span>
+                        }
+                        else
+                        {
+                            <span>Thinking...</span>
+                        }
+
+                        <RProgressIndicator/>
+
+                    </MudChatBubble>
+                </MudChat>
+            }
+        </div>
+        <div style="position: fixed; width: calc(100% - var(--mud-drawer-width-left)); bottom: 10px; padding-left: 0; padding-right: 50px">
+            <RTextField @ref="_chatInput"
+                        @bind-Value="@_chatInputMessage"
+                        AdornmentIcon="@Icons.Material.Filled.ArrowCircleUp"
+                        Placeholder="What can I help with Today?"
+                        Disabled="@_currentMessageIsProcessing"
+                        Lines="1"
+                        Immediate
+                        AutoGrow
+                        Adornment="Adornment.End"
+                        OnAdornmentClick="() => SendMessage(_chatInputMessage)"
+                        Clearable
+                        OnKeyUp="args => SubmitIfEnter(args, _chatInputMessage)"
+                        OnFocus="() => _shouldRender = false"
+                        OnFocusOut="() => _shouldRender = true"
+                        TextUpdateSuppression="false"
+                        Style="font-size: 18px; padding-top: 10px; padding-bottom: 10px;"/>
+
+        </div>
+    }
+</div>

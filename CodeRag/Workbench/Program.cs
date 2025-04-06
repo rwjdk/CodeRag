@@ -1,16 +1,24 @@
 using Blazor.Shared.Extensions;
 using Blazored.LocalStorage;
+using CodeRag.Shared.BusinessLogic.Ai;
+using CodeRag.Shared.BusinessLogic.Ai.Models;
+using CodeRag.Shared.BusinessLogic.Chunking;
+using CodeRag.Shared.BusinessLogic.CodeIngestion;
+using CodeRag.Shared.BusinessLogic.VectorStore;
 using MudBlazor.Services;
 using Workbench.Components;
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
 builder.Services.AddBlazorShared();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<CodeIngestionCommand>();
+builder.Services.AddScoped<CSharpCodeChunker>();
+builder.Services.AddScoped<SemanticKernelQuery>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 <CascadingValue Value="BlazorUtils">
     <CascadingValue Value="Project">
-        <MudThemeProvider />
+        <MudThemeProvider IsDarkMode="true" />
         <MudPopoverProvider />
         <MudDialogProvider />
         <MudSnackbarProvider />
@@ -10,7 +10,7 @@
                 <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
                 <MudGrid Style="align-items: center">
                     <MudItem>
-                        <MudText Typo="Typo.h5" Class="ml-3">Code-RAG Workbench</MudText>
+                        <MudText Typo="Typo.h5" Class="ml-3">Workbench</MudText>
                     </MudItem>
                     <MudSpacer />
                     <MudItem>
@@ -19,9 +19,19 @@
                 </MudGrid>
             </MudAppBar>
             <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
-
-            </MudDrawer>
+                <MudNavLink Icon="@Icons.Material.Filled.Dashboard" Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
+                <MudNavGroup Icon="@Icons.Material.Filled.Dataset" Title="Data Ingestion" Expanded="true">
+                    <MudNavLink Icon="@Icons.Material.Filled.DataObject" Href="/CodeIngestion">Code Ingestion</MudNavLink>
+                    <MudNavLink Icon="@Icons.Material.Filled.MenuBook" Href="/DocsIngestion">Docs Ingestion</MudNavLink>
+                </MudNavGroup>
+                <MudNavGroup Icon="@Icons.Material.Filled.AutoFixHigh" Title="Generate & Evaluate" Expanded="true">
+                    <MudNavLink Icon="@Icons.Material.Filled.Code" Href="/xmlSummaries">XML Summaries</MudNavLink>
+                    <MudNavLink Icon="@Icons.Material.Filled.Article" Href="/WikiGeneration">Wiki Entries</MudNavLink>
+                </MudNavGroup>
+                <MudNavLink Icon="@Icons.Material.Filled.AutoGraph" Href="/Test">Test AI Answers</MudNavLink>
+                </MudDrawer>
             <MudMainContent>
+                <div style="padding: 16px">
                 @if (Project != null)
                 {
                     @Body
@@ -30,6 +40,7 @@
                 {
                     <div>Todo: Create first Project</div>
                 }
+                </div>
             </MudMainContent>
         </MudLayout>
     </CascadingValue>

@@ -1,5 +1,5 @@
 ﻿using Blazor.Shared;
-using CodeRag.Shared;
+using CodeRag.Shared.Models;
 
 namespace Workbench.Components.Layout;
 
