@@ -1,0 +1,41 @@
+﻿@inherits LayoutComponentBase
+<CascadingValue Value="BlazorUtils">
+    <CascadingValue Value="Project">
+        <MudThemeProvider />
+        <MudPopoverProvider />
+        <MudDialogProvider />
+        <MudSnackbarProvider />
+        <MudLayout>
+            <MudAppBar Elevation="1" Dense>
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+                <MudGrid Style="align-items: center">
+                    <MudItem>
+                        <MudText Typo="Typo.h5" Class="ml-3">Code-RAG Workbench</MudText>
+                    </MudItem>
+                    <MudSpacer />
+                    <MudItem>
+                        <MainLayoutProjectSelector ProjectChanged="x => Project = x" />
+                    </MudItem>
+                </MudGrid>
+            </MudAppBar>
+            <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+
+            </MudDrawer>
+            <MudMainContent>
+                @if (Project != null)
+                {
+                    @Body
+                }
+                else
+                {
+                    <div>Todo: Create first Project</div>
+                }
+            </MudMainContent>
+        </MudLayout>
+    </CascadingValue>
+</CascadingValue>
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

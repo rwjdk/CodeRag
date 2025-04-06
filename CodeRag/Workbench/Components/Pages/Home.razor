@@ -1,0 +1,15 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+Name: @Project.Name
+
+@code
+{
+    [CascadingParameter]
+    public required Project Project { get; set; }
+}
