@@ -6,16 +6,21 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
 using System.Text.RegularExpressions;
-using CodeRag.Shared.BusinessLogic.Ai;
-using CodeRag.Shared.BusinessLogic.Ai.Models;
-using CodeRag.Shared.BusinessLogic.VectorStore.Models;
+using CodeRag.Shared;
 using CodeRag.Shared.Models;
 using Markdown.ColorCode;
 using Microsoft.SemanticKernel;
+using CodeRag.Shared.BusinessLogic.Ai.SemanticKernel;
+using CodeRag.Shared.BusinessLogic.Ai.AzureOpenAi;
+using CodeRag.Shared.BusinessLogic.VectorStore;
+using CodeRag.Shared.BusinessLogic.VectorStore.SourceCode;
+using Microsoft.Extensions.VectorData;
+using Blazor.Shared.Components.Dialogs;
+using Workbench.Components.Dialogs;
 
 namespace Workbench.Components.Pages.Test;
 
-public partial class TestPage(IConfiguration configuration, SemanticKernelQuery semanticKernelQuery)
+public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogService dialogService) : IDisposable
 {
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }
@@ -29,7 +34,14 @@ public partial class TestPage(IConfiguration configuration, SemanticKernelQuery 
     private bool _shouldRender = true;
 
     private readonly List<ChatMessageContent> _converstation = new List<ChatMessageContent>();
-    private ChatModel? _chatModel;
+    private AzureOpenAiChatModel? _chatModel;
+    private bool _useSourceCodeSearch = true;
+    private bool _useDocumentationSearch = true;
+    private int _maxNumberOfAnswersBackFromSourceCodeSearch = 50;
+    private double _scoreShouldBeLowerThanThisInSourceCodeSearch = 0.7;
+    private int _maxNumberOfAnswersBackFromDoucumentationSearch = 50;
+    private double _scoreShouldBeLowerThanThisInDocumentSearch = 0.5;
+    private readonly List<ProgressNotification> _log = [];
 
     private async Task SubmitIfEnter(KeyboardEventArgs args, string? messageToSend)
     {
@@ -42,6 +54,16 @@ public partial class TestPage(IConfiguration configuration, SemanticKernelQuery 
     protected override void OnInitialized()
     {
         _chatModel = Project.ChatModels.FirstOrDefault();
+        semanticKernelQuery.NotifyProgress += SemanticKernelQueryNotifyProgress;
+#if DEBUG
+        _chatInputMessage = Project.DefaultTestChatInput;
+#endif
+    }
+
+    private void SemanticKernelQueryNotifyProgress(ProgressNotification obj)
+    {
+        _log.Add(obj);
+        InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
 
     protected override bool ShouldRender()
@@ -51,8 +73,9 @@ public partial class TestPage(IConfiguration configuration, SemanticKernelQuery 
 
     private async Task SendMessage(string? messageToSend)
     {
+        _log.Clear();
         _shouldRender = true;
-        if (_chatInput != null && !string.IsNullOrWhiteSpace(messageToSend))
+        if (_chatInput != null && _chatModel != null && !string.IsNullOrWhiteSpace(messageToSend))
         {
             _currentMessageIsProcessing = true;
             try
@@ -61,7 +84,16 @@ public partial class TestPage(IConfiguration configuration, SemanticKernelQuery 
                 _converstation.Add(input);
                 await _chatInput.Clear();
 
-                ChatMessageContent? output = await GetAiAnswer(input);
+                ChatMessageContent? output = await semanticKernelQuery.GetAnswer(
+                    _chatModel,
+                    _converstation,
+                    _useSourceCodeSearch,
+                    _useDocumentationSearch,
+                    _maxNumberOfAnswersBackFromSourceCodeSearch,
+                    _scoreShouldBeLowerThanThisInSourceCodeSearch,
+                    _maxNumberOfAnswersBackFromDoucumentationSearch,
+                    _scoreShouldBeLowerThanThisInDocumentSearch,
+                    Project);
                 if (output != null)
                 {
                     _converstation.Add(output);
@@ -76,11 +108,6 @@ public partial class TestPage(IConfiguration configuration, SemanticKernelQuery 
                 _currentMessageIsProcessing = false;
             }
         }
-    }
-
-    private async Task<ChatMessageContent?> GetAiAnswer(ChatMessageContent input)
-    {
-        return await new SemanticKernelQuery().GetAnswer(_chatModel, _converstation, Project.AzureOpenAiCredentials, Project.SourceCodeVectorSettings);
     }
 
     private MarkupString ConvertToMarkdown(string? messageContent)
@@ -110,5 +137,24 @@ public partial class TestPage(IConfiguration configuration, SemanticKernelQuery 
     {
         _converstation.Clear();
         BlazorUtils.ShowSuccess("New Chat initiated", 3, Defaults.Classes.Position.TopCenter);
+    }
+
+    public void Dispose()
+    {
+        semanticKernelQuery.NotifyProgress -= SemanticKernelQueryNotifyProgress;
+    }
+
+    private async Task ShowSourceCodeVectorEntry(SourceCodeVectorEntity entity)
+    {
+        var parameters = new DialogParameters<ShowSourceCodeVectorEntityDialog>
+        {
+            { x => x.Entity, entity },
+        };
+
+        DialogOptions dialogOptions = new()
+        {
+            CloseButton = true,
+        };
+        await dialogService.ShowAsync<ShowSourceCodeVectorEntityDialog>(entity.Source, parameters, dialogOptions);
     }
 }

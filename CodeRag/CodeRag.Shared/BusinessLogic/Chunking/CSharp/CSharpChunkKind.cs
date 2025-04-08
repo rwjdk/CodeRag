@@ -1,6 +1,6 @@
-﻿namespace CodeRag.Shared.BusinessLogic.Chunking.Models;
+﻿namespace CodeRag.Shared.BusinessLogic.Chunking.CSharp;
 
-public enum CodeEntityKind
+public enum CSharpChunkKind
 {
     None,
     Interface,

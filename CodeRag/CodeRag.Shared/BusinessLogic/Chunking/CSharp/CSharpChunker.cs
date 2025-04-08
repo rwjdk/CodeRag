@@ -1,31 +1,33 @@
 ﻿using System.Text;
-using CodeRag.Shared.BusinessLogic.Chunking.Models;
+using CodeRag.Shared.ServiceLifetimes;
+using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace CodeRag.Shared.BusinessLogic.Chunking
+namespace CodeRag.Shared.BusinessLogic.Chunking.CSharp
 {
-    public class CSharpCodeChunker
+    [UsedImplicitly]
+    public class CSharpChunker : IScopedService
     {
-        public List<CodeEntity> GetCodeEntities(string code) //todo allow the passing of settings
+        public List<CSharpChunk> GetCodeEntities(string code) //todo allow the passing of settings
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
             SyntaxNode root = tree.GetRoot();
 
-            List<CodeEntity> entries = [];
-            entries.AddRange(ProcessTypeDeclaration<ClassDeclarationSyntax>(root, CodeEntityKind.Class));
-            entries.AddRange(ProcessTypeDeclaration<StructDeclarationSyntax>(root, CodeEntityKind.Struct));
-            entries.AddRange(ProcessTypeDeclaration<RecordDeclarationSyntax>(root, CodeEntityKind.Record));
+            List<CSharpChunk> entries = [];
+            entries.AddRange(ProcessTypeDeclaration<ClassDeclarationSyntax>(root, CSharpChunkKind.Class));
+            entries.AddRange(ProcessTypeDeclaration<StructDeclarationSyntax>(root, CSharpChunkKind.Struct));
+            entries.AddRange(ProcessTypeDeclaration<RecordDeclarationSyntax>(root, CSharpChunkKind.Record));
             entries.AddRange(ProcessEnums(root));
             entries.AddRange(ProcessDelegates(root));
             entries.AddRange(ProcessInterfaces(root));
             return entries;
         }
 
-        private List<CodeEntity> ProcessInterfaces(SyntaxNode root)
+        private List<CSharpChunk> ProcessInterfaces(SyntaxNode root)
         {
-            List<CodeEntity> result = [];
+            List<CSharpChunk> result = [];
             InterfaceDeclarationSyntax[] nodes = root.DescendantNodes()
                 .OfType<InterfaceDeclarationSyntax>()
                 .ToArray();
@@ -40,15 +42,15 @@ namespace CodeRag.Shared.BusinessLogic.Chunking
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
                 string parent = string.Empty;
-                result.Add(new CodeEntity(CodeEntityKind.Interface, ns, parent, CodeEntityKind.None, name, xmlSummary, node.ToString(), []));
+                result.Add(new CSharpChunk(CSharpChunkKind.Interface, ns, parent, CSharpChunkKind.None, name, xmlSummary, node.ToString(), []));
             }
 
             return result;
         }
 
-        private List<CodeEntity> ProcessDelegates(SyntaxNode root)
+        private List<CSharpChunk> ProcessDelegates(SyntaxNode root)
         {
-            List<CodeEntity> result = [];
+            List<CSharpChunk> result = [];
             DelegateDeclarationSyntax[] nodes = root.DescendantNodes()
                 .OfType<DelegateDeclarationSyntax>()
                 .ToArray();
@@ -64,15 +66,15 @@ namespace CodeRag.Shared.BusinessLogic.Chunking
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
                 string parent = string.Empty;
-                result.Add(new CodeEntity(CodeEntityKind.Delegate, ns, parent, CodeEntityKind.None, name, xmlSummary, node.ToString(), []));
+                result.Add(new CSharpChunk(CSharpChunkKind.Delegate, ns, parent, CSharpChunkKind.None, name, xmlSummary, node.ToString(), []));
             }
 
             return result;
         }
 
-        private List<CodeEntity> ProcessEnums(SyntaxNode root)
+        private List<CSharpChunk> ProcessEnums(SyntaxNode root)
         {
-            List<CodeEntity> result = [];
+            List<CSharpChunk> result = [];
             EnumDeclarationSyntax[] nodes = root.DescendantNodes().OfType<EnumDeclarationSyntax>().ToArray();
             foreach (EnumDeclarationSyntax node in nodes)
             {
@@ -85,15 +87,15 @@ namespace CodeRag.Shared.BusinessLogic.Chunking
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
                 string parent = string.Empty;
-                result.Add(new CodeEntity(CodeEntityKind.Enum, ns, parent, CodeEntityKind.None, name, xmlSummary, RemoveAttributes(node).ToString(), []));
+                result.Add(new CSharpChunk(CSharpChunkKind.Enum, ns, parent, CSharpChunkKind.None, name, xmlSummary, RemoveAttributes(node).ToString(), []));
             }
 
             return result;
         }
 
-        private List<CodeEntity> ProcessTypeDeclaration<T>(SyntaxNode root, CodeEntityKind kind) where T : TypeDeclarationSyntax
+        private List<CSharpChunk> ProcessTypeDeclaration<T>(SyntaxNode root, CSharpChunkKind kind) where T : TypeDeclarationSyntax
         {
-            List<CodeEntity> result = [];
+            List<CSharpChunk> result = [];
             T[] nodes = root.DescendantNodes()
                 .OfType<T>()
                 .ToArray();
@@ -134,11 +136,11 @@ namespace CodeRag.Shared.BusinessLogic.Chunking
                         string xmlSummary = GetXmlSummary(method);
                         string metodSignature = (method.ToString().Replace(method.Body?.ToString() ?? Guid.NewGuid().ToString(), "").Trim() + " { /*...*/ }").Trim();
                         string parent = node.Identifier.ValueText;
-                        CodeEntityKind parentKind = kind;
+                        CSharpChunkKind parentKind = kind;
                         List<string> dependencies = GetMethodDependencies(method);
                         dependencies = dependencies.Distinct().ToList();
 
-                        result.Add(new CodeEntity(CodeEntityKind.Method, ns, parent, parentKind, name, xmlSummary, metodSignature, dependencies));
+                        result.Add(new CSharpChunk(CSharpChunkKind.Method, ns, parent, parentKind, name, xmlSummary, metodSignature, dependencies));
                     }
                 }
 
@@ -194,7 +196,7 @@ namespace CodeRag.Shared.BusinessLogic.Chunking
                     sb.AppendLine("}");
                     string parent = string.Empty;
                     dependencies = dependencies.Distinct().ToList();
-                    result.Add(new CodeEntity(kind, ns, parent, CodeEntityKind.None, name, GetXmlSummary(node), sb.ToString(), dependencies));
+                    result.Add(new CSharpChunk(kind, ns, parent, CSharpChunkKind.None, name, GetXmlSummary(node), sb.ToString(), dependencies));
                 }
             }
 

@@ -1,69 +1,163 @@
 ﻿@page "/Test"
-@using CodeRag.Shared.BusinessLogic.Ai.Models
+@using System.Globalization
+@using CodeRag.Shared
+@using CodeRag.Shared.BusinessLogic.Ai.AzureOpenAi
 @using Microsoft.SemanticKernel.ChatCompletion
 <div>
-    <MudGrid Class="align-items-center">
-        <MudItem Style="margin-left: 0">
-            <RIconButton Icon="@Icons.Material.Filled.DriveFileRenameOutline" ToolTip="New Chat" OnClick="NewChat" />
-        </MudItem>
-        <MudItem>
-            <RSelect T="ChatModel" Items="Project.ChatModels" @bind-Value="_chatModel" ToStringFunc="@(x=> x?.DeploymentName ?? "???")"  Style="width: 200px" />
-        </MudItem>
-    </MudGrid>
-    @if(_chatModel == null)
+    @if (_chatModel == null)
     {
         <div>No Chat-models defined in settings ☹️</div>
     }
     else
     {
-        <div style="height: calc(100vh - 200px); overflow-y: scroll; padding-left: 0; padding-right: 50px; margin-top: 10px">
+        <MudGrid>
+            <MudItem xs="8">
+                <div style="height: calc(100vh - 200px); overflow-y: scroll; padding-left: 0; padding-right: 50px; margin-top: 10px">
 
 
-            @foreach (var message in _converstation)
-            {
-                <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == AuthorRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
-                    <MudChatBubble>
-                        @ConvertToMarkdown(message.Content)
-                    </MudChatBubble>
-                </MudChat>
-            }
-            @if (_currentMessageIsProcessing)
-            {
-                <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="ChatBubblePosition.Start">
-                    <MudChatBubble>
-                        @if (_chatModel.IsO3ReasonModel)
-                        {
-                            <span>Thinking... (o3-mini is quite slow 🐢💤)</span>
-                        }
-                        else
-                        {
-                            <span>Thinking...</span>
-                        }
+                    @foreach (var message in _converstation)
+                    {
+                        <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == AuthorRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
+                            <MudChatBubble>
+                                @ConvertToMarkdown(message.Content)
+                            </MudChatBubble>
+                        </MudChat>
+                    }
+                    @if (_currentMessageIsProcessing)
+                    {
+                        <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="ChatBubblePosition.Start">
+                            <MudChatBubble>
+                                @if (_chatModel.ChatReasoningEffortLevel.HasValue)
+                                {
+                                    <span>Reasoning... (can be quite slow 🐢💤)</span>
+                                }
+                                else
+                                {
+                                    <span>Thinking...</span>
+                                }
 
-                        <RProgressIndicator/>
+                                <RProgressIndicator />
 
-                    </MudChatBubble>
-                </MudChat>
-            }
-        </div>
-        <div style="position: fixed; width: calc(100% - var(--mud-drawer-width-left)); bottom: 10px; padding-left: 0; padding-right: 50px">
-            <RTextField @ref="_chatInput"
-                        @bind-Value="@_chatInputMessage"
-                        AdornmentIcon="@Icons.Material.Filled.ArrowCircleUp"
-                        Placeholder="What can I help with Today?"
-                        Disabled="@_currentMessageIsProcessing"
-                        Lines="1"
-                        Immediate
-                        AutoGrow
-                        Adornment="Adornment.End"
-                        OnAdornmentClick="() => SendMessage(_chatInputMessage)"
-                        Clearable
-                        OnKeyUp="args => SubmitIfEnter(args, _chatInputMessage)"
-                        OnFocus="() => _shouldRender = false"
-                        OnFocusOut="() => _shouldRender = true"
-                        TextUpdateSuppression="false"
-                        Style="font-size: 18px; padding-top: 10px; padding-bottom: 10px;"/>
+                            </MudChatBubble>
+                        </MudChat>
+                    }
+                </div>
+            </MudItem>
+            <MudItem xs="4">
 
-        </div>
+                <MudGrid Class="align-items-center" Spacing="1">
+                    <MudItem xs="1">
+                        <RIconButton Icon="@Icons.Material.Filled.DriveFileRenameOutline" ToolTip="New Chat" OnClick="NewChat" />
+                    </MudItem>
+                    <MudItem xs="11" Style="text-align: end">
+                        <h2>Settings and Parameters</h2>
+                    </MudItem>
+                </MudGrid>
+                <hr />
+                <div class="font-size-10">Model</div>
+                <RSelect T="AzureOpenAiChatModel" Items="Project.ChatModels" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
+                <hr />
+                <div class="font-size-10">Source Code Search</div>
+                <MudGrid>
+                    <MudItem>
+                        <RCheckBox @bind-Value="_useSourceCodeSearch" Label="Use" />
+                    </MudItem>
+                    <MudItem>
+                        <MudSlider Min="1" Max="100" @bind-Value="_maxNumberOfAnswersBackFromSourceCodeSearch">Max Records (@_maxNumberOfAnswersBackFromSourceCodeSearch)</MudSlider>
+                    </MudItem>
+                    <MudItem>
+                        <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
+                            <MudSlider Min="0" Max="1" Step="0.1" @bind-Value="_scoreShouldBeLowerThanThisInSourceCodeSearch">Max Score (@_scoreShouldBeLowerThanThisInSourceCodeSearch)</MudSlider>
+                        </MudTooltip>
+                    </MudItem>
+                </MudGrid>
+                <hr />
+                <div class="font-size-10">Documentation Search</div>
+                <MudGrid>
+                    <MudItem>
+                        <RCheckBox @bind-Value="_useDocumentationSearch" Label="Use" />
+                    </MudItem>
+                    <MudItem>
+                        <MudSlider Min="1" Max="100" @bind-Value="_maxNumberOfAnswersBackFromDoucumentationSearch">Max Records (@_maxNumberOfAnswersBackFromDoucumentationSearch)</MudSlider>
+                    </MudItem>
+                    <MudItem>
+                        <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
+                            <MudSlider Min="0" Max="1" Step="0.1" @bind-Value="_scoreShouldBeLowerThanThisInDocumentSearch">Max Score (@_scoreShouldBeLowerThanThisInDocumentSearch)</MudSlider>
+                        </MudTooltip>
+                    </MudItem>
+                </MudGrid>
+                <hr />
+                @if (_log.Count != 0)
+                {
+                    <h3>Details for last request</h3>
+                    <MudDataGrid Dense Striped Items="_log" ColumnResizeMode="ResizeMode.Column" Height="calc(100vh - 500px)" SortMode="SortMode.None" Filterable="false">
+                        <Columns>
+                            <HierarchyColumn T="ProgressNotification" ButtonDisabledFunc="x=> x.HasNoDetails" />
+                            <PropertyColumn Property="x => x.Timestamp.DateTime.ToShortTimeString()" Title="Time" />
+                            <PropertyColumn Property="x => x.Message" />
+                        </Columns>
+                        <ChildRowContent>
+                            @if (context.Item.SourceCodeSearchResults != null && context.Item.SourceCodeSearchResults.Count != 0)
+                            {
+                                <MudDataGrid Dense Striped Items="context.Item.SourceCodeSearchResults" SortMode="SortMode.None" Filterable="false">
+                                    <Columns>
+                                        <TemplateColumn Title="Details" Context="row">
+                                            <CellTemplate>
+                                                <div class="pointer" @onclick="() => ShowSourceCodeVectorEntry(row.Item.Record)">
+                                                    @row.Item.Record.Kind: @row.Item.Record.Name
+                                                    <div class="font-size-10">@row.Item.Record.Namespace</div>
+                                                </div>
+                                            </CellTemplate>
+                                        </TemplateColumn>
+                                        <PropertyColumn Property="x => Math.Round(Convert.ToDecimal(x.Score), 2).ToString(CultureInfo.InvariantCulture)"/>
+                                        <TemplateColumn Context="row">
+                                            <CellTemplate>
+                                                <RIconButton Href="@row.Item.Record.Link" Target="_blank" Icon="@Icons.Material.Filled.Launch" />
+                                            </CellTemplate>
+                                        </TemplateColumn>
+                                    </Columns>
+                                </MudDataGrid>
+                            }
+                            @if (context.Item.DocumentSearchResults != null && context.Item.DocumentSearchResults.Count != 0)
+                            {
+                                <MudDataGrid Dense Striped Items="context.Item.DocumentSearchResults" SortMode="SortMode.None" Filterable="false">
+                                    <Columns>
+                                        <PropertyColumn Property="x => Math.Round(Convert.ToDecimal(x.Score), 2).ToString(CultureInfo.InvariantCulture)" />
+                                        <TemplateColumn Title="Details" Context="row">
+                                            <CellTemplate>
+                                                <div>@row.Item.Record.Source</div>
+                                                <a href="@row.Item.Record.Link" target="_blank">@row.Item.Record.Name</a>
+                                            </CellTemplate>
+                                        </TemplateColumn>
+                                    </Columns>
+                                </MudDataGrid>
+                            }
+                        </ChildRowContent>
+                    </MudDataGrid>
+                }
+            </MudItem>
+            <MudItem xs="12">
+                <div style="position: fixed; width: calc(100% - var(--mud-drawer-width-left)); bottom: 10px; padding-left: 0; padding-right: 50px">
+                    <RTextField @ref="_chatInput"
+                                @bind-Value="@_chatInputMessage"
+                                AdornmentIcon="@Icons.Material.Filled.ArrowCircleUp"
+                                Placeholder="What can I help with Today?"
+                                Disabled="@_currentMessageIsProcessing"
+                                Lines="1"
+                                Immediate
+                                AutoGrow
+                                Adornment="Adornment.End"
+                                OnAdornmentClick="() => SendMessage(_chatInputMessage)"
+                                Clearable
+                                OnKeyUp="args => SubmitIfEnter(args, _chatInputMessage)"
+                                OnFocus="() => _shouldRender = false"
+                                OnFocusOut="() => _shouldRender = true"
+                                TextUpdateSuppression="false"
+                                Style="font-size: 18px; padding-top: 10px; padding-bottom: 10px;" />
+
+                </div>
+            </MudItem>
+        </MudGrid>
+
     }
 </div>

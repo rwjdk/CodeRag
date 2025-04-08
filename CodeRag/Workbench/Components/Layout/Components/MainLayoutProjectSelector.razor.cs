@@ -1,9 +1,15 @@
 ﻿using Blazor.Shared;
 using Blazored.LocalStorage;
-using CodeRag.Shared.BusinessLogic.Ai.Models;
-using CodeRag.Shared.BusinessLogic.VectorStore.Models;
+using CodeRag.Shared.BusinessLogic.Ai.AzureOpenAi;
+using CodeRag.Shared.BusinessLogic.Ingestion.Documentation;
+using CodeRag.Shared.BusinessLogic.Ingestion.Documentation.Markdown;
+using CodeRag.Shared.BusinessLogic.Ingestion.SourceCode;
+using CodeRag.Shared.BusinessLogic.Ingestion.SourceCode.Csharp;
+using CodeRag.Shared.BusinessLogic.Prompting;
+using CodeRag.Shared.BusinessLogic.VectorStore;
 using CodeRag.Shared.Models;
 using Microsoft.AspNetCore.Components;
+using OpenAI.Chat;
 
 namespace Workbench.Components.Layout.Components;
 
@@ -32,36 +38,77 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                     Id = Guid.Parse("9928f9e2-970d-487d-be15-e90b873db0e0"),
                     Name = "TrelloDotNet",
                     Description = "An API for the Trello Rest API in C#",
+                    TestChatDeveloperInstructions = Prompt
+                        .Create("You are an C# expert in TrelloDotNet (An API for the Trello Rest API in C#) on GitHub [https://github.com/rwjdk/TrelloDotNet]. Assume all questions are about TrelloDotNet unless specified otherwise")
+                        .AddStep($"Use tool '{CodeRag.Shared.Constants.DocumentationSearchPluginName}' to get an overview (break question down to keywords for the tool-usage but do NOT include words 'TrelloDotNet' or 'question' in the tool request)")
+                        .AddStep("Next prepare your answer with current knowledge")
+                        .AddStep($"If your answer include code-samples then use tool '{CodeRag.Shared.Constants.SourceCodeSearchPluginName}' to check that you called methods correctly and classes and properties exist")
+                        .AddStep("Add citations (Link) from the relevant sources")
+                        .AddStep("Based on previous step prepare your final answer")
+                        .AddStep("The answer and code-examples should ALWAYS be Marmdown format!")
+                        //.AddRule("Do NOT include samples in Python or Java. Only C#")
+                        //.AddRule($"Do not answer questions about anything but Pleasantries, General subject information, {settings.Name} and C#")
+                        //.AddRule($"Do not wrap the code from {settings.Name} in sample methods etc. just show the raw calls to the API")
+                        //.AddRuleThatIfYouDontKnowThenDontAnswer()
+                        .ToString(),
                     RepoUrl = "https://github.com/rwjdk/TrelloDotNet",
+                    RepoUrlSourceCode = "https://github.com/rwjdk/TrelloDotNet/tree/main/src/TrelloDotNet",
+                    LocalSourceCodeRepoRoot = @"X:\TrelloDotNet",
                     AzureOpenAiCredentials = new AzureOpenAiCredentials("https://sensum365ai.openai.azure.com/", configuration["AzureOpenAiKey"]!),
+                    AzureOpenAiEmbeddingsDeploymentName = "text-embedding-3-small",
                     ChatModels =
                     [
-                        new ChatModel
+                        new AzureOpenAiChatModel
                         {
                             DeploymentName = "gpt-4o-mini",
-                            IsO3ReasonModel = false
+                            Temperature = 0,
+                            TimeoutInSeconds = 60
                         },
-                        new ChatModel
+                        new AzureOpenAiChatModel
                         {
                             DeploymentName = "gpt-4o",
-                            IsO3ReasonModel = false
+                            Temperature = 0,
+                            TimeoutInSeconds = 60
                         },
-                        new ChatModel
+                        new AzureOpenAiChatModel
                         {
                             DeploymentName = "o3-mini",
-                            IsO3ReasonModel = true
+                            ChatReasoningEffortLevel = ChatReasoningEffortLevel.High,
+                            TimeoutInSeconds = 60 * 5
                         },
                     ],
-                    SourceCodeVectorSettings = new VectorStoreSettings
+                    VectorSettings = new VectorStoreSettings
                     {
                         Type = VectorStoreType.AzureSql,
                         AzureSqlConnectionString = configuration["SqlServerConnectionString"]!,
-#if DEBUG
-                        CollectionName = "debug_trellodotnet_source_code",
-#else
-                CollectionName = "trellodotnet_source_code",
-#endif
-                    }
+                        DocumentationCollectionName = "debug_trellodotnet_docs",
+                        SourceCodeCollectionName = "debug_trellodotnet_source_code",
+                    },
+                    CSharpSourceCodeIngestionSettings = new CSharpIngestionSettings
+                    {
+                        Source = SourceCodeIngestionSource.LocalCSharpRepo,
+                        SourcePath = @"X:\TrelloDotNet\src\TrelloDotNet",
+                        CSharpFilesToIgnore = ["Program.cs"],
+                        CSharpFilesWithTheseSuffixesToIgnore = ["Test.cs", "Tests.cs", "AssemblyAttributes.cs", "AssemblyInfo.cs"],
+                    },
+                    MarkdownIngestionSettings = new MarkdownIngestionSettings
+                    {
+                        Source = DocumentationIngestionSource.LocalMarkdown,
+                        SourcePath = @"X:\TrelloDotNet.wiki",
+                        FilenameEqualDocUrlSubpage = true,
+                        LineSplitter = Environment.NewLine,
+                        FilesToIgnore = ["_Footer", "_Sidebar"],
+                        IgnoreCommentedOutContent = true,
+                        IgnoreImages = true,
+                        IgnoreMicrosoftLearnNoneCsharpContent = false,
+                        IncludeMarkdownInSourceCodeRepoRoot = true,
+                        MarkdownLevelsToChunk = 2,
+                        OnlyChunkIfMoreThanThisNumberOfLines = 50,
+                        RootUrl = "https://github.com/rwjdk/TrelloDotNet/wiki",
+                        ChunkIgnoreIfLessThanThisAmountOfChars = 25,
+                        ChunkLineRegExPatternsToIgnore = [@"^\[Back to [^\]]+\]\([^\)]+\)"],
+                    },
+                    DefaultTestChatInput = "What is GetCardOptions? (use code)"
                 }
             ];
 

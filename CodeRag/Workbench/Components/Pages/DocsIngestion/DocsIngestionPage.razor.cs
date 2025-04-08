@@ -1,13 +1,12 @@
 ﻿using Blazor.Shared;
 using CodeRag.Shared;
 using CodeRag.Shared.BusinessLogic.Ingestion.Documentation.Markdown;
-using CodeRag.Shared.BusinessLogic.Ingestion.SourceCode.Csharp;
 using CodeRag.Shared.Models;
 using Microsoft.AspNetCore.Components;
 
-namespace Workbench.Components.Pages.CodeIngestion;
+namespace Workbench.Components.Pages.DocsIngestion;
 
-public partial class CodeIngestionPage(CSharpIngestionCommand ingestionCommand) : IDisposable
+public partial class DocsIngestionPage(MarkdownIngestionCommand ingestionCommand)
 {
     [CascadingParameter]
     public required BlazorUtils Utils { get; set; }
@@ -16,7 +15,6 @@ public partial class CodeIngestionPage(CSharpIngestionCommand ingestionCommand) 
     public required Project Project { get; set; }
 
     private bool _reinitializeVectorStoreTable = true; //todo - support deterministic ids and make this default false
-
     private readonly List<ProgressNotification> _messages = [];
 
     protected override void OnInitialized()

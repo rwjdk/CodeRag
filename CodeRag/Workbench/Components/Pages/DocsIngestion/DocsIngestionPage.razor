@@ -1,12 +1,12 @@
-﻿@page "/CodeIngestion"
+﻿@page "/DocsIngestion"
 
-<h1>Code Ingestion</h1>
-<RButton OnClick="Ingest">Ingest Code</RButton>
+<h1>Docs Ingestion</h1>
+<RButton OnClick="Ingest">Ingest Docs</RButton>
 
 <RCheckBox Label="Re-initialize Vector Store Table" @bind-Value="_reinitializeVectorStoreTable" Tooltip="If this is check the ingestion will delete previous vector store and re-create it"/>
 
 <h2>Progress</h2>
-<MudDataGrid Items="_messages.OrderByDescending(x=> x.Timestamp)" Virtualize Height="500px">
+<MudDataGrid Items="_messages.OrderByDescending(x => x.Timestamp)" Virtualize Height="500px">
     <Columns>
         <PropertyColumn Property="x => x.Timestamp"/>
         <PropertyColumn Property="x => x.Message"/>

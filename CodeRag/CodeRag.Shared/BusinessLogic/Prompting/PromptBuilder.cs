@@ -107,7 +107,7 @@ namespace CodeRag.Shared.BusinessLogic.Prompting
             return prompt;
         }
 
-        public static Prompt AddRuleThatIfYouDontKnowThenDontAnswer(this Prompt prompt, string rule = null)
+        public static Prompt AddRuleThatIfYouDontKnowThenDontAnswer(this Prompt prompt, string? rule = null)
         {
             prompt.Rules.Add(!string.IsNullOrWhiteSpace(rule) ? new PromptRule(rule) : new PromptRule("Do not answer or make stuff up if your confidence is low or you do not have knowledge. Instead answer 'Sorry, I don't know this'"));
 
