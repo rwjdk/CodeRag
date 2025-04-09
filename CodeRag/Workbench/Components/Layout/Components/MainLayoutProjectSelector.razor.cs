@@ -81,8 +81,6 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                     {
                         Type = VectorStoreType.AzureSql,
                         AzureSqlConnectionString = configuration["SqlServerConnectionString"]!,
-                        DocumentationCollectionName = "debug_trellodotnet_docs",
-                        SourceCodeCollectionName = "debug_trellodotnet_source_code",
                     },
                     CSharpSourceCodeIngestionSettings = new CSharpIngestionSettings
                     {

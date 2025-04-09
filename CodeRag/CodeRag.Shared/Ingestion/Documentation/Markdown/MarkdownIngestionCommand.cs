@@ -5,17 +5,19 @@ using Microsoft.SemanticKernel.Embeddings;
 using System.Text.RegularExpressions;
 using System.Text;
 using CodeRag.Shared.VectorStore;
-using CodeRag.Shared.Ingestion.Documentation;
 using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.VectorStore.Documentation;
 using CodeRag.Shared.Chunking.Markdown;
 using CodeRag.Shared.Interfaces;
+using CodeRag.Shared.EntityFramework;
+using Microsoft.EntityFrameworkCore;
 
 namespace CodeRag.Shared.Ingestion.Documentation.Markdown;
 
 [UsedImplicitly]
-public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQuery semanticKernelQuery) : ProgressNotificationBase, IScopedService
+public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQuery semanticKernelQuery, IDbContextFactory<SqlDbContext> dbContextFactory) : ProgressNotificationBase, IScopedService
 {
+    //todo - should multiple sources be supported at the same time (I so we need a column in table to identify source and only delete for that source)?
     public async Task Ingest(Project settings, bool deletePreviousDataInCollection)
     {
         switch (settings.MarkdownIngestionSettings.Source)
@@ -34,15 +36,16 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
         VectorStoreSettings settingsVectorSettings = settings.VectorSettings;
         ITextEmbeddingGenerationService embeddingGenerationService = semanticKernelQuery.GetTextEmbeddingGenerationService(settings.AzureOpenAiCredentials, settings.AzureOpenAiEmbeddingsDeploymentName);
         VectorStoreCommand vectorStoreCommand = new(embeddingGenerationService);
-        VectorStoreQuery vectorStoreQuery = new(settingsVectorSettings);
+        VectorStoreQuery vectorStoreQuery = new(settingsVectorSettings, dbContextFactory);
         IVectorStoreRecordCollection<string, DocumentationVectorEntity> collection = vectorStoreQuery.GetCollection<DocumentationVectorEntity>(settingsVectorSettings.DocumentationCollectionName);
+
+        await collection.CreateCollectionIfNotExistsAsync();
 
         if (deletePreviousDataInCollection)
         {
-            await collection.DeleteCollectionAsync();
+            string[] ids = await vectorStoreQuery.GetDocumentationIdsForProject(settings.Id);
+            await collection.DeleteBatchAsync(ids);
         }
-
-        await collection.CreateCollectionIfNotExistsAsync();
 
         if (ingestionSettings.IncludeMarkdownInSourceCodeRepoRoot && !string.IsNullOrWhiteSpace(settings.LocalSourceCodeRepoRoot))
         {
@@ -136,12 +139,13 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
         {
             DocumentationVectorEntity documentationVectorEntity = new()
             {
+                Id = Guid.NewGuid().ToString(),
                 Content = title + Environment.NewLine + "---" + Environment.NewLine + content,
                 Source = source,
                 Name = title,
                 Link = url
             };
-            await vectorStoreCommand.Upsert(collection, documentationVectorEntity);
+            await vectorStoreCommand.Upsert(settings.Id, collection, documentationVectorEntity);
         }
 
         OnNotifyProgress("Done");
@@ -162,9 +166,9 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
             {
                 Console.WriteLine($"Processing {id}");
                 string fileName = Path.GetFileName(path);
-                await vectorStoreCommand.Upsert(collection, new DocumentationVectorEntity
+                await vectorStoreCommand.Upsert(settings.Id, collection, new DocumentationVectorEntity
                 {
-                    Id = id,
+                    Id = "ROOT_FILE_" + id,
                     Content = id + Environment.NewLine + "---" + Environment.NewLine + await File.ReadAllTextAsync(path),
                     Name = id,
                     Source = fileName,

@@ -1,14 +1,13 @@
 ﻿using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.Models;
 using CodeRag.Shared.VectorStore;
-using CodeRag.Shared.VectorStore.Documentation;
 using CodeRag.Shared.VectorStore.SourceCode;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 
-namespace Workbench.Components.Pages.WikiGeneration;
+namespace Workbench.Components.Pages.XmlSummariesGeneration;
 
-public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContextFactory)
+public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> dbContextFactory)
 {
     private List<Data>? _data;
     private Dictionary<string, bool>? _onlyUndocumentedCheckStates;
@@ -20,7 +19,6 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
     protected override async Task OnInitializedAsync()
     {
         VectorStoreQuery vectorStoreQuery = new(Project.VectorSettings, dbContextFactory);
-        DocumentationVectorEntity[] documentation = await vectorStoreQuery.GetDocumentationForProject(Project.Id);
         SourceCodeVectorEntity[] sourceCode = await vectorStoreQuery.GetSourceCodeForProject(Project.Id);
 
         string[] kinds = sourceCode.Select(x => x.Kind).Distinct().ToArray();
@@ -30,7 +28,7 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
         foreach (string kind in kinds)
         {
             SourceCodeVectorEntity[] allOfKind = sourceCode.Where(x => x.Kind == kind).OrderBy(x => x.Name).ToArray();
-            SourceCodeVectorEntity[] undocumentedOfKind = allOfKind.Where(x => documentation.All(y => y.Name != x.Name && y.Source != x.Name + ".md")).OrderBy(x => x.Name).ToArray();
+            SourceCodeVectorEntity[] undocumentedOfKind = allOfKind.Where(x => 1 == 1).OrderBy(x => x.Name).ToArray(); //todo
             SourceCodeVectorEntity[] documentedOfKind = allOfKind.Except(undocumentedOfKind).ToArray();
             data.Add(new Data(kind, allOfKind, documentedOfKind, undocumentedOfKind));
             onlyUndocumentedCheckStates.Add(kind, true);
@@ -56,8 +54,13 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
         }
     }
 
-    private void SwitchSelectedItem(SourceCodeVectorEntity sourceCodeVectorEntity)
+    private void SwitchSelectedItem(SourceCodeVectorEntity? sourceCodeVectorEntity)
     {
+        if (sourceCodeVectorEntity == null)
+        {
+            return;
+        }
+
         if (_selectEntry?.Id != sourceCodeVectorEntity.Id)
         {
             _selectEntry = sourceCodeVectorEntity;

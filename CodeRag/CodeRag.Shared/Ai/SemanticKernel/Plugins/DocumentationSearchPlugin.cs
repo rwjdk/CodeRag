@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using CodeRag.Shared.Models;
 using CodeRag.Shared.VectorStore.Documentation;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
@@ -7,17 +8,19 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace CodeRag.Shared.Ai.SemanticKernel.Plugins;
 
-public class DocumentationSearchPlugin(ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<string, DocumentationVectorEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
+public class DocumentationSearchPlugin(Guid projectId, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<string, DocumentationVectorEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
     [UsedImplicitly]
     [KernelFunction]
     public async Task<string[]> Search(string searchQuery)
     {
+        string projectToSearch = projectId.ToString();
         List<string> searchResults = [];
         ReadOnlyMemory<float> searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchQuery);
         VectorSearchResults<DocumentationVectorEntity> searchResult = await collection.VectorizedSearchAsync(searchVector, new VectorSearchOptions<DocumentationVectorEntity>
         {
             Top = numberofResultsBack,
+            Filter = entity => entity.ProjectId == projectToSearch,
             IncludeVectors = false
         });
 

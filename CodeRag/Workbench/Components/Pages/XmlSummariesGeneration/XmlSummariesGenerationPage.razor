@@ -1,6 +1,5 @@
-﻿@page "/WikiGeneration"
-@using CodeRag.Shared.VectorStore.SourceCode
-<h3>Wiki Generation</h3>
+﻿@page "/XmlSummariesGeneration"
+<h3>XML Summaries Generation</h3>
 
 @if(_data != null)
 {
@@ -15,7 +14,7 @@
                         {
                             var onlyUndocumented = _onlyUndocumentedCheckStates[dataEntry.Kind];
                             <RCheckBox Value="@onlyUndocumented" Label="Only list undocumented" ValueChanged="x => SwitchAllUndocumentedState(dataEntry.Kind, x)"/>
-                            <SourceCodeVectorEntitySelectionList Items="@(onlyUndocumented ? dataEntry.UnDocumented : dataEntry.All)" SelectedItemChanged="x=> SwitchSelectedItem(x)"/>
+                            <SourceCodeVectorEntitySelectionList Items="@(onlyUndocumented ? dataEntry.UnDocumented : dataEntry.All)" SelectedItemChanged="x => SwitchSelectedItem(x)"/>
                         }
                     </MudItem>
                     <MudItem xs="10">

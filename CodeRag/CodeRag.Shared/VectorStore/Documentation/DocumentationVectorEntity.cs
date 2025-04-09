@@ -1,6 +1,9 @@
-﻿using CodeRag.Shared.VectorStore;
-using Microsoft.Extensions.VectorData;
+﻿namespace CodeRag.Shared.VectorStore.Documentation;
 
-namespace CodeRag.Shared.VectorStore.Documentation;
-
-public class DocumentationVectorEntity : VectorEntity;
+public class DocumentationVectorEntity : VectorEntity
+{
+    public override string ToString()
+    {
+        return Name;
+    }
+}

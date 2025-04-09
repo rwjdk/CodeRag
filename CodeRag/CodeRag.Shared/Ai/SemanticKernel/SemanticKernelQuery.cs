@@ -1,13 +1,14 @@
 ﻿using System.Diagnostics;
 using CodeRag.Shared.Ai.AzureOpenAi;
 using CodeRag.Shared.Ai.SemanticKernel.Plugins;
+using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.Interfaces;
 using CodeRag.Shared.Models;
 using CodeRag.Shared.VectorStore;
 using CodeRag.Shared.VectorStore.Documentation;
 using CodeRag.Shared.VectorStore.SourceCode;
 using JetBrains.Annotations;
-using Microsoft.Extensions.VectorData;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -17,7 +18,7 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 namespace CodeRag.Shared.Ai.SemanticKernel;
 
 [UsedImplicitly]
-public class SemanticKernelQuery : ProgressNotificationBase, IScopedService
+public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactory) : ProgressNotificationBase, IScopedService
 {
     public ITextEmbeddingGenerationService GetTextEmbeddingGenerationService(AzureOpenAiCredentials credentials, string azureOpenAiEmbeddingDeploymentName)
     {
@@ -48,15 +49,15 @@ public class SemanticKernelQuery : ProgressNotificationBase, IScopedService
 
         if (useSourceCodeSearch)
         {
-            var sourceCodeCollection = new VectorStoreQuery(project.VectorSettings).GetCollection<SourceCodeVectorEntity>(project.VectorSettings.SourceCodeCollectionName);
-            var codePlugin = new SourceCodeSearchPlugin(embeddingGenerationService, sourceCodeCollection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
+            var sourceCodeCollection = new VectorStoreQuery(project.VectorSettings, dbContextFactory).GetCollection<SourceCodeVectorEntity>(project.VectorSettings.SourceCodeCollectionName);
+            var codePlugin = new SourceCodeSearchPlugin(project.Id, embeddingGenerationService, sourceCodeCollection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
             kernel.ImportPluginFromObject(codePlugin, Constants.SourceCodeSearchPluginName);
         }
 
         if (useDocumentationSearch)
         {
-            var documentationCollection = new VectorStoreQuery(project.VectorSettings).GetCollection<DocumentationVectorEntity>(project.VectorSettings.DocumentationCollectionName);
-            var docsPlugin = new DocumentationSearchPlugin(embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDoucumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
+            var documentationCollection = new VectorStoreQuery(project.VectorSettings, dbContextFactory).GetCollection<DocumentationVectorEntity>(project.VectorSettings.DocumentationCollectionName);
+            var docsPlugin = new DocumentationSearchPlugin(project.Id, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDoucumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
             kernel.ImportPluginFromObject(docsPlugin, Constants.DocumentationSearchPluginName);
         }
 

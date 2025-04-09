@@ -6,22 +6,25 @@ namespace CodeRag.Shared.VectorStore;
 public abstract class VectorEntity
 {
     [VectorStoreRecordKey]
-    public string Id { get; set; } = Guid.NewGuid().ToString(); //todo - make id's determenistic and not just GUIDs
+    public required string Id { get; set; }
+
+    [VectorStoreRecordData(IsFilterable = true)]
+    public required string Name { get; init; }
+
+    [VectorStoreRecordData]
+    public required string Link { get; init; }
+
+    [VectorStoreRecordData]
+    public required string Content { get; init; }
+
+    [VectorStoreRecordData(IsFilterable = true)]
+    public required string Source { get; init; }
 
     [VectorStoreRecordData]
     public DateTime TimeOfIngestion { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
-    public required string Name { get; set; }
-
-    [VectorStoreRecordData]
-    public required string Link { get; set; }
-
-    [VectorStoreRecordData]
-    public required string Content { get; set; }
-
-    [VectorStoreRecordData(IsFilterable = true)]
-    public required string Source { get; set; }
+    public string? ProjectId { get; set; }
 
     [VectorStoreRecordVector(Dimensions: 1536, DistanceFunction.CosineDistance, IndexKind.Flat)]
     [NotMapped]

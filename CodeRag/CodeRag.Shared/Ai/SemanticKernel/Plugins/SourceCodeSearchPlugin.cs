@@ -7,17 +7,19 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace CodeRag.Shared.Ai.SemanticKernel.Plugins;
 
-public class SourceCodeSearchPlugin(ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<string, SourceCodeVectorEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
+public class SourceCodeSearchPlugin(Guid projectId, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<string, SourceCodeVectorEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
     [UsedImplicitly]
     [KernelFunction]
     public async Task<string[]> Search(string searchQuery)
     {
+        string projectToSearch = projectId.ToString();
         List<string> searchResults = [];
         ReadOnlyMemory<float> searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchQuery);
         VectorSearchResults<SourceCodeVectorEntity> searchResult = await collection.VectorizedSearchAsync(searchVector, new VectorSearchOptions<SourceCodeVectorEntity>
         {
             Top = numberofResultsBack,
+            Filter = entity => entity.ProjectId == projectToSearch,
             IncludeVectors = false
         });
 

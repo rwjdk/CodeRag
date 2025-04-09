@@ -46,14 +46,14 @@
             <MudItem xs="4">
 
                 <MudGrid Class="align-items-center" Spacing="1">
-                    <MudItem xs="1">
-                        <RIconButton Icon="@Icons.Material.Filled.DriveFileRenameOutline" ToolTip="New Chat" OnClick="NewChat" />
+                    <MudItem xs="3">
+                        <RButton StartIcon="@Icons.Material.Filled.DriveFileRenameOutline" OnClick="NewChat">New Chat</RButton>
                     </MudItem>
-                    <MudItem xs="11" Style="text-align: end">
+                    <MudItem xs="9" Style="text-align: end">
                         <h2>Settings and Parameters</h2>
                     </MudItem>
                 </MudGrid>
-                <hr />
+                <br/>
                 <div class="font-size-10">Model</div>
                 <RSelect T="AzureOpenAiChatModel" Items="Project.ChatModels" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
                 <hr />

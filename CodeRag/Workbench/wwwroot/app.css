@@ -50,6 +50,14 @@ pre {
     border: 1px solid gray;
 }
 
+.mud-tab {
+    text-transform: none !important;
+}
+
+.mud-button-label {
+    text-transform: none !important;
+}
+
 h1:focus {
     outline: none;
 }

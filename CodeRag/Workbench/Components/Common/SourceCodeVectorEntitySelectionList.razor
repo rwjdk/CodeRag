@@ -1,0 +1,43 @@
+﻿@using CodeRag.Shared.VectorStore.SourceCode
+<MudDataGrid T="SourceCodeVectorEntity" Items="Items" Dense SelectedItem="_selectEntry" SelectedItemChanged="x => SwitchSelectedItem(x)" Height="70vh">
+    <Columns>
+        <TemplateColumn T="SourceCodeVectorEntity">
+            <CellTemplate>
+                @if (context.Item.Id == _selectEntry?.Id)
+                {
+                    <div style="color: var(--mud-palette-primary)"><strong>@context.Item.Name</strong></div>
+                    <div class="font-size-10">@context.Item.Namespace.@context.Item.Source</div>
+                }
+                else
+                {
+                    <div>@context.Item.Name</div>
+                    <div class="font-size-10">@context.Item.Namespace.@context.Item.Source</div>
+                }
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+
+@code {
+    private SourceCodeVectorEntity? _selectEntry;
+
+    [Parameter, EditorRequired]
+    public required SourceCodeVectorEntity[] Items { get; set; }
+
+    [Parameter, EditorRequired]
+    public required EventCallback<SourceCodeVectorEntity> SelectedItemChanged { get; set; }
+
+    private async Task SwitchSelectedItem(SourceCodeVectorEntity? sourceCodeVectorEntity)
+    {
+        if (sourceCodeVectorEntity == null)
+        {
+            return;
+        }
+
+        if (_selectEntry?.Id != sourceCodeVectorEntity.Id)
+        {
+            _selectEntry = sourceCodeVectorEntity;
+            await SelectedItemChanged.InvokeAsync(_selectEntry);
+        }
+    }
+}
