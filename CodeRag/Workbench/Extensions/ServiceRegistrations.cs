@@ -1,4 +1,6 @@
-﻿using CodeRag.Shared.ServiceLifetimes;
+﻿using CodeRag.Shared.EntityFramework;
+using CodeRag.Shared.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Workbench.Extensions;
 
@@ -27,5 +29,14 @@ public static class ServiceRegistrations
                 builder.Services.AddScoped(type);
             }
         }
+    }
+
+    public static void AddSqlServer(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddDbContextFactory<SqlDbContext>(options =>
+        {
+            var mainConnectionString = builder.Configuration[Constants.Secrets.SqlServerConnectionString];
+            options.UseSqlServer(mainConnectionString);
+        });
     }
 }

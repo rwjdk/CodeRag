@@ -1,3 +1,3 @@
-﻿namespace CodeRag.Shared.ServiceLifetimes;
+﻿namespace CodeRag.Shared.Interfaces;
 
 public interface IScopedService;

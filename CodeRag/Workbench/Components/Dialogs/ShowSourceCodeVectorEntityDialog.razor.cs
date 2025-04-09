@@ -1,8 +1,7 @@
-﻿using CodeRag.Shared.BusinessLogic.VectorStore.SourceCode;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Blazor.Shared;
-using Blazor.Shared.Helpers;
+using CodeRag.Shared.VectorStore.SourceCode;
 
 namespace Workbench.Components.Dialogs;
 

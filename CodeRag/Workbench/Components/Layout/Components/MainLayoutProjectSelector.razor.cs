@@ -1,13 +1,13 @@
 ﻿using Blazor.Shared;
 using Blazored.LocalStorage;
-using CodeRag.Shared.BusinessLogic.Ai.AzureOpenAi;
-using CodeRag.Shared.BusinessLogic.Ingestion.Documentation;
-using CodeRag.Shared.BusinessLogic.Ingestion.Documentation.Markdown;
-using CodeRag.Shared.BusinessLogic.Ingestion.SourceCode;
-using CodeRag.Shared.BusinessLogic.Ingestion.SourceCode.Csharp;
-using CodeRag.Shared.BusinessLogic.Prompting;
-using CodeRag.Shared.BusinessLogic.VectorStore;
+using CodeRag.Shared.Ai.AzureOpenAi;
+using CodeRag.Shared.Ingestion.Documentation;
+using CodeRag.Shared.Ingestion.Documentation.Markdown;
+using CodeRag.Shared.Ingestion.SourceCode;
+using CodeRag.Shared.Ingestion.SourceCode.Csharp;
 using CodeRag.Shared.Models;
+using CodeRag.Shared.Prompting;
+using CodeRag.Shared.VectorStore;
 using Microsoft.AspNetCore.Components;
 using OpenAI.Chat;
 

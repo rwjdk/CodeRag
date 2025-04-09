@@ -1,5 +1,5 @@
-﻿using CodeRag.Shared.BusinessLogic.VectorStore.Documentation;
-using CodeRag.Shared.BusinessLogic.VectorStore.SourceCode;
+﻿using CodeRag.Shared.VectorStore.Documentation;
+using CodeRag.Shared.VectorStore.SourceCode;
 using Microsoft.Extensions.VectorData;
 
 namespace CodeRag.Shared;

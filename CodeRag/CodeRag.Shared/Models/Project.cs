@@ -1,7 +1,7 @@
-﻿using CodeRag.Shared.BusinessLogic.Ai.AzureOpenAi;
-using CodeRag.Shared.BusinessLogic.Ingestion.Documentation.Markdown;
-using CodeRag.Shared.BusinessLogic.Ingestion.SourceCode.Csharp;
-using CodeRag.Shared.BusinessLogic.VectorStore;
+﻿using CodeRag.Shared.Ai.AzureOpenAi;
+using CodeRag.Shared.Ingestion.Documentation.Markdown;
+using CodeRag.Shared.Ingestion.SourceCode.Csharp;
+using CodeRag.Shared.VectorStore;
 
 namespace CodeRag.Shared.Models;
 

@@ -14,6 +14,7 @@ builder.Services.AddBlazorShared();
 builder.Services.AddBlazoredLocalStorage();
 builder.AutoRegisterServicesViaReflection(typeof(Program));
 builder.AutoRegisterServicesViaReflection(typeof(Project));
+builder.AddSqlServer();
 
 var app = builder.Build();
 

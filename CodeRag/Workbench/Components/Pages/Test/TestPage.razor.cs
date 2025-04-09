@@ -10,13 +10,12 @@ using CodeRag.Shared;
 using CodeRag.Shared.Models;
 using Markdown.ColorCode;
 using Microsoft.SemanticKernel;
-using CodeRag.Shared.BusinessLogic.Ai.SemanticKernel;
-using CodeRag.Shared.BusinessLogic.Ai.AzureOpenAi;
-using CodeRag.Shared.BusinessLogic.VectorStore;
-using CodeRag.Shared.BusinessLogic.VectorStore.SourceCode;
 using Microsoft.Extensions.VectorData;
 using Blazor.Shared.Components.Dialogs;
 using Workbench.Components.Dialogs;
+using CodeRag.Shared.Ai.AzureOpenAi;
+using CodeRag.Shared.Ai.SemanticKernel;
+using CodeRag.Shared.VectorStore.SourceCode;
 
 namespace Workbench.Components.Pages.Test;
 
