@@ -1,14 +1,20 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
+using System.Text;
+using System.Text.Json;
 using CodeRag.Shared.Ai.SemanticKernel.Plugins;
 using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Interfaces;
+using CodeRag.Shared.Prompting;
 using CodeRag.Shared.VectorStore;
 using CodeRag.Shared.VectorStore.Documentation;
+using CodeRag.Shared.VectorStore.SourceCode;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using OpenAI.Chat;
@@ -36,29 +42,95 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
         Project project) //todo - support get a streaming answer
     {
         long timestamp = Stopwatch.GetTimestamp();
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddAzureOpenAIChatCompletion(chatModel.DeploymentName, project.AzureOpenAiEndpoint, project.AzureOpenAiKey, httpClient: new HttpClient
-        {
-            Timeout = TimeSpan.FromMinutes(chatModel.TimeoutInSeconds)
-        });
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(project.AzureOpenAiEmbeddingModelDeploymentName, project.AzureOpenAiEndpoint, project.AzureOpenAiKey);
-        Kernel kernel = kernelBuilder.Build();
+        Kernel kernel = GetKernel(chatModel, project);
 
-        ITextEmbeddingGenerationService embeddingGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        ITextEmbeddingGenerationService embeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
 
         if (useSourceCodeSearch)
         {
-            var cSharpCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharpCodeVectorCollection);
-            var codePlugin = new SourceCodeSearchPlugin(project.Id, embeddingGenerationService, cSharpCollection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
-            kernel.ImportPluginFromObject(codePlugin, Constants.SourceCodeSearchPluginName);
+            AddCodeSearchPluginToKernel(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, embeddingGenerationService, kernel);
         }
 
         if (useDocumentationSearch)
         {
-            var documentationCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<DocumentationVectorEntity>(Constants.VectorCollections.MarkdownVectorCollection);
-            var docsPlugin = new DocumentationSearchPlugin(project.Id, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDoucumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
-            kernel.ImportPluginFromObject(docsPlugin, Constants.DocumentationSearchPluginName);
+            AddDocumentationSearchPluginToKernel(maxNumberOfAnswersBackFromDoucumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
         }
+
+        ChatCompletionAgent answerAgent = GetAgent(chatModel, project, project.TestChatDeveloperInstructions, kernel);
+
+        ChatMessageContent chatMessageContent = null!;
+
+        OnNotifyProgress("Sending Request to AI");
+        await foreach (AgentResponseItem<ChatMessageContent> item in answerAgent.InvokeAsync(converstation))
+        {
+            chatMessageContent = item.Message;
+        }
+
+        TimeSpan elapsedTime = Stopwatch.GetElapsedTime(timestamp);
+        OnNotifyProgress($"Done - Total time: {Convert.ToInt32(elapsedTime.TotalSeconds)} sec");
+        return chatMessageContent;
+    }
+
+    private ITextEmbeddingGenerationService GetTextEmbeddingGenerationService(Kernel kernel)
+    {
+        ITextEmbeddingGenerationService embeddingGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        return embeddingGenerationService;
+    }
+
+    private void AddDocumentationSearchPluginToKernel(int maxNumberOfAnswersBackFromDoucumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
+    {
+        var documentationCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<DocumentationVectorEntity>(Constants.VectorCollections.MarkdownVectorCollection);
+        var docsPlugin = new DocumentationSearchPlugin(project.Id, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDoucumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
+        kernel.ImportPluginFromObject(docsPlugin, Constants.DocumentationSearchPluginName);
+    }
+
+    private void AddCodeSearchPluginToKernel(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
+    {
+        var cSharpCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharpCodeVectorCollection);
+        var codePlugin = new SourceCodeSearchPlugin(project.Id, embeddingGenerationService, cSharpCollection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
+        kernel.ImportPluginFromObject(codePlugin, Constants.SourceCodeSearchPluginName);
+    }
+
+    private ChatCompletionAgent GetAgentForStructuredOutput<T>(AzureOpenAiChatCompletionDeployment chatModel, string instructions, Kernel kernel)
+    {
+        AzureOpenAIPromptExecutionSettings executionSettings = new()
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+        if (chatModel.Temperature.HasValue)
+        {
+            executionSettings.Temperature = chatModel.Temperature.Value;
+            executionSettings.ResponseFormat = typeof(T);
+        }
+
+        if (!string.IsNullOrWhiteSpace(chatModel.ReasoningEffortLevel))
+        {
+            switch (chatModel.ReasoningEffortLevel)
+            {
+                case "low":
+                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.Low;
+                    break;
+                case "medium":
+                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.Medium;
+                    break;
+                case "high":
+                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.High;
+                    break;
+            }
+        }
+
+        ChatCompletionAgent agent = new()
+        {
+            Instructions = instructions,
+            Kernel = kernel,
+            Arguments = new KernelArguments(executionSettings)
+        };
+        return agent;
+    }
+
+    private ChatCompletionAgent GetAgent(AzureOpenAiChatCompletionDeployment chatModel, Project project, string instructions, Kernel? kernel = null)
+    {
+        kernel ??= GetKernel(chatModel, project);
 
         AzureOpenAIPromptExecutionSettings executionSettings = new()
         {
@@ -85,23 +157,173 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
             }
         }
 
-        ChatCompletionAgent answerAgent = new()
+        ChatCompletionAgent agent = new()
         {
-            Instructions = project.TestChatDeveloperInstructions,
+            Instructions = instructions,
             Kernel = kernel,
             Arguments = new KernelArguments(executionSettings)
         };
+        return agent;
+    }
 
-        ChatMessageContent chatMessageContent = null!;
-
-        OnNotifyProgress("Sending Request to AI");
-        await foreach (AgentResponseItem<ChatMessageContent> item in answerAgent.InvokeAsync(converstation))
+    private Kernel GetKernel(AzureOpenAiChatCompletionDeployment chatModel, Project project)
+    {
+        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.AddAzureOpenAIChatCompletion(chatModel.DeploymentName, project.AzureOpenAiEndpoint, project.AzureOpenAiKey, httpClient: new HttpClient
         {
-            chatMessageContent = item.Message;
+            Timeout = TimeSpan.FromMinutes(chatModel.TimeoutInSeconds)
+        });
+        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(project.AzureOpenAiEmbeddingModelDeploymentName, project.AzureOpenAiEndpoint, project.AzureOpenAiKey);
+        Kernel kernel = kernelBuilder.Build();
+        return kernel;
+    }
+
+    private async Task<T> GetStructuredOutputResponse<T>(Project project, AzureOpenAiChatCompletionDeployment model, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch)
+    {
+        Kernel kernel = GetKernel(model, project);
+        ITextEmbeddingGenerationService textEmbeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
+
+        if (useSourceCodeSearch)
+        {
+            AddCodeSearchPluginToKernel(25, 0.7, project, textEmbeddingGenerationService, kernel);
         }
 
-        TimeSpan elapsedTime = Stopwatch.GetElapsedTime(timestamp);
-        OnNotifyProgress($"Done - Total time: {Convert.ToInt32(elapsedTime.TotalSeconds)} sec");
-        return chatMessageContent;
+        if (useDocumentationSearch)
+        {
+            AddDocumentationSearchPluginToKernel(25, 0.5, project, textEmbeddingGenerationService, kernel);
+        }
+
+        ChatCompletionAgent agent = GetAgentForStructuredOutput<T>(model, instructions, kernel);
+
+        string json = string.Empty;
+        await foreach (AgentResponseItem<ChatMessageContent> item in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input)))
+        {
+            json = item.Message.ToString();
+        }
+
+        return JsonSerializer.Deserialize<T>(json)!;
     }
+
+    public async Task<string?> GenerateCSharpXmlSummary(Project project, CSharpCodeEntity code)
+    {
+        string prompt = Prompting.Prompt.Create("You are an C# Expert that can generate XML Summaries.")
+            .AddRule($"Always use all tools available ('{Constants.SourceCodeSearchPluginName}' and '{Constants.DocumentationSearchPluginName}') before you provide your answer")
+            .AddRule("Always report back in C# XML Summary Format")
+            .AddRule("Do not mention that the method is asynchronously and that the Cancellation-token can be used")
+            .AddRule("The description should be short and focus on what the C# entity do")
+            .AddRule("CancellationToken params should just be refered to as 'Cancellation Token'")
+            .AddRule("Do not use cref")
+            .AddRule("Don't use wording 'with the specified options' and similar. Be short and on point")
+            .AddRule("Don't end the sentences with '.'")
+            .ToString();
+        AzureOpenAiChatCompletionDeployment model = project.AzureOpenAiChatCompletionDeployments.First();
+        XmlSummaryGeneration response = await GetStructuredOutputResponse<XmlSummaryGeneration>(
+            project: project,
+            model: model,
+            instructions: prompt,
+            input: "Generate XML Summary for this code Entity: " + code.Content,
+            useSourceCodeSearch: true,
+            useDocumentationSearch: true);
+        return response.XmlSummary;
+    }
+
+    public async Task<string?> GenerateCodeWikiEntryForMethod(Project project, CSharpCodeEntity code)
+    {
+        string prompt = Prompting.Prompt.Create("You are an C# Expert that can given Code and existing wiki content generates Markdown that documents the Code")
+            .AddRule($"Always use all tools available ('{Constants.SourceCodeSearchPluginName}' and '{Constants.DocumentationSearchPluginName}') before you provide your answer")
+            .AddRule("Always report back in Markdown")
+            .AddRule("Do not mention that the method is asynchronously and that the Cancellation-token can be used")
+            .ToString();
+        AzureOpenAiChatCompletionDeployment model = project.AzureOpenAiChatCompletionDeployments.First();
+        WikiMethodEntry response = await GetStructuredOutputResponse<WikiMethodEntry>(
+            project: project,
+            model: model,
+            instructions: prompt,
+            input: "Generate XML Summary for this code Entity: " + code.Content,
+            useSourceCodeSearch: true,
+            useDocumentationSearch: true);
+        return response.ToMarkdown();
+    }
+}
+
+public class XmlSummaryGeneration
+{
+    public required string XmlSummary { get; set; }
+}
+
+public class WikiMethodEntry
+{
+    [Description("Describe in at least 100 chars but max 500 chars what the Method is designed to do, Describe the various notes and ways this method can be called. Do not include things like the method need to be called async. Do not repeat yourself. Do not mention the method-name")]
+    public required string WhatDoesTheMethodDo { get; set; }
+
+    [Description("Always exclude the 'public' keyword, include the async keyword, also exclude the 'CancellationToken cancellationToken = default' parameter. Include the XML Summary")]
+    public required string MethodSignature { get; set; }
+
+    [Description("Surround each parameter with ``<name>`` If a parameter is a GetCardOptions then describe it in full instead of just a bulletlist entry. Exclude the cancellationToken")]
+    public required string[]? ParameterDescriptions { get; set; }
+
+    [Description("Surround return type with ``<type>`` and describe what the return type is and how to use it. Only include if return value is other that Task. Ignore the Task part and only include the actual return value")]
+    public required string? ReturnValueDescription { get; set; }
+
+    [Description("Make at least 3 examples")]
+    public required WikiEntryCodeExample[]? CodeExamples { get; set; }
+
+    public string ToMarkdown()
+    {
+        StringBuilder sb = new();
+        sb.AppendLine(AddLinks(WhatDoesTheMethodDo));
+        sb.AppendLine();
+
+        sb.AppendLine("## Method Signature");
+        sb.AppendLine("```csharp");
+        sb.AppendLine(MethodSignature);
+        sb.AppendLine("```");
+        sb.AppendLine();
+
+        if (ParameterDescriptions != null)
+        {
+            sb.AppendLine("### Parameters");
+            foreach (string parameterDescription in ParameterDescriptions)
+            {
+                sb.AppendLine("- " + AddLinks(parameterDescription));
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(ReturnValueDescription))
+        {
+            sb.AppendLine("### Return value");
+            sb.AppendLine(AddLinks(ReturnValueDescription));
+        }
+
+        if (CodeExamples != null)
+        {
+            sb.AppendLine("## Examples");
+            int exampleCounter = 1;
+            foreach (WikiEntryCodeExample codeExample in CodeExamples)
+            {
+                sb.AppendLine("```csharp");
+                sb.AppendLine($"// Example {exampleCounter}: " + codeExample.DescriptionOfExample);
+                sb.AppendLine(codeExample.ExampleCode.Replace("\n", Environment.NewLine));
+                sb.AppendLine("```");
+                exampleCounter++;
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    private string AddLinks(string input)
+    {
+        input = input.Replace("`GetCardOptions`", "[`GetCardOptions`](GetCardOptions)");
+        return input;
+    }
+}
+
+public class WikiEntryCodeExample
+{
+    [Description("A short description of what the example does")]
+    public string DescriptionOfExample { get; set; }
+
+    [Description("Never include instantiation of the 'trelloClient'. Just assume it is there. use a verbose syntax allowing more linebreaks and when using object initializer add each property on a new line. Remmber to include await if method suffix is 'Async'. make all variable local variables instead of inlining them and for id parameters always write \"<your_'type'_id>\" (Example \"<your_card_id>\" or \"<your_board_id>\"). Never use 'var'")]
+    public string ExampleCode { get; set; }
 }

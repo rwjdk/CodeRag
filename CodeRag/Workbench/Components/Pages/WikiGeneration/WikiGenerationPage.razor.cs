@@ -1,17 +1,20 @@
-﻿using CodeRag.Shared.EntityFramework;
+﻿using CodeRag.Shared.Ai.SemanticKernel;
+using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.VectorStore;
 using CodeRag.Shared.VectorStore.Documentation;
+using CodeRag.Shared.VectorStore.SourceCode;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 
 namespace Workbench.Components.Pages.WikiGeneration;
 
-public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContextFactory)
+public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContextFactory, SemanticKernelQuery semanticKernelQuery)
 {
     private List<Data>? _data;
     private Dictionary<string, bool>? _onlyUndocumentedCheckStates;
     private CSharpCodeEntity? _selectEntry;
+    private string? _markdown;
 
     [CascadingParameter]
     public required Project Project { get; set; }
@@ -19,8 +22,8 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
     protected override async Task OnInitializedAsync()
     {
         SqlServerVectorStoreQuery vectorStoreQuery = new(Project.SqlServerVectorStoreConnectionString, dbContextFactory);
-        DocumentationVectorEntity[] documentation = await vectorStoreQuery.GetDocumentationForProject(Project.Id);
-        CSharpCodeEntity[] sourceCode = await vectorStoreQuery.GetCSharpCodeForProject(Project.Id);
+        DocumentationVectorEntity[] documentation = await vectorStoreQuery.GetDocumentation(Project.Id);
+        CSharpCodeEntity[] sourceCode = await vectorStoreQuery.GetCSharpCode(Project.Id);
 
         string[] kinds = sourceCode.Select(x => x.Kind).Distinct().ToArray();
 
@@ -60,6 +63,12 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
         if (_selectEntry?.Id != cSharpCodeEntity.Id)
         {
             _selectEntry = cSharpCodeEntity;
+            _markdown = null;
         }
+    }
+
+    private async Task GenerateCodeWiki()
+    {
+        _markdown = await semanticKernelQuery.GenerateCodeWikiEntryForMethod(Project, _selectEntry);
     }
 }

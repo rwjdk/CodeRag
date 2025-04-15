@@ -1,16 +1,19 @@
-﻿using CodeRag.Shared.EntityFramework;
+﻿using CodeRag.Shared.Ai.SemanticKernel;
+using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.VectorStore;
+using CodeRag.Shared.VectorStore.SourceCode;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 
 namespace Workbench.Components.Pages.XmlSummariesGeneration;
 
-public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> dbContextFactory)
+public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> dbContextFactory, SemanticKernelQuery semanticKernelQuery)
 {
     private List<Data>? _data;
     private Dictionary<string, bool>? _onlyUndocumentedCheckStates;
     private CSharpCodeEntity? _selectEntry;
+    private string? _xmlSummary;
 
     [CascadingParameter]
     public required Project Project { get; set; }
@@ -18,7 +21,7 @@ public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> 
     protected override async Task OnInitializedAsync()
     {
         SqlServerVectorStoreQuery vectorStoreQuery = new(Project.SqlServerVectorStoreConnectionString, dbContextFactory);
-        CSharpCodeEntity[] sourceCode = await vectorStoreQuery.GetCSharpCodeForProject(Project.Id);
+        CSharpCodeEntity[] sourceCode = await vectorStoreQuery.GetCSharpCode(Project.Id);
 
         string[] kinds = sourceCode.Select(x => x.Kind).Distinct().ToArray();
 
@@ -27,7 +30,7 @@ public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> 
         foreach (string kind in kinds)
         {
             CSharpCodeEntity[] allOfKind = sourceCode.Where(x => x.Kind == kind).OrderBy(x => x.Name).ToArray();
-            CSharpCodeEntity[] undocumentedOfKind = allOfKind.Where(x => 1 == 1).OrderBy(x => x.Name).ToArray(); //todo
+            CSharpCodeEntity[] undocumentedOfKind = allOfKind.Where(x => string.IsNullOrWhiteSpace(x.XmlSummary)).OrderBy(x => x.Name).ToArray();
             CSharpCodeEntity[] documentedOfKind = allOfKind.Except(undocumentedOfKind).ToArray();
             data.Add(new Data(kind, allOfKind, documentedOfKind, undocumentedOfKind));
             onlyUndocumentedCheckStates.Add(kind, true);
@@ -63,6 +66,13 @@ public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> 
         if (_selectEntry?.Id != CSharpCodeEntity.Id)
         {
             _selectEntry = CSharpCodeEntity;
+            _xmlSummary = null;
         }
+    }
+
+
+    private async Task GenerateXmlSummary()
+    {
+        _xmlSummary = await semanticKernelQuery.GenerateCSharpXmlSummary(Project, _selectEntry);
     }
 }

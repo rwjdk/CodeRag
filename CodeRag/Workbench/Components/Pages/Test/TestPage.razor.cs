@@ -14,7 +14,7 @@ using Blazor.Shared.Components.Dialogs;
 using Workbench.Components.Dialogs;
 using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.EntityFramework.Entities;
-using CodeRag.Shared.VectorStore;
+using CodeRag.Shared.VectorStore.SourceCode;
 
 namespace Workbench.Components.Pages.Test;
 

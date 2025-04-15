@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Workbench.Components.Pages.DocsIngestion;
 
-public partial class DocsIngestionPage(MarkdownIngestionCommand ingestionCommand)
+public partial class DocsIngestionPage(MarkdownIngestionCommand ingestionCommand) : IDisposable
 {
     [CascadingParameter]
     public required BlazorUtils Utils { get; set; }
@@ -16,12 +16,10 @@ public partial class DocsIngestionPage(MarkdownIngestionCommand ingestionCommand
 
     private bool _reinitializeSource = true; //todo - support deterministic ids and make this default false
     private readonly List<ProgressNotification> _messages = [];
-    private DocumentationSource? _selectedSource;
 
     protected override void OnInitialized()
     {
         ingestionCommand.NotifyProgress += IngestionCommand_NotifyProgress;
-        _selectedSource = Project.DocumentationSources.FirstOrDefault();
     }
 
     private void IngestionCommand_NotifyProgress(ProgressNotification obj)
@@ -30,11 +28,11 @@ public partial class DocsIngestionPage(MarkdownIngestionCommand ingestionCommand
         StateHasChanged();
     }
 
-    private async Task Ingest()
+    private async Task Ingest(DocumentationSource source)
     {
         _messages.Clear();
 
-        await ingestionCommand.Ingest(Project, _selectedSource, _reinitializeSource);
+        await ingestionCommand.Ingest(Project, source, _reinitializeSource);
     }
 
     public void Dispose()

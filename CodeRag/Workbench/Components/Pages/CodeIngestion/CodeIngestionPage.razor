@@ -1,10 +1,15 @@
 ﻿@page "/CodeIngestion"
-@using CodeRag.Shared.EntityFramework.Entities
 
 <h1>Code Ingestion</h1>
-<RButton OnClick="Ingest">Ingest Code</RButton>
-<RSelect T="CodeSource" Label="Source" @bind-Value="_selectedSource" Items="Project.CodeSources" ToStringFunc="x => x!.Name"/>
-<RCheckBox Label="Re-initialize Source" @bind-Value="_reinitializeSource" Tooltip="If this is check the ingestion will delete previous Source Data and re-create it"/>
+<RCheckBox Label="Re-initialize Source" @bind-Value="_reinitializeSource" Tooltip="If this is check the ingestion will delete previous Source Data and re-create it" />
+<MudTabs>
+    @foreach (var source in Project.CodeSources)
+    {
+        <MudTabPanel Text="@(source.Name)">
+            <RButton OnClick="() => Ingest(source)">Ingest @source.Name</RButton>
+        </MudTabPanel>
+    }
+</MudTabs>
 
 <h2>Progress</h2>
 <MudDataGrid Items="_messages.OrderByDescending(x=> x.Timestamp)" Virtualize Height="500px">

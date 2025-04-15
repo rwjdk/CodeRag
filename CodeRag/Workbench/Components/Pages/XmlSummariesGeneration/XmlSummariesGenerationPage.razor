@@ -22,6 +22,13 @@
                         {
                             <h1>@_selectEntry.Name</h1>
                             <div>@_selectEntry.Namespace.@_selectEntry.SourcePath</div>
+                            <RButton OnClick="GenerateXmlSummary">Generate XML Summary</RButton>
+
+                            <h2>New XML Summary</h2>
+                            <RTextField @bind-Value="_xmlSummary" Lines="10">
+
+                            </RTextField>
+
                             <h2>Content</h2>
                             <pre style="white-space: pre-wrap; word-wrap: break-word;">
                                 @_selectEntry.Content

@@ -1,5 +1,6 @@
 ﻿using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.VectorStore.Documentation;
+using CodeRag.Shared.VectorStore.SourceCode;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
 using System.Runtime.CompilerServices;
@@ -31,7 +32,7 @@ public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactor
         return result.ToArray();
     }
 
-    public async Task<DocumentationVectorEntity[]> GetDocumentationForProject(Guid projectId)
+    public async Task<DocumentationVectorEntity[]> GetDocumentation(Guid projectId)
     {
         SqlDbContext context = await dbContextFactory.CreateDbContextAsync();
 
@@ -39,6 +40,7 @@ public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactor
         sql.AppendLine("SELECT ");
         sql.AppendLine($"[{nameof(DocumentationVectorEntity.Id)}], ");
         sql.AppendLine($"[{nameof(DocumentationVectorEntity.ProjectId)}], ");
+        sql.AppendLine($"[{nameof(DocumentationVectorEntity.SourceId)}], ");
         sql.AppendLine($"[{nameof(DocumentationVectorEntity.TimeOfIngestion)}], ");
         sql.AppendLine($"[{nameof(DocumentationVectorEntity.Name)}], ");
         sql.AppendLine($"[{nameof(DocumentationVectorEntity.RemotePath)}], ");
@@ -66,7 +68,7 @@ public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactor
         return result.ToArray();
     }
 
-    public async Task<CSharpCodeEntity[]> GetCSharpCodeForProject(Guid projectId)
+    public async Task<CSharpCodeEntity[]> GetCSharpCode(Guid projectId)
     {
         SqlDbContext context = await dbContextFactory.CreateDbContextAsync();
 
@@ -74,9 +76,11 @@ public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactor
         sql.AppendLine("SELECT ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.Id)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.ProjectId)}], ");
+        sql.AppendLine($"[{nameof(CSharpCodeEntity.SourceId)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.TimeOfIngestion)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.Name)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.Namespace)}], ");
+        sql.AppendLine($"[{nameof(CSharpCodeEntity.XmlSummary)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.Kind)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.RemotePath)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.Content)}], ");

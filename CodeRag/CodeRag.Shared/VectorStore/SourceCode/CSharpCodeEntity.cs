@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.VectorData;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CodeRag.Shared.VectorStore;
+namespace CodeRag.Shared.VectorStore.SourceCode;
 
 public class CSharpCodeEntity : BaseVectorEntity
 {

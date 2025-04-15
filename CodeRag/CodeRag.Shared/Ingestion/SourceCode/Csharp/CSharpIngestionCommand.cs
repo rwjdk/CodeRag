@@ -6,6 +6,7 @@ using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Ingestion.SourceCode;
 using CodeRag.Shared.Interfaces;
 using CodeRag.Shared.VectorStore;
+using CodeRag.Shared.VectorStore.SourceCode;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;

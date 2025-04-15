@@ -14,7 +14,6 @@ public partial class CodeIngestionPage(CSharpIngestionCommand ingestionCommand) 
     [CascadingParameter]
     public required Project Project { get; set; }
 
-    private CodeSource? _selectedSource;
 
     private bool _reinitializeSource = true; //todo - support deterministic ids and make this default false
 
@@ -23,7 +22,6 @@ public partial class CodeIngestionPage(CSharpIngestionCommand ingestionCommand) 
     protected override void OnInitialized()
     {
         ingestionCommand.NotifyProgress += IngestionCommand_NotifyProgress;
-        _selectedSource = Project.CodeSources.FirstOrDefault();
     }
 
     private void IngestionCommand_NotifyProgress(ProgressNotification obj)
@@ -32,11 +30,11 @@ public partial class CodeIngestionPage(CSharpIngestionCommand ingestionCommand) 
         StateHasChanged();
     }
 
-    private async Task Ingest()
+    private async Task Ingest(CodeSource source)
     {
         _messages.Clear();
 
-        await ingestionCommand.Ingest(Project, _selectedSource, _reinitializeSource);
+        await ingestionCommand.Ingest(Project, source, _reinitializeSource);
     }
 
     public void Dispose()

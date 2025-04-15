@@ -54,28 +54,28 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                     [
                         new AzureOpenAiChatCompletionDeployment
                         {
-                            Id = Guid.NewGuid(),
+                            Id = new Guid("230e772c-7a58-4f60-83c9-f8351c422428"),
                             DeploymentName = "gpt-4.1",
                             Temperature = 0,
                             TimeoutInSeconds = 60
                         },
                         new AzureOpenAiChatCompletionDeployment
                         {
-                            Id = Guid.NewGuid(),
+                            Id = new Guid("230e772c-7a58-4f60-83c9-f8351c422427"),
                             DeploymentName = "gpt-4o-mini",
                             Temperature = 0,
                             TimeoutInSeconds = 60
                         },
                         new AzureOpenAiChatCompletionDeployment
                         {
-                            Id = Guid.NewGuid(),
+                            Id = new Guid("230e772c-7a58-4f60-83c9-f8351c422426"),
                             DeploymentName = "gpt-4o",
                             Temperature = 0,
                             TimeoutInSeconds = 60
                         },
                         new AzureOpenAiChatCompletionDeployment
                         {
-                            Id = Guid.NewGuid(),
+                            Id = new Guid("230e772c-7a58-4f60-83c9-f8351c422424"),
                             DeploymentName = "o3-mini",
                             ReasoningEffortLevel = "high",
                             TimeoutInSeconds = 60 * 5
@@ -86,7 +86,7 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                     [
                         new CodeSource
                         {
-                            Id = Guid.NewGuid(),
+                            Id = new Guid("230e772c-7a58-4f60-83c9-f8351c322428"),
                             Name = "TrelloDotNet SourceCode",
                             SourcePath = @"X:\TrelloDotNet\src\TrelloDotNet",
                             Type = CodeSourceType.CSharp,
@@ -98,7 +98,7 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                     [
                         new DocumentationSource
                         {
-                            Id = Guid.NewGuid(),
+                            Id = new Guid("230e772c-7a58-4f60-83c2-f8351c422428"),
                             SourcePath = @"X:\TrelloDotNet.wiki",
                             FilenameEqualDocUrlSubpage = true,
                             LineSplitter = Environment.NewLine,
@@ -116,7 +116,7 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                         },
                         new DocumentationSource
                         {
-                            Id = Guid.NewGuid(),
+                            Id = new Guid("230e772c-7a58-5f60-83c9-f8351c422428"),
                             IgnoreCommentedOutContent = true,
                             IgnoreImages = true,
                             SourcePath = @"X:\TrelloDotNet",

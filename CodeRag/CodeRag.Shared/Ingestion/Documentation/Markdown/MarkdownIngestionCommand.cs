@@ -48,7 +48,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
                         continue;
                     }
 
-                    Console.WriteLine($"{counter}/{mdFilePaths.Length} processing: '{fileNameWithoutExtension}'");
+                    OnNotifyProgress($"{counter}/{mdFilePaths.Length} processing: '{fileNameWithoutExtension}'");
 
                     string url = source.RootUrl;
                     if (source.FilenameEqualDocUrlSubpage)
