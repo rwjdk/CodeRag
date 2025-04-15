@@ -1,19 +1,19 @@
-﻿using CodeRag.Shared.Models;
-using Microsoft.Extensions.VectorData;
+﻿using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Embeddings;
 
 namespace CodeRag.Shared.VectorStore;
 
 public class VectorStoreCommand(ITextEmbeddingGenerationService textEmbeddingGenerationService)
 {
-    public async Task Upsert<T>(Guid projectId, IVectorStoreRecordCollection<string, T> collection, T entry) where T : VectorEntity
+    public async Task Upsert<T>(Guid projectId, Guid sourceId, IVectorStoreRecordCollection<string, T> collection, T entry) where T : BaseVectorEntity
     {
         try
         {
-            entry.Id = projectId + "___" + entry.Id; //Prefix Id with ProjectId to ensure uniqueness
+            entry.Id = Guid.NewGuid().ToString();
             entry.ProjectId = projectId.ToString();
+            entry.SourceId = sourceId.ToString();
             ReadOnlyMemory<float> vector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(entry.Content);
-            entry.Vector = vector;
+            entry.Vector = vector.ToArray();
             entry.TimeOfIngestion = DateTime.UtcNow;
             await collection.UpsertAsync(entry);
         }

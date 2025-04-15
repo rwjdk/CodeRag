@@ -7,15 +7,14 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
 using System.Text.RegularExpressions;
 using CodeRag.Shared;
-using CodeRag.Shared.Models;
 using Markdown.ColorCode;
 using Microsoft.SemanticKernel;
 using Microsoft.Extensions.VectorData;
 using Blazor.Shared.Components.Dialogs;
 using Workbench.Components.Dialogs;
-using CodeRag.Shared.Ai.AzureOpenAi;
 using CodeRag.Shared.Ai.SemanticKernel;
-using CodeRag.Shared.VectorStore.SourceCode;
+using CodeRag.Shared.EntityFramework.Entities;
+using CodeRag.Shared.VectorStore;
 
 namespace Workbench.Components.Pages.Test;
 
@@ -33,7 +32,7 @@ public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogSe
     private bool _shouldRender = true;
 
     private readonly List<ChatMessageContent> _converstation = new List<ChatMessageContent>();
-    private AzureOpenAiChatModel? _chatModel;
+    private AzureOpenAiChatCompletionDeployment? _chatModel;
     private bool _useSourceCodeSearch = true;
     private bool _useDocumentationSearch = true;
     private int _maxNumberOfAnswersBackFromSourceCodeSearch = 50;
@@ -52,7 +51,7 @@ public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogSe
 
     protected override void OnInitialized()
     {
-        _chatModel = Project.ChatModels.FirstOrDefault();
+        _chatModel = Project.AzureOpenAiChatCompletionDeployments.FirstOrDefault();
         semanticKernelQuery.NotifyProgress += SemanticKernelQueryNotifyProgress;
 #if DEBUG
         _chatInputMessage = Project.DefaultTestChatInput;
@@ -143,9 +142,9 @@ public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogSe
         semanticKernelQuery.NotifyProgress -= SemanticKernelQueryNotifyProgress;
     }
 
-    private async Task ShowSourceCodeVectorEntry(SourceCodeVectorEntity entity)
+    private async Task ShowSourceCodeVectorEntry(CSharpCodeEntity entity)
     {
-        var parameters = new DialogParameters<ShowSourceCodeVectorEntityDialog>
+        var parameters = new DialogParameters<ShowCSharpCodeEntityDialog>
         {
             { x => x.Entity, entity },
         };
@@ -154,6 +153,6 @@ public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogSe
         {
             CloseButton = true,
         };
-        await dialogService.ShowAsync<ShowSourceCodeVectorEntityDialog>(entity.Source, parameters, dialogOptions);
+        await dialogService.ShowAsync<ShowCSharpCodeEntityDialog>(entity.SourcePath, parameters, dialogOptions);
     }
 }

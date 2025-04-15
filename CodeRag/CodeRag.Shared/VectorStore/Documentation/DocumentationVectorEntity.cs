@@ -1,6 +1,6 @@
 ﻿namespace CodeRag.Shared.VectorStore.Documentation;
 
-public class DocumentationVectorEntity : VectorEntity
+public class DocumentationVectorEntity : BaseVectorEntity
 {
     public override string ToString()
     {

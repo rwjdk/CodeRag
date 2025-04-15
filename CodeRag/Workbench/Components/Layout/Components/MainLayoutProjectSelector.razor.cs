@@ -1,13 +1,7 @@
 ﻿using Blazor.Shared;
 using Blazored.LocalStorage;
-using CodeRag.Shared.Ai.AzureOpenAi;
-using CodeRag.Shared.Ingestion.Documentation;
-using CodeRag.Shared.Ingestion.Documentation.Markdown;
-using CodeRag.Shared.Ingestion.SourceCode;
-using CodeRag.Shared.Ingestion.SourceCode.Csharp;
-using CodeRag.Shared.Models;
+using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Prompting;
-using CodeRag.Shared.VectorStore;
 using Microsoft.AspNetCore.Components;
 using OpenAI.Chat;
 
@@ -53,59 +47,83 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                         .ToString(),
                     RepoUrl = "https://github.com/rwjdk/TrelloDotNet",
                     RepoUrlSourceCode = "https://github.com/rwjdk/TrelloDotNet/tree/main/src/TrelloDotNet",
-                    LocalSourceCodeRepoRoot = @"X:\TrelloDotNet",
-                    AzureOpenAiCredentials = new AzureOpenAiCredentials("https://sensum365ai.openai.azure.com/", configuration["AzureOpenAiKey"]!),
-                    AzureOpenAiEmbeddingsDeploymentName = "text-embedding-3-small",
-                    ChatModels =
+                    AzureOpenAiEndpoint = "https://sensum365ai.openai.azure.com/",
+                    AzureOpenAiKey = configuration["AzureOpenAiKey"]!,
+                    AzureOpenAiEmbeddingModelDeploymentName = "text-embedding-3-small",
+                    AzureOpenAiChatCompletionDeployments =
                     [
-                        new AzureOpenAiChatModel
+                        new AzureOpenAiChatCompletionDeployment
                         {
+                            Id = Guid.NewGuid(),
+                            DeploymentName = "gpt-4.1",
+                            Temperature = 0,
+                            TimeoutInSeconds = 60
+                        },
+                        new AzureOpenAiChatCompletionDeployment
+                        {
+                            Id = Guid.NewGuid(),
                             DeploymentName = "gpt-4o-mini",
                             Temperature = 0,
                             TimeoutInSeconds = 60
                         },
-                        new AzureOpenAiChatModel
+                        new AzureOpenAiChatCompletionDeployment
                         {
+                            Id = Guid.NewGuid(),
                             DeploymentName = "gpt-4o",
                             Temperature = 0,
                             TimeoutInSeconds = 60
                         },
-                        new AzureOpenAiChatModel
+                        new AzureOpenAiChatCompletionDeployment
                         {
+                            Id = Guid.NewGuid(),
                             DeploymentName = "o3-mini",
-                            ChatReasoningEffortLevel = ChatReasoningEffortLevel.High,
+                            ReasoningEffortLevel = "high",
                             TimeoutInSeconds = 60 * 5
-                        },
+                        }
                     ],
-                    VectorSettings = new VectorStoreSettings
-                    {
-                        Type = VectorStoreType.AzureSql,
-                        AzureSqlConnectionString = configuration["SqlServerConnectionString"]!,
-                    },
-                    CSharpSourceCodeIngestionSettings = new CSharpIngestionSettings
-                    {
-                        Source = SourceCodeIngestionSource.LocalCSharpRepo,
-                        SourcePath = @"X:\TrelloDotNet\src\TrelloDotNet",
-                        CSharpFilesToIgnore = ["Program.cs"],
-                        CSharpFilesWithTheseSuffixesToIgnore = ["Test.cs", "Tests.cs", "AssemblyAttributes.cs", "AssemblyInfo.cs"],
-                    },
-                    MarkdownIngestionSettings = new MarkdownIngestionSettings
-                    {
-                        Source = DocumentationIngestionSource.LocalMarkdown,
-                        SourcePath = @"X:\TrelloDotNet.wiki",
-                        FilenameEqualDocUrlSubpage = true,
-                        LineSplitter = Environment.NewLine,
-                        FilesToIgnore = ["_Footer", "_Sidebar"],
-                        IgnoreCommentedOutContent = true,
-                        IgnoreImages = true,
-                        IgnoreMicrosoftLearnNoneCsharpContent = false,
-                        IncludeMarkdownInSourceCodeRepoRoot = true,
-                        MarkdownLevelsToChunk = 2,
-                        OnlyChunkIfMoreThanThisNumberOfLines = 50,
-                        RootUrl = "https://github.com/rwjdk/TrelloDotNet/wiki",
-                        ChunkIgnoreIfLessThanThisAmountOfChars = 25,
-                        ChunkLineRegExPatternsToIgnore = [@"^\[Back to [^\]]+\]\([^\)]+\)"],
-                    },
+                    SqlServerVectorStoreConnectionString = configuration["SqlServerConnectionString"]!,
+                    CodeSources =
+                    [
+                        new CodeSource
+                        {
+                            Id = Guid.NewGuid(),
+                            Name = "TrelloDotNet SourceCode",
+                            SourcePath = @"X:\TrelloDotNet\src\TrelloDotNet",
+                            Type = CodeSourceType.CSharp,
+                            FilesToIgnore = ["Program.cs"],
+                            FilesWithTheseSuffixesToIgnore = ["Test.cs", "Tests.cs", "AssemblyAttributes.cs", "AssemblyInfo.cs"],
+                        }
+                    ],
+                    DocumentationSources =
+                    [
+                        new DocumentationSource
+                        {
+                            Id = Guid.NewGuid(),
+                            SourcePath = @"X:\TrelloDotNet.wiki",
+                            FilenameEqualDocUrlSubpage = true,
+                            LineSplitter = Environment.NewLine,
+                            FilesToIgnore = ["_Footer", "_Sidebar"],
+                            IgnoreCommentedOutContent = true,
+                            IgnoreImages = true,
+                            IgnoreMicrosoftLearnNoneCsharpContent = false,
+                            MarkdownLevelsToChunk = 2,
+                            OnlyChunkIfMoreThanThisNumberOfLines = 50,
+                            RootUrl = "https://github.com/rwjdk/TrelloDotNet/wiki",
+                            ChunkIgnoreIfLessThanThisAmountOfChars = 25,
+                            ChunkLineRegExPatternsToIgnore = [@"^\[Back to [^\]]+\]\([^\)]+\)"],
+                            Name = "Code Wiki",
+                            Type = DocumentationSourceType.GitHubCodeWiki,
+                        },
+                        new DocumentationSource
+                        {
+                            Id = Guid.NewGuid(),
+                            IgnoreCommentedOutContent = true,
+                            IgnoreImages = true,
+                            SourcePath = @"X:\TrelloDotNet",
+                            Type = DocumentationSourceType.CodeRepoRootMarkdown,
+                            Name = "Repo Root Files"
+                        }
+                    ],
                     DefaultTestChatInput = "What is GetCardOptions? (use code)"
                 }
             ];

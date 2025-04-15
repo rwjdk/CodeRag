@@ -1,9 +1,15 @@
 ﻿@page "/DocsIngestion"
+@using CodeRag.Shared.EntityFramework.Entities
 
 <h1>Docs Ingestion</h1>
+
+<RSelect T="DocumentationSource" Label="Source" @bind-Value="_selectedSource" Items="Project.DocumentationSources" ToStringFunc="x=> x!.Name"/>
+
 <RButton OnClick="Ingest">Ingest Docs</RButton>
 
-<RCheckBox Label="Re-initialize Vector Store Table" @bind-Value="_reinitializeVectorStoreTable" Tooltip="If this is check the ingestion will delete previous vector store and re-create it"/>
+
+
+<RCheckBox Label="Re-initialize Source" @bind-Value="_reinitializeSource" Tooltip="If this is check the ingestion will delete previous Source Data and re-create it" />
 
 <h2>Progress</h2>
 <MudDataGrid Items="_messages.OrderByDescending(x => x.Timestamp)" Virtualize Height="500px">

@@ -1,7 +1,7 @@
 ﻿using Blazor.Shared;
 using CodeRag.Shared;
+using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Ingestion.SourceCode.Csharp;
-using CodeRag.Shared.Models;
 using Microsoft.AspNetCore.Components;
 
 namespace Workbench.Components.Pages.CodeIngestion;
@@ -14,13 +14,16 @@ public partial class CodeIngestionPage(CSharpIngestionCommand ingestionCommand) 
     [CascadingParameter]
     public required Project Project { get; set; }
 
-    private bool _reinitializeVectorStoreTable = true; //todo - support deterministic ids and make this default false
+    private CodeSource? _selectedSource;
+
+    private bool _reinitializeSource = true; //todo - support deterministic ids and make this default false
 
     private readonly List<ProgressNotification> _messages = [];
 
     protected override void OnInitialized()
     {
         ingestionCommand.NotifyProgress += IngestionCommand_NotifyProgress;
+        _selectedSource = Project.CodeSources.FirstOrDefault();
     }
 
     private void IngestionCommand_NotifyProgress(ProgressNotification obj)
@@ -33,7 +36,7 @@ public partial class CodeIngestionPage(CSharpIngestionCommand ingestionCommand) 
     {
         _messages.Clear();
 
-        await ingestionCommand.Ingest(Project, _reinitializeVectorStoreTable);
+        await ingestionCommand.Ingest(Project, _selectedSource, _reinitializeSource);
     }
 
     public void Dispose()

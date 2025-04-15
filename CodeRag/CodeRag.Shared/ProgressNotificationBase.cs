@@ -1,5 +1,5 @@
-﻿using CodeRag.Shared.VectorStore.Documentation;
-using CodeRag.Shared.VectorStore.SourceCode;
+﻿using CodeRag.Shared.VectorStore;
+using CodeRag.Shared.VectorStore.Documentation;
 using Microsoft.Extensions.VectorData;
 
 namespace CodeRag.Shared;
@@ -21,7 +21,7 @@ public class ProgressNotificationBase
 
 public record ProgressNotification(DateTimeOffset Timestamp, string Message)
 {
-    public List<VectorSearchResult<SourceCodeVectorEntity>>? SourceCodeSearchResults { get; set; }
+    public List<VectorSearchResult<CSharpCodeEntity>>? SourceCodeSearchResults { get; set; }
     public List<VectorSearchResult<DocumentationVectorEntity>>? DocumentSearchResults { get; set; }
     public bool HasNoDetails => SourceCodeSearchResults?.Count is null or 0 && DocumentSearchResults?.Count is null or 0;
 }

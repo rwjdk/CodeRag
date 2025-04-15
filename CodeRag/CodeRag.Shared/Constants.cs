@@ -5,6 +5,10 @@ public static class Constants
     public const string DocumentationSearchPluginName = "documentation_search";
     public const string SourceCodeSearchPluginName = "source_code_search";
 
-    public const string DocumentationVectorStoreName = "documentation_vectors";
-    public const string SourceCodeVectorStoreName = "source_code_vectors";
+
+    public static class VectorCollections
+    {
+        public const string CSharpCodeVectorCollection = "vector_source_csharp";
+        public const string MarkdownVectorCollection = "vector_source_markdown";
+    }
 }

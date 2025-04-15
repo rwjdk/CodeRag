@@ -1,17 +1,19 @@
-﻿@using CodeRag.Shared.VectorStore.SourceCode
-<MudDataGrid T="SourceCodeVectorEntity" Items="Items" Dense SelectedItem="_selectEntry" SelectedItemChanged="x => SwitchSelectedItem(x)" Height="70vh">
+﻿@using CodeRag.Shared.EntityFramework.Entities
+@using CodeRag.Shared.VectorStore
+
+<MudDataGrid T="CSharpCodeEntity" Items="Items" Dense SelectedItem="_selectEntry" SelectedItemChanged="x => SwitchSelectedItem(x)" Height="70vh">
     <Columns>
-        <TemplateColumn T="SourceCodeVectorEntity">
+        <TemplateColumn T="CSharpCodeEntity">
             <CellTemplate>
                 @if (context.Item.Id == _selectEntry?.Id)
                 {
                     <div style="color: var(--mud-palette-primary)"><strong>@context.Item.Name</strong></div>
-                    <div class="font-size-10">@context.Item.Namespace.@context.Item.Source</div>
+                    <div class="font-size-10">@context.Item.Namespace.@context.Item.SourcePath</div>
                 }
                 else
                 {
                     <div>@context.Item.Name</div>
-                    <div class="font-size-10">@context.Item.Namespace.@context.Item.Source</div>
+                    <div class="font-size-10">@context.Item.Namespace.@context.Item.SourcePath</div>
                 }
             </CellTemplate>
         </TemplateColumn>
@@ -19,24 +21,24 @@
 </MudDataGrid>
 
 @code {
-    private SourceCodeVectorEntity? _selectEntry;
+    private CSharpCodeEntity? _selectEntry;
 
     [Parameter, EditorRequired]
-    public required SourceCodeVectorEntity[] Items { get; set; }
+    public required CSharpCodeEntity[] Items { get; set; }
 
     [Parameter, EditorRequired]
-    public required EventCallback<SourceCodeVectorEntity> SelectedItemChanged { get; set; }
+    public required EventCallback<CSharpCodeEntity> SelectedItemChanged { get; set; }
 
-    private async Task SwitchSelectedItem(SourceCodeVectorEntity? sourceCodeVectorEntity)
+    private async Task SwitchSelectedItem(CSharpCodeEntity? CSharpCodeEntity)
     {
-        if (sourceCodeVectorEntity == null)
+        if (CSharpCodeEntity == null)
         {
             return;
         }
 
-        if (_selectEntry?.Id != sourceCodeVectorEntity.Id)
+        if (_selectEntry?.Id != CSharpCodeEntity.Id)
         {
-            _selectEntry = sourceCodeVectorEntity;
+            _selectEntry = CSharpCodeEntity;
             await SelectedItemChanged.InvokeAsync(_selectEntry);
         }
     }

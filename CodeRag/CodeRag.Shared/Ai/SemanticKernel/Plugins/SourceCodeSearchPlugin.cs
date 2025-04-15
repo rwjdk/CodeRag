@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using CodeRag.Shared.VectorStore.SourceCode;
+using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace CodeRag.Shared.Ai.SemanticKernel.Plugins;
 
-public class SourceCodeSearchPlugin(Guid projectId, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<string, SourceCodeVectorEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
+public class SourceCodeSearchPlugin(Guid projectId, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<string, CSharpCodeEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
     [UsedImplicitly]
     [KernelFunction]
@@ -16,15 +16,15 @@ public class SourceCodeSearchPlugin(Guid projectId, ITextEmbeddingGenerationServ
         string projectToSearch = projectId.ToString();
         List<string> searchResults = [];
         ReadOnlyMemory<float> searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchQuery);
-        VectorSearchResults<SourceCodeVectorEntity> searchResult = await collection.VectorizedSearchAsync(searchVector, new VectorSearchOptions<SourceCodeVectorEntity>
+        VectorSearchResults<CSharpCodeEntity> searchResult = await collection.VectorizedSearchAsync(searchVector, new VectorSearchOptions<CSharpCodeEntity>
         {
             Top = numberofResultsBack,
             Filter = entity => entity.ProjectId == projectToSearch,
             IncludeVectors = false
         });
 
-        List<VectorSearchResult<SourceCodeVectorEntity>> results = [];
-        await foreach (VectorSearchResult<SourceCodeVectorEntity> record in searchResult.Results.Where(x => x.Score < scoreShouldBeBelowThis))
+        List<VectorSearchResult<CSharpCodeEntity>> results = [];
+        await foreach (VectorSearchResult<CSharpCodeEntity> record in searchResult.Results.Where(x => x.Score < scoreShouldBeBelowThis))
         {
             results.Add(record);
             StringBuilder sb = new();

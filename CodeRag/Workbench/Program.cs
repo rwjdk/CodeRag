@@ -1,6 +1,6 @@
 using Blazor.Shared.Extensions;
 using Blazored.LocalStorage;
-using CodeRag.Shared.Models;
+using CodeRag.Shared.EntityFramework.Entities;
 using MudBlazor.Services;
 using Workbench.Components;
 using Workbench.Extensions;
@@ -34,5 +34,5 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
+//app.MigrateDatabase(); //todo
 app.Run();

@@ -1,7 +1,7 @@
 ﻿@page "/Test"
 @using System.Globalization
 @using CodeRag.Shared
-@using CodeRag.Shared.Ai.AzureOpenAi
+@using CodeRag.Shared.EntityFramework.Entities
 @using Microsoft.SemanticKernel.ChatCompletion
 <div>
     @if (_chatModel == null)
@@ -27,7 +27,7 @@
                     {
                         <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="ChatBubblePosition.Start">
                             <MudChatBubble>
-                                @if (_chatModel.ChatReasoningEffortLevel.HasValue)
+                                @if (!string.IsNullOrWhiteSpace(_chatModel.ReasoningEffortLevel))
                                 {
                                     <span>Reasoning... (can be quite slow 🐢💤)</span>
                                 }
@@ -55,7 +55,7 @@
                 </MudGrid>
                 <br/>
                 <div class="font-size-10">Model</div>
-                <RSelect T="AzureOpenAiChatModel" Items="Project.ChatModels" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
+                <RSelect T="AzureOpenAiChatCompletionDeployment" Items="Project.AzureOpenAiChatCompletionDeployments" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
                 <hr />
                 <div class="font-size-10">Source Code Search</div>
                 <MudGrid>
@@ -112,7 +112,7 @@
                                         <PropertyColumn Property="x => Math.Round(Convert.ToDecimal(x.Score), 2).ToString(CultureInfo.InvariantCulture)"/>
                                         <TemplateColumn Context="row">
                                             <CellTemplate>
-                                                <RIconButton Href="@row.Item.Record.Link" Target="_blank" Icon="@Icons.Material.Filled.Launch" />
+                                                <RIconButton Href="@row.Item.Record.RemotePath" Target="_blank" Icon="@Icons.Material.Filled.Launch" />
                                             </CellTemplate>
                                         </TemplateColumn>
                                     </Columns>
@@ -125,8 +125,8 @@
                                         <PropertyColumn Property="x => Math.Round(Convert.ToDecimal(x.Score), 2).ToString(CultureInfo.InvariantCulture)" />
                                         <TemplateColumn Title="Details" Context="row">
                                             <CellTemplate>
-                                                <div>@row.Item.Record.Source</div>
-                                                <a href="@row.Item.Record.Link" target="_blank">@row.Item.Record.Name</a>
+                                                <div>@row.Item.Record.SourcePath</div>
+                                                <a href="@row.Item.Record.RemotePath" target="_blank">@row.Item.Record.Name</a>
                                             </CellTemplate>
                                         </TemplateColumn>
                                     </Columns>

@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using CodeRag.Shared.Models;
 using CodeRag.Shared.VectorStore.Documentation;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;

@@ -14,14 +14,14 @@
                         {
                             var onlyUndocumented = _onlyUndocumentedCheckStates[dataEntry.Kind];
                             <RCheckBox Value="@onlyUndocumented" Label="Only list undocumented" ValueChanged="x => SwitchAllUndocumentedState(dataEntry.Kind, x)"/>
-                            <SourceCodeVectorEntitySelectionList Items="@(onlyUndocumented ? dataEntry.UnDocumented : dataEntry.All)" SelectedItemChanged="x => SwitchSelectedItem(x)"/>
+                            <CSharpCodeEntitySelectionList Items="@(onlyUndocumented ? dataEntry.UnDocumented : dataEntry.All)" SelectedItemChanged="x => SwitchSelectedItem(x)"/>
                         }
                     </MudItem>
                     <MudItem xs="10">
                         @if(_selectEntry != null)
                         {
                             <h1>@_selectEntry.Name</h1>
-                            <div>@_selectEntry.Namespace.@_selectEntry.Source</div>
+                            <div>@_selectEntry.Namespace.@_selectEntry.SourcePath</div>
                             <h2>Content</h2>
                             <pre style="white-space: pre-wrap; word-wrap: break-word;">
                                 @_selectEntry.Content

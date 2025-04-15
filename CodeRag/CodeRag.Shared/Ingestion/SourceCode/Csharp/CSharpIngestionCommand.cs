@@ -2,11 +2,10 @@
 using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.Chunking.CSharp;
 using CodeRag.Shared.EntityFramework;
+using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Ingestion.SourceCode;
 using CodeRag.Shared.Interfaces;
-using CodeRag.Shared.Models;
 using CodeRag.Shared.VectorStore;
-using CodeRag.Shared.VectorStore.SourceCode;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
@@ -17,28 +16,14 @@ namespace CodeRag.Shared.Ingestion.SourceCode.Csharp;
 [UsedImplicitly]
 public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery semanticKernelQuery, IDbContextFactory<SqlDbContext> dbContextFactory) : ProgressNotificationBase, IScopedService
 {
-    public async Task Ingest(Project settings, bool deletePreviousDataInCollection)
+    public async Task Ingest(Project project, CodeSource source, bool deletePreviousDataInCollection)
     {
-        switch (settings.CSharpSourceCodeIngestionSettings.Source)
-        {
-            case SourceCodeIngestionSource.LocalCSharpRepo:
-                await IngestFromLocal(settings, deletePreviousDataInCollection);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-    }
-
-    private async Task IngestFromLocal(Project settings, bool deletePreviousDataInCollection)
-    {
-        CSharpIngestionSettings ingestionSettings = settings.CSharpSourceCodeIngestionSettings;
-        VectorStoreSettings settingsVectorSettings = settings.VectorSettings;
-        string[] sourceCodeFiles = Directory.GetFiles(ingestionSettings.SourcePath, "*.cs", SearchOption.AllDirectories);
+        string[] sourceCodeFiles = Directory.GetFiles(source.SourcePath, "*.cs", SearchOption.AllDirectories);
         OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
-        ITextEmbeddingGenerationService embeddingGenerationService = semanticKernelQuery.GetTextEmbeddingGenerationService(settings.AzureOpenAiCredentials, settings.AzureOpenAiEmbeddingsDeploymentName);
+        ITextEmbeddingGenerationService embeddingGenerationService = semanticKernelQuery.GetTextEmbeddingGenerationService(project);
         VectorStoreCommand vectorStoreCommand = new(embeddingGenerationService);
-        VectorStoreQuery vectorStoreQuery = new(settingsVectorSettings, dbContextFactory);
-        IVectorStoreRecordCollection<string, SourceCodeVectorEntity> collection = vectorStoreQuery.GetCollection<SourceCodeVectorEntity>(settingsVectorSettings.SourceCodeCollectionName);
+        SqlServerVectorStoreQuery vectorStoreQuery = new(project.SqlServerVectorStoreConnectionString, dbContextFactory);
+        IVectorStoreRecordCollection<string, CSharpCodeEntity> collection = vectorStoreQuery.GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharpCodeVectorCollection);
 
         List<string> ignoredFiles = [];
         List<CSharpChunk> codeEntities = [];
@@ -46,9 +31,9 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
         {
             string fileName = Path.GetFileName(sourceCodeFilePath);
 
-            if (ingestionSettings.CSharpFilesToIgnore.Contains(fileName, StringComparer.InvariantCultureIgnoreCase) ||
-                ingestionSettings.CSharpFilesWithTheseSuffixesToIgnore.Any(x => x.EndsWith(fileName, StringComparison.CurrentCultureIgnoreCase)) ||
-                ingestionSettings.CSharpFilesWithThesePrefixesToIgnore.Any(x => x.StartsWith(fileName, StringComparison.CurrentCultureIgnoreCase)))
+            if (source.FilesToIgnore.Contains(fileName, StringComparer.InvariantCultureIgnoreCase) ||
+                source.FilesWithTheseSuffixesToIgnore.Any(x => x.EndsWith(fileName, StringComparison.CurrentCultureIgnoreCase)) ||
+                source.FilesWithThesePrefixesToIgnore.Any(x => x.StartsWith(fileName, StringComparison.CurrentCultureIgnoreCase)))
             {
                 ignoredFiles.Add(fileName);
                 continue;
@@ -89,7 +74,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
 
         if (deletePreviousDataInCollection)
         {
-            string[] ids = await vectorStoreQuery.GetSourceCodeIdsForProject(settings.Id);
+            string[] ids = await vectorStoreQuery.GetCSharpCodeIds(project.Id, source.Id);
             await collection.DeleteBatchAsync(ids);
         }
 
@@ -125,18 +110,18 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
                 content.AppendLine(string.Join(Environment.NewLine, codeEntity.References.Select(x => "- " + x.Path)));
             }
 
-            SourceCodeVectorEntity entry = new()
+            CSharpCodeEntity entry = new()
             {
-                Id = Guid.NewGuid().ToString(),
                 Kind = codeEntity.KindAsString,
                 Namespace = codeEntity.Namespace,
                 Name = codeEntity.Name,
-                Source = codeEntity.Filename!,
-                Link = $"{settings.RepoUrlSourceCode}/{codeEntity.Filename}",
+                XmlSummary = codeEntity.XmlSummary,
+                SourcePath = codeEntity.Filename!,
+                RemotePath = $"{project.RepoUrlSourceCode}/{codeEntity.Filename}",
                 Content = content.ToString(),
             };
 
-            await vectorStoreCommand.Upsert(settings.Id, collection, entry);
+            await vectorStoreCommand.Upsert(project.Id, source.Id, collection, entry);
         }
 
         OnNotifyProgress("Done");

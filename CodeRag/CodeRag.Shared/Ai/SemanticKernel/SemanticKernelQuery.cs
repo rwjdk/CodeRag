@@ -1,18 +1,17 @@
 ﻿using System.Diagnostics;
-using CodeRag.Shared.Ai.AzureOpenAi;
 using CodeRag.Shared.Ai.SemanticKernel.Plugins;
 using CodeRag.Shared.EntityFramework;
+using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Interfaces;
-using CodeRag.Shared.Models;
 using CodeRag.Shared.VectorStore;
 using CodeRag.Shared.VectorStore.Documentation;
-using CodeRag.Shared.VectorStore.SourceCode;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
+using OpenAI.Chat;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace CodeRag.Shared.Ai.SemanticKernel;
@@ -20,13 +19,13 @@ namespace CodeRag.Shared.Ai.SemanticKernel;
 [UsedImplicitly]
 public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactory) : ProgressNotificationBase, IScopedService
 {
-    public ITextEmbeddingGenerationService GetTextEmbeddingGenerationService(AzureOpenAiCredentials credentials, string azureOpenAiEmbeddingDeploymentName)
+    public ITextEmbeddingGenerationService GetTextEmbeddingGenerationService(Project project)
     {
-        return new AzureOpenAITextEmbeddingGenerationService(azureOpenAiEmbeddingDeploymentName, credentials.Endpoint, credentials.Key);
+        return new AzureOpenAITextEmbeddingGenerationService(project.AzureOpenAiEmbeddingModelDeploymentName, project.AzureOpenAiEndpoint, project.AzureOpenAiKey);
     }
 
     public async Task<ChatMessageContent?> GetAnswer(
-        AzureOpenAiChatModel chatModel,
+        AzureOpenAiChatCompletionDeployment chatModel,
         List<ChatMessageContent> converstation,
         bool useSourceCodeSearch,
         bool useDocumentationSearch,
@@ -38,25 +37,25 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
     {
         long timestamp = Stopwatch.GetTimestamp();
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddAzureOpenAIChatCompletion(chatModel.DeploymentName, project.AzureOpenAiCredentials.Endpoint, project.AzureOpenAiCredentials.Key, httpClient: new HttpClient
+        kernelBuilder.AddAzureOpenAIChatCompletion(chatModel.DeploymentName, project.AzureOpenAiEndpoint, project.AzureOpenAiKey, httpClient: new HttpClient
         {
             Timeout = TimeSpan.FromMinutes(chatModel.TimeoutInSeconds)
         });
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(project.AzureOpenAiEmbeddingsDeploymentName, project.AzureOpenAiCredentials.Endpoint, project.AzureOpenAiCredentials.Key);
+        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(project.AzureOpenAiEmbeddingModelDeploymentName, project.AzureOpenAiEndpoint, project.AzureOpenAiKey);
         Kernel kernel = kernelBuilder.Build();
 
         ITextEmbeddingGenerationService embeddingGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
         if (useSourceCodeSearch)
         {
-            var sourceCodeCollection = new VectorStoreQuery(project.VectorSettings, dbContextFactory).GetCollection<SourceCodeVectorEntity>(project.VectorSettings.SourceCodeCollectionName);
-            var codePlugin = new SourceCodeSearchPlugin(project.Id, embeddingGenerationService, sourceCodeCollection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
+            var cSharpCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharpCodeVectorCollection);
+            var codePlugin = new SourceCodeSearchPlugin(project.Id, embeddingGenerationService, cSharpCollection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
             kernel.ImportPluginFromObject(codePlugin, Constants.SourceCodeSearchPluginName);
         }
 
         if (useDocumentationSearch)
         {
-            var documentationCollection = new VectorStoreQuery(project.VectorSettings, dbContextFactory).GetCollection<DocumentationVectorEntity>(project.VectorSettings.DocumentationCollectionName);
+            var documentationCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<DocumentationVectorEntity>(Constants.VectorCollections.MarkdownVectorCollection);
             var docsPlugin = new DocumentationSearchPlugin(project.Id, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDoucumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
             kernel.ImportPluginFromObject(docsPlugin, Constants.DocumentationSearchPluginName);
         }
@@ -70,9 +69,20 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
             executionSettings.Temperature = chatModel.Temperature.Value;
         }
 
-        if (chatModel.ChatReasoningEffortLevel.HasValue)
+        if (!string.IsNullOrWhiteSpace(chatModel.ReasoningEffortLevel))
         {
-            executionSettings.ReasoningEffort = chatModel.ChatReasoningEffortLevel.Value;
+            switch (chatModel.ReasoningEffortLevel)
+            {
+                case "low":
+                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.Low;
+                    break;
+                case "medium":
+                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.Medium;
+                    break;
+                case "high":
+                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.High;
+                    break;
+            }
         }
 
         ChatCompletionAgent answerAgent = new()

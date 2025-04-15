@@ -1,7 +1,6 @@
 ﻿using CodeRag.Shared.EntityFramework;
-using CodeRag.Shared.Models;
+using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.VectorStore;
-using CodeRag.Shared.VectorStore.SourceCode;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,15 +10,15 @@ public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> 
 {
     private List<Data>? _data;
     private Dictionary<string, bool>? _onlyUndocumentedCheckStates;
-    private SourceCodeVectorEntity? _selectEntry;
+    private CSharpCodeEntity? _selectEntry;
 
     [CascadingParameter]
     public required Project Project { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        VectorStoreQuery vectorStoreQuery = new(Project.VectorSettings, dbContextFactory);
-        SourceCodeVectorEntity[] sourceCode = await vectorStoreQuery.GetSourceCodeForProject(Project.Id);
+        SqlServerVectorStoreQuery vectorStoreQuery = new(Project.SqlServerVectorStoreConnectionString, dbContextFactory);
+        CSharpCodeEntity[] sourceCode = await vectorStoreQuery.GetCSharpCodeForProject(Project.Id);
 
         string[] kinds = sourceCode.Select(x => x.Kind).Distinct().ToArray();
 
@@ -27,9 +26,9 @@ public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> 
         Dictionary<string, bool>? onlyUndocumentedCheckStates = [];
         foreach (string kind in kinds)
         {
-            SourceCodeVectorEntity[] allOfKind = sourceCode.Where(x => x.Kind == kind).OrderBy(x => x.Name).ToArray();
-            SourceCodeVectorEntity[] undocumentedOfKind = allOfKind.Where(x => 1 == 1).OrderBy(x => x.Name).ToArray(); //todo
-            SourceCodeVectorEntity[] documentedOfKind = allOfKind.Except(undocumentedOfKind).ToArray();
+            CSharpCodeEntity[] allOfKind = sourceCode.Where(x => x.Kind == kind).OrderBy(x => x.Name).ToArray();
+            CSharpCodeEntity[] undocumentedOfKind = allOfKind.Where(x => 1 == 1).OrderBy(x => x.Name).ToArray(); //todo
+            CSharpCodeEntity[] documentedOfKind = allOfKind.Except(undocumentedOfKind).ToArray();
             data.Add(new Data(kind, allOfKind, documentedOfKind, undocumentedOfKind));
             onlyUndocumentedCheckStates.Add(kind, true);
         }
@@ -38,7 +37,7 @@ public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> 
         _onlyUndocumentedCheckStates = onlyUndocumentedCheckStates;
     }
 
-    private record Data(string Kind, SourceCodeVectorEntity[] All, SourceCodeVectorEntity[] Documented, SourceCodeVectorEntity[] UnDocumented)
+    private record Data(string Kind, CSharpCodeEntity[] All, CSharpCodeEntity[] Documented, CSharpCodeEntity[] UnDocumented)
     {
         public int Order => 1; //todo - set order based on importance of kind
         public string TabCaption => $"{KindPlural} ({(Documented.Length)}/{All.Length})";
@@ -54,16 +53,16 @@ public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> 
         }
     }
 
-    private void SwitchSelectedItem(SourceCodeVectorEntity? sourceCodeVectorEntity)
+    private void SwitchSelectedItem(CSharpCodeEntity? CSharpCodeEntity)
     {
-        if (sourceCodeVectorEntity == null)
+        if (CSharpCodeEntity == null)
         {
             return;
         }
 
-        if (_selectEntry?.Id != sourceCodeVectorEntity.Id)
+        if (_selectEntry?.Id != CSharpCodeEntity.Id)
         {
-            _selectEntry = sourceCodeVectorEntity;
+            _selectEntry = CSharpCodeEntity;
         }
     }
 }
