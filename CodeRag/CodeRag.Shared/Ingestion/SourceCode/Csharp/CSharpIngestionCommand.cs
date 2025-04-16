@@ -40,13 +40,13 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
                 continue;
             }
 
+            var sourcePath = sourceCodeFilePath.Replace(source.SourcePath, string.Empty);
             string code = await File.ReadAllTextAsync(sourceCodeFilePath);
             List<CSharpChunk> entitiesForFile = chunker.GetCodeEntities(code);
             foreach (CSharpChunk codeEntity in entitiesForFile)
             {
-                codeEntity.Filename = fileName;
+                codeEntity.LocalSourcePath = sourcePath;
             }
-
             codeEntities.AddRange(entitiesForFile);
         }
 
@@ -117,8 +117,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
                 Namespace = codeEntity.Namespace,
                 Name = codeEntity.Name,
                 XmlSummary = codeEntity.XmlSummary,
-                SourcePath = codeEntity.Filename!,
-                RemotePath = $"{project.RepoUrlSourceCode}/{codeEntity.Filename}",
+                SourcePath = codeEntity.LocalSourcePath!,
                 Content = content.ToString(),
             };
 

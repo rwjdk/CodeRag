@@ -9,11 +9,9 @@ namespace Workbench.Components.Layout.Components;
 
 public partial class MainLayoutProjectSelector(ILocalStorageService localStorage, IConfiguration configuration)
 {
-    [CascadingParameter]
-    public required BlazorUtils Utils { get; set; }
+    [CascadingParameter] public required BlazorUtils Utils { get; set; }
 
-    [Parameter, EditorRequired]
-    public required EventCallback<Project> ProjectChanged { get; set; }
+    [Parameter, EditorRequired] public required EventCallback<Project> ProjectChanged { get; set; }
 
     private Project[]? _projects;
     private Project? _project;
@@ -46,7 +44,6 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                         //.AddRuleThatIfYouDontKnowThenDontAnswer()
                         .ToString(),
                     RepoUrl = "https://github.com/rwjdk/TrelloDotNet",
-                    RepoUrlSourceCode = "https://github.com/rwjdk/TrelloDotNet/tree/main/src/TrelloDotNet",
                     AzureOpenAiEndpoint = "https://sensum365ai.openai.azure.com/",
                     AzureOpenAiKey = configuration["AzureOpenAiKey"]!,
                     AzureOpenAiEmbeddingModelDeploymentName = "text-embedding-3-small",
@@ -89,6 +86,7 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                             Id = new Guid("230e772c-7a58-4f60-83c9-f8351c322428"),
                             Name = "TrelloDotNet SourceCode",
                             SourcePath = @"X:\TrelloDotNet\src\TrelloDotNet",
+                            RootUrl = "https://github.com/rwjdk/TrelloDotNet/tree/main/src/TrelloDotNet",
                             Type = CodeSourceType.CSharp,
                             FilesToIgnore = ["Program.cs"],
                             FilesWithTheseSuffixesToIgnore = ["Test.cs", "Tests.cs", "AssemblyAttributes.cs", "AssemblyInfo.cs"],

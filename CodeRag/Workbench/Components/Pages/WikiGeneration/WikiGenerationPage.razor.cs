@@ -1,4 +1,5 @@
-﻿using CodeRag.Shared.Ai.SemanticKernel;
+﻿using Blazor.Shared;
+using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.VectorStore;
@@ -11,35 +12,41 @@ namespace Workbench.Components.Pages.WikiGeneration;
 
 public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContextFactory, SemanticKernelQuery semanticKernelQuery)
 {
+    [CascadingParameter] public required BlazorUtils BlazorUtils { get; set; }
+
     private List<Data>? _data;
     private Dictionary<string, bool>? _onlyUndocumentedCheckStates;
     private CSharpCodeEntity? _selectEntry;
     private string? _markdown;
+    private DocumentationSource? _documentationSource;
 
-    [CascadingParameter]
-    public required Project Project { get; set; }
+    [CascadingParameter] public required Project Project { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        SqlServerVectorStoreQuery vectorStoreQuery = new(Project.SqlServerVectorStoreConnectionString, dbContextFactory);
-        DocumentationVectorEntity[] documentation = await vectorStoreQuery.GetDocumentation(Project.Id);
-        CSharpCodeEntity[] sourceCode = await vectorStoreQuery.GetCSharpCode(Project.Id);
-
-        string[] kinds = sourceCode.Select(x => x.Kind).Distinct().ToArray();
-
-        List<Data> data = [];
-        Dictionary<string, bool>? onlyUndocumentedCheckStates = [];
-        foreach (string kind in kinds)
+        _documentationSource = Project.DocumentationSources.SingleOrDefault(x => x.Type == DocumentationSourceType.GitHubCodeWiki);
+        if (_documentationSource != null)
         {
-            CSharpCodeEntity[] allOfKind = sourceCode.Where(x => x.Kind == kind).OrderBy(x => x.Name).ToArray();
-            CSharpCodeEntity[] undocumentedOfKind = allOfKind.Where(x => documentation.All(y => y.Name != x.Name && y.SourcePath != x.Name + ".md")).OrderBy(x => x.Name).ToArray();
-            CSharpCodeEntity[] documentedOfKind = allOfKind.Except(undocumentedOfKind).ToArray();
-            data.Add(new Data(kind, allOfKind, documentedOfKind, undocumentedOfKind));
-            onlyUndocumentedCheckStates.Add(kind, true);
-        }
+            SqlServerVectorStoreQuery vectorStoreQuery = new(Project.SqlServerVectorStoreConnectionString, dbContextFactory);
+            var mdFilenames = Directory.GetFiles(_documentationSource.SourcePath).Select(Path.GetFileNameWithoutExtension);
+            CSharpCodeEntity[] sourceCode = await vectorStoreQuery.GetCSharpCode(Project.Id);
 
-        _data = data;
-        _onlyUndocumentedCheckStates = onlyUndocumentedCheckStates;
+            string[] kinds = sourceCode.Select(x => x.Kind).Distinct().ToArray();
+
+            List<Data> data = [];
+            Dictionary<string, bool>? onlyUndocumentedCheckStates = [];
+            foreach (string kind in kinds)
+            {
+                CSharpCodeEntity[] allOfKind = sourceCode.Where(x => x.Kind == kind).OrderBy(x => x.Name).ToArray();
+                CSharpCodeEntity[] undocumentedOfKind = allOfKind.Where(x => !mdFilenames.Contains(x.Name)).OrderBy(x => x.Name).ToArray();
+                CSharpCodeEntity[] documentedOfKind = allOfKind.Except(undocumentedOfKind).ToArray();
+                data.Add(new Data(kind, allOfKind, documentedOfKind, undocumentedOfKind));
+                onlyUndocumentedCheckStates.Add(kind, true);
+            }
+
+            _data = data;
+            _onlyUndocumentedCheckStates = onlyUndocumentedCheckStates;
+        }
     }
 
     private record Data(string Kind, CSharpCodeEntity[] All, CSharpCodeEntity[] Documented, CSharpCodeEntity[] UnDocumented)
@@ -70,5 +77,13 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
     private async Task GenerateCodeWiki()
     {
         _markdown = await semanticKernelQuery.GenerateCodeWikiEntryForMethod(Project, _selectEntry);
+    }
+
+    private async Task AcceptMarkdown()
+    {
+        var sourcePath = _documentationSource!.SourcePath;
+        var path = Path.Combine(sourcePath, _selectEntry.Name) + ".md";
+        await File.WriteAllTextAsync(path, _markdown);
+        BlazorUtils.ShowSuccess($"{Path.GetFileName(path)} saved to {_documentationSource.SourcePath}");
     }
 }

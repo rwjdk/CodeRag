@@ -80,14 +80,14 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
     private void AddDocumentationSearchPluginToKernel(int maxNumberOfAnswersBackFromDoucumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
         var documentationCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<DocumentationVectorEntity>(Constants.VectorCollections.MarkdownVectorCollection);
-        var docsPlugin = new DocumentationSearchPlugin(project.Id, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDoucumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
+        var docsPlugin = new DocumentationSearchPlugin(project, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDoucumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
         kernel.ImportPluginFromObject(docsPlugin, Constants.DocumentationSearchPluginName);
     }
 
     private void AddCodeSearchPluginToKernel(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
         var cSharpCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharpCodeVectorCollection);
-        var codePlugin = new SourceCodeSearchPlugin(project.Id, embeddingGenerationService, cSharpCollection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
+        var codePlugin = new SourceCodeSearchPlugin(project, embeddingGenerationService, cSharpCollection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
         kernel.ImportPluginFromObject(codePlugin, Constants.SourceCodeSearchPluginName);
     }
 

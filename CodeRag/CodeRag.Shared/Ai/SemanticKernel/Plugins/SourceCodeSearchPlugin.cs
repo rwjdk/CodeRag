@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.VectorStore.SourceCode;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
@@ -7,13 +8,13 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace CodeRag.Shared.Ai.SemanticKernel.Plugins;
 
-public class SourceCodeSearchPlugin(Guid projectId, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<string, CSharpCodeEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
+public class SourceCodeSearchPlugin(Project project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<string, CSharpCodeEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
     [UsedImplicitly]
     [KernelFunction]
     public async Task<string[]> Search(string searchQuery)
     {
-        string projectToSearch = projectId.ToString();
+        string projectToSearch = project.Id.ToString();
         List<string> searchResults = [];
         ReadOnlyMemory<float> searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchQuery);
         VectorSearchResults<CSharpCodeEntity> searchResult = await collection.VectorizedSearchAsync(searchVector, new VectorSearchOptions<CSharpCodeEntity>
@@ -28,7 +29,7 @@ public class SourceCodeSearchPlugin(Guid projectId, ITextEmbeddingGenerationServ
         {
             results.Add(record);
             StringBuilder sb = new();
-            sb.AppendLine(record.Record.Content);
+            sb.AppendLine($"Citation: {record.Record.GetUrl(project)} \n***\n" + record.Record.Content);
             sb.AppendLine("***");
 
             searchResults.Add(sb.ToString());

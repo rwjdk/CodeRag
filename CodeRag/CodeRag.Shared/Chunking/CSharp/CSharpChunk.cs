@@ -6,7 +6,7 @@ public record CSharpChunk(CSharpChunkKind Kind, string Namespace, string Parent,
 {
     public string KindAsString => Kind.ToString();
 
-    public string? Filename { get; set; }
+    public string? LocalSourcePath { get; set; }
 
     public string Path
     {

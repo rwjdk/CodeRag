@@ -7,12 +7,12 @@
                 @if (context.Item.Id == _selectEntry?.Id)
                 {
                     <div style="color: var(--mud-palette-primary)"><strong>@context.Item.Name</strong></div>
-                    <div class="font-size-10">@context.Item.Namespace.@context.Item.SourcePath</div>
+                    <div class="font-size-10">@context.Item.SourcePath</div>
                 }
                 else
                 {
                     <div>@context.Item.Name</div>
-                    <div class="font-size-10">@context.Item.Namespace.@context.Item.SourcePath</div>
+                    <div class="font-size-10">@context.Item.SourcePath</div>
                 }
             </CellTemplate>
         </TemplateColumn>
@@ -28,16 +28,16 @@
     [Parameter, EditorRequired]
     public required EventCallback<CSharpCodeEntity> SelectedItemChanged { get; set; }
 
-    private async Task SwitchSelectedItem(CSharpCodeEntity? CSharpCodeEntity)
+    private async Task SwitchSelectedItem(CSharpCodeEntity? entity)
     {
-        if (CSharpCodeEntity == null)
+        if (entity == null)
         {
             return;
         }
 
-        if (_selectEntry?.Id != CSharpCodeEntity.Id)
+        if (_selectEntry?.Id != entity.Id)
         {
-            _selectEntry = CSharpCodeEntity;
+            _selectEntry = entity;
             await SelectedItemChanged.InvokeAsync(_selectEntry);
         }
     }

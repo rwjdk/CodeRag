@@ -3,6 +3,7 @@
 @using CodeRag.Shared
 @using CodeRag.Shared.EntityFramework.Entities
 @using Microsoft.SemanticKernel.ChatCompletion
+@using Workbench.Extensions
 <div>
     @if (_chatModel == null)
     {
@@ -19,7 +20,7 @@
                     {
                         <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == AuthorRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
                             <MudChatBubble>
-                                @ConvertToMarkdown(message.Content)
+                                @message.Content?.ToMarkdown()
                             </MudChatBubble>
                         </MudChat>
                     }
@@ -112,7 +113,7 @@
                                         <PropertyColumn Property="x => Math.Round(Convert.ToDecimal(x.Score), 2).ToString(CultureInfo.InvariantCulture)"/>
                                         <TemplateColumn Context="row">
                                             <CellTemplate>
-                                                <RIconButton Href="@row.Item.Record.RemotePath" Target="_blank" Icon="@Icons.Material.Filled.Launch" />
+                                                <RIconButton Href="@row.Item.Record.GetUrl(Project)" Target="_blank" Icon="@Icons.Material.Filled.Launch" />
                                             </CellTemplate>
                                         </TemplateColumn>
                                     </Columns>
@@ -126,7 +127,7 @@
                                         <TemplateColumn Title="Details" Context="row">
                                             <CellTemplate>
                                                 <div>@row.Item.Record.SourcePath</div>
-                                                <a href="@row.Item.Record.RemotePath" target="_blank">@row.Item.Record.Name</a>
+                                                <a href="@row.Item.Record.GetUrl(Project)" target="_blank">@row.Item.Record.Name</a>
                                             </CellTemplate>
                                         </TemplateColumn>
                                     </Columns>

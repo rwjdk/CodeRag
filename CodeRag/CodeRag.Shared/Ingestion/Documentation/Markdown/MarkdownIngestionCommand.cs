@@ -35,28 +35,23 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
         switch (source.Type)
         {
             case DocumentationSourceType.GitHubCodeWiki:
-                string[] mdFilePaths = Directory.GetFiles(source.SourcePath, "*.md", SearchOption.AllDirectories);
+                string[] paths = Directory.GetFiles(source.SourcePath, "*.md", SearchOption.AllDirectories);
                 List<string> filesToIgnore = source.FilesToIgnore;
                 int counter = 0;
-                foreach (string mdFilePath in mdFilePaths)
+                foreach (string path in paths)
                 {
                     counter++;
-                    string fileName = Path.GetFileName(mdFilePath);
-                    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(mdFilePath);
+                    string fileName = Path.GetFileName(path);
+                    var sourcePath = path.Replace(source.SourcePath, string.Empty);
+                    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
                     if (filesToIgnore.Contains(fileNameWithoutExtension))
                     {
                         continue;
                     }
 
-                    OnNotifyProgress($"{counter}/{mdFilePaths.Length} processing: '{fileNameWithoutExtension}'");
+                    OnNotifyProgress($"{counter}/{paths.Length} processing: '{fileNameWithoutExtension}'");
 
-                    string url = source.RootUrl;
-                    if (source.FilenameEqualDocUrlSubpage)
-                    {
-                        url += $"/{fileNameWithoutExtension}";
-                    }
-
-                    string content = await File.ReadAllTextAsync(mdFilePath, Encoding.UTF8);
+                    string content = await File.ReadAllTextAsync(path, Encoding.UTF8);
 
                     if (source.IgnoreCommentedOutContent)
                     {
@@ -102,19 +97,14 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
                             if (!string.IsNullOrWhiteSpace(chunk.Content))
                             {
                                 OnNotifyProgress($"- Chunk: '{chunk.Id}'");
-                                if (source.FilenameEqualDocUrlSubpage)
-                                {
-                                    url = $"{url}#{chunk}";
-                                }
-
-                                await Upsert(chunk.Content, chunk.Title, fileName, url);
+                                await Upsert(chunk.Content, chunk.Title, sourcePath, chunk.Id);
                             }
                         }
                     }
                     else
                     {
                         OnNotifyProgress($"File {fileName}");
-                        await Upsert(content, fileNameWithoutExtension, fileName, url);
+                        await Upsert(content, fileNameWithoutExtension, sourcePath);
                     }
                 }
 
@@ -124,21 +114,20 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
                 {
                     await IngestRootKnownMdFiles(project, source, vectorStoreCommand, collection);
                 }
-
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
 
 
-        async Task Upsert(string content, string title, string sourcePath, string url)
+        async Task Upsert(string content, string title, string sourcePath, string? chunkId = null)
         {
             DocumentationVectorEntity documentationVectorEntity = new()
             {
                 Content = title + Environment.NewLine + "---" + Environment.NewLine + content,
                 SourcePath = sourcePath,
+                ChunkId = chunkId,
                 Name = title,
-                RemotePath = url
             };
             await vectorStoreCommand.Upsert(project.Id, source.Id, collection, documentationVectorEntity);
         }
@@ -149,7 +138,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
     private async Task IngestRootKnownMdFiles(Project project, DocumentationSource source, VectorStoreCommand vectorStoreCommand, IVectorStoreRecordCollection<string, DocumentationVectorEntity> collection)
     {
         OnNotifyProgress("Ingesting Source Root MD Files");
-        string[] rootFiles = Directory.GetFiles(source.SourcePath!);
+        string[] rootFiles = Directory.GetFiles(source.SourcePath);
         await IngestSpecialFile("README");
         await IngestSpecialFile("LICENSE");
         await IngestSpecialFile("SECURITY");
@@ -161,12 +150,13 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
             {
                 Console.WriteLine($"Processing {id}");
                 string fileName = Path.GetFileName(path);
+                var sourcePath = path.Replace(source.SourcePath, string.Empty);
+
                 await vectorStoreCommand.Upsert(project.Id, source.Id, collection, new DocumentationVectorEntity
                 {
                     Content = id + Environment.NewLine + "---" + Environment.NewLine + await File.ReadAllTextAsync(path),
                     Name = id,
                     SourcePath = fileName,
-                    RemotePath = project.RepoUrl + "/" + fileName
                 });
             }
         }

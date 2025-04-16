@@ -1,45 +1,65 @@
 ﻿@page "/WikiGeneration"
+@using Workbench.Extensions
 <h3>Wiki Generation</h3>
-
-@if(_data != null)
+@if (_documentationSource == null)
 {
-    <MudTabs>
-        @foreach(var dataEntry in _data.OrderBy(x=> x.Order))
-        {
-            <MudTabPanel Text="@dataEntry.TabCaption">
-                <h2>@dataEntry.KindPlural (@dataEntry.UnDocumented.Length Undocumented, @dataEntry.Documented.Length Documented (@dataEntry.All.Length in Total))</h2>
-                <MudGrid>
-                    <MudItem xs="2">
-                        @if (_onlyUndocumentedCheckStates != null)
-                        {
-                            var onlyUndocumented = _onlyUndocumentedCheckStates[dataEntry.Kind];
-                            <RCheckBox Value="@onlyUndocumented" Label="Only list undocumented" ValueChanged="x => SwitchAllUndocumentedState(dataEntry.Kind, x)"/>
-                            <CSharpCodeEntitySelectionList Items="@(onlyUndocumented ? dataEntry.UnDocumented : dataEntry.All)" SelectedItemChanged="x=> SwitchSelectedItem(x)"/>
-                        }
-                    </MudItem>
-                    <MudItem xs="10">
-                        @if(_selectEntry != null)
-                        {
-                            <h1>@_selectEntry.Name</h1>
-                            <div>@_selectEntry.Namespace.@_selectEntry.SourcePath</div>
-                            <RButton OnClick="GenerateCodeWiki">Generate Code Wiki Entry</RButton>
-
-                            <h2>New XML Summary</h2>
-                            <RTextField @bind-Value="_markdown" Lines="20">
-
-                            </RTextField>
-                            <h2>Content</h2>
-                            <pre style="white-space: pre-wrap; word-wrap: break-word;">
-                                @_selectEntry.Content
-                            </pre>
-                        }
-                    </MudItem>
-                </MudGrid>
-            </MudTabPanel>
-        }
-    </MudTabs>
+    <h2>No CodeWiki Documentation Source Found</h2>
 }
 else
 {
-    <RProgressIndicator/>
+    if (_data != null)
+    {
+        <MudTabs>
+            @foreach (var dataEntry in _data.OrderBy(x => x.Order))
+            {
+                <MudTabPanel Text="@dataEntry.TabCaption">
+                    <h2>@dataEntry.KindPlural (@dataEntry.UnDocumented.Length Undocumented, @dataEntry.Documented.Length Documented (@dataEntry.All.Length in Total))</h2>
+                    <MudGrid>
+                        <MudItem xs="2">
+                            @if (_onlyUndocumentedCheckStates != null)
+                            {
+                                var onlyUndocumented = _onlyUndocumentedCheckStates[dataEntry.Kind];
+                                <RCheckBox Value="@onlyUndocumented" Label="Only list undocumented" ValueChanged="x => SwitchAllUndocumentedState(dataEntry.Kind, x)" />
+                                <CSharpCodeEntitySelectionList Items="@(onlyUndocumented ? dataEntry.UnDocumented : dataEntry.All)" SelectedItemChanged="x=> SwitchSelectedItem(x)" />
+                            }
+                        </MudItem>
+                        <MudItem xs="10">
+                            @if (_selectEntry != null)
+                            {
+                                <h1>@_selectEntry.Name</h1>
+                                <div>Namespace: @_selectEntry.Namespace</div>
+                                <div>Local Source: @_selectEntry.GetLocalFilePath(Project)</div>
+                                <div>Remote Source: <a href="@_selectEntry.GetUrl(Project)" target="_blank">@_selectEntry.GetUrl(Project)</a></div>
+
+                                <RButton OnClick="GenerateCodeWiki">Generate Code Wiki Entry</RButton>
+
+                                <h2>New Wiki Entry</h2>
+                                <MudGrid>
+                                    <MudItem xs="4">
+                                        <RTextField @bind-Value="_markdown" Lines="20" />
+                                    </MudItem>
+                                    <MudItem xs="8" Style="height: 500px; overflow-y: scroll">
+                                        @_markdown?.ToMarkdown()
+                                    </MudItem>
+                                </MudGrid>
+                                <RButton OnClick="AcceptMarkdown">Accept</RButton>
+
+
+                                <h2>Content</h2>
+                                <pre style="white-space: pre-wrap; word-wrap: break-word;">
+                                    @_selectEntry.Content
+                                            </pre>
+                            }
+                        </MudItem>
+                    </MudGrid>
+                </MudTabPanel>
+            }
+        </MudTabs>
+    }
+    else
+    {
+        <RProgressIndicator />
+    }
 }
+
+
