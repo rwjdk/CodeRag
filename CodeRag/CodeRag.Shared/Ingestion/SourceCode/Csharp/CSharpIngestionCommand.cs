@@ -47,6 +47,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
             {
                 codeEntity.LocalSourcePath = sourcePath;
             }
+
             codeEntities.AddRange(entitiesForFile);
         }
 
@@ -62,10 +63,10 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
         {
             switch (codeEntity.Kind)
             {
-                case CSharpChunkKind.Enum:
-                case CSharpChunkKind.Class:
-                case CSharpChunkKind.Struct:
-                case CSharpChunkKind.Record:
+                case CSharpKind.Enum:
+                case CSharpKind.Class:
+                case CSharpKind.Struct:
+                case CSharpKind.Record:
                     codeEntity.References = codeEntities.Where(x => x != codeEntity && x.Dependencies.Any(y => y == codeEntity.Name)).ToList();
                     break;
             }
@@ -88,7 +89,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
 
             StringBuilder content = new();
             content.AppendLine($"// Namespace: {codeEntity.Namespace}");
-            if (codeEntity.ParentKind != CSharpChunkKind.None)
+            if (codeEntity.ParentKind != CSharpKind.None)
             {
                 content.AppendLine($"// {codeEntity.ParentKind}: {codeEntity.Parent}");
             }
@@ -116,6 +117,8 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
                 Kind = codeEntity.KindAsString,
                 Namespace = codeEntity.Namespace,
                 Name = codeEntity.Name,
+                Parent = codeEntity.Parent,
+                ParentKind = codeEntity.ParentKindAsString,
                 XmlSummary = codeEntity.XmlSummary,
                 SourcePath = codeEntity.LocalSourcePath!,
                 Content = content.ToString(),

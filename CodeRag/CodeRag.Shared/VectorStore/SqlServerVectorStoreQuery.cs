@@ -42,8 +42,7 @@ public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactor
         sql.AppendLine($"WHERE [{nameof(CSharpCodeEntity.ProjectId)}] = {{0}}");
         sql.AppendLine($"AND [{nameof(CSharpCodeEntity.SourceId)}] = {{1}}");
 
-        List<Guid> arguments = [projectId, sourceId];
-        List<string> result = context.Database.SqlQuery<string>(FormattableStringFactory.Create(sql.ToString(), arguments)).ToList();
+        List<string> result = context.Database.SqlQuery<string>(FormattableStringFactory.Create(sql.ToString(), projectId, sourceId)).ToList();
 
         return result.ToArray();
     }
@@ -95,6 +94,8 @@ public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactor
         sql.AppendLine($"[{nameof(CSharpCodeEntity.SourceId)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.TimeOfIngestion)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.Name)}], ");
+        sql.AppendLine($"[{nameof(CSharpCodeEntity.Parent)}], ");
+        sql.AppendLine($"[{nameof(CSharpCodeEntity.ParentKind)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.Namespace)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.XmlSummary)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.Kind)}], ");

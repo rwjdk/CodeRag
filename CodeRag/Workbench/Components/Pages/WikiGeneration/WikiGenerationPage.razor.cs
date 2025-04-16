@@ -38,7 +38,7 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
             foreach (string kind in kinds)
             {
                 CSharpCodeEntity[] allOfKind = sourceCode.Where(x => x.Kind == kind).OrderBy(x => x.Name).ToArray();
-                CSharpCodeEntity[] undocumentedOfKind = allOfKind.Where(x => !mdFilenames.Contains(x.Name)).OrderBy(x => x.Name).ToArray();
+                CSharpCodeEntity[] undocumentedOfKind = allOfKind.Where(x => !mdFilenames.Contains(x.GetTargetMarkdownFilename())).OrderBy(x => x.Name).ToArray();
                 CSharpCodeEntity[] documentedOfKind = allOfKind.Except(undocumentedOfKind).ToArray();
                 data.Add(new Data(kind, allOfKind, documentedOfKind, undocumentedOfKind));
                 onlyUndocumentedCheckStates.Add(kind, true);
@@ -82,7 +82,7 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
     private async Task AcceptMarkdown()
     {
         var sourcePath = _documentationSource!.SourcePath;
-        var path = Path.Combine(sourcePath, _selectEntry.Name) + ".md";
+        var path = Path.Combine(sourcePath, _selectEntry.GetTargetMarkdownFilename());
         await File.WriteAllTextAsync(path, _markdown);
         BlazorUtils.ShowSuccess($"{Path.GetFileName(path)} saved to {_documentationSource.SourcePath}");
     }

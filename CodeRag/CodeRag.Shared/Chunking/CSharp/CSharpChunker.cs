@@ -16,9 +16,9 @@ namespace CodeRag.Shared.Chunking.CSharp
             SyntaxNode root = tree.GetRoot();
 
             List<CSharpChunk> entries = [];
-            entries.AddRange(ProcessTypeDeclaration<ClassDeclarationSyntax>(root, CSharpChunkKind.Class));
-            entries.AddRange(ProcessTypeDeclaration<StructDeclarationSyntax>(root, CSharpChunkKind.Struct));
-            entries.AddRange(ProcessTypeDeclaration<RecordDeclarationSyntax>(root, CSharpChunkKind.Record));
+            entries.AddRange(ProcessTypeDeclaration<ClassDeclarationSyntax>(root, CSharpKind.Class));
+            entries.AddRange(ProcessTypeDeclaration<StructDeclarationSyntax>(root, CSharpKind.Struct));
+            entries.AddRange(ProcessTypeDeclaration<RecordDeclarationSyntax>(root, CSharpKind.Record));
             entries.AddRange(ProcessEnums(root));
             entries.AddRange(ProcessDelegates(root));
             entries.AddRange(ProcessInterfaces(root));
@@ -42,7 +42,7 @@ namespace CodeRag.Shared.Chunking.CSharp
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
                 string parent = string.Empty;
-                result.Add(new CSharpChunk(CSharpChunkKind.Interface, ns, parent, CSharpChunkKind.None, name, xmlSummary, node.ToString(), []));
+                result.Add(new CSharpChunk(CSharpKind.Interface, ns, parent, CSharpKind.None, name, xmlSummary, node.ToString(), []));
             }
 
             return result;
@@ -66,7 +66,7 @@ namespace CodeRag.Shared.Chunking.CSharp
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
                 string parent = string.Empty;
-                result.Add(new CSharpChunk(CSharpChunkKind.Delegate, ns, parent, CSharpChunkKind.None, name, xmlSummary, node.ToString(), []));
+                result.Add(new CSharpChunk(CSharpKind.Delegate, ns, parent, CSharpKind.None, name, xmlSummary, node.ToString(), []));
             }
 
             return result;
@@ -87,13 +87,13 @@ namespace CodeRag.Shared.Chunking.CSharp
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
                 string parent = string.Empty;
-                result.Add(new CSharpChunk(CSharpChunkKind.Enum, ns, parent, CSharpChunkKind.None, name, xmlSummary, RemoveAttributes(node).ToString(), []));
+                result.Add(new CSharpChunk(CSharpKind.Enum, ns, parent, CSharpKind.None, name, xmlSummary, RemoveAttributes(node).ToString(), []));
             }
 
             return result;
         }
 
-        private List<CSharpChunk> ProcessTypeDeclaration<T>(SyntaxNode root, CSharpChunkKind kind) where T : TypeDeclarationSyntax
+        private List<CSharpChunk> ProcessTypeDeclaration<T>(SyntaxNode root, CSharpKind kind) where T : TypeDeclarationSyntax
         {
             List<CSharpChunk> result = [];
             T[] nodes = root.DescendantNodes()
@@ -105,7 +105,7 @@ namespace CodeRag.Shared.Chunking.CSharp
                 {
                     continue;
                 }
-
+                //todo
                 /*Things yet to support inside Typess
                         ConstructorDeclarationSyntax – Constructors
                         DestructorDeclarationSyntax – Destructors
@@ -136,11 +136,11 @@ namespace CodeRag.Shared.Chunking.CSharp
                         string xmlSummary = GetXmlSummary(method);
                         string metodSignature = (method.ToString().Replace(method.Body?.ToString() ?? Guid.NewGuid().ToString(), "").Trim() + " { /*...*/ }").Trim();
                         string parent = node.Identifier.ValueText;
-                        CSharpChunkKind parentKind = kind;
+                        CSharpKind parentKind = kind;
                         List<string> dependencies = GetMethodDependencies(method);
                         dependencies = dependencies.Distinct().ToList();
 
-                        result.Add(new CSharpChunk(CSharpChunkKind.Method, ns, parent, parentKind, name, xmlSummary, metodSignature, dependencies));
+                        result.Add(new CSharpChunk(CSharpKind.Method, ns, parent, parentKind, name, xmlSummary, metodSignature, dependencies));
                     }
                 }
 
@@ -196,7 +196,7 @@ namespace CodeRag.Shared.Chunking.CSharp
                     sb.AppendLine("}");
                     string parent = string.Empty;
                     dependencies = dependencies.Distinct().ToList();
-                    result.Add(new CSharpChunk(kind, ns, parent, CSharpChunkKind.None, name, GetXmlSummary(node), sb.ToString(), dependencies));
+                    result.Add(new CSharpChunk(kind, ns, parent, CSharpKind.None, name, GetXmlSummary(node), sb.ToString(), dependencies));
                 }
             }
 

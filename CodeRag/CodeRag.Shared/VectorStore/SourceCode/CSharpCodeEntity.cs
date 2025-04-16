@@ -1,4 +1,5 @@
-﻿using CodeRag.Shared.EntityFramework.Entities;
+﻿using CodeRag.Shared.Chunking.CSharp;
+using CodeRag.Shared.EntityFramework.Entities;
 using Microsoft.Extensions.VectorData;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -7,16 +8,18 @@ namespace CodeRag.Shared.VectorStore.SourceCode;
 public class CSharpCodeEntity : BaseVectorEntity
 {
     [VectorStoreRecordData(IsFilterable = true)]
-    [Column(TypeName = "nvarchar(4000)")] //todo - use or remove
     public required string Kind { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
-    [Column(TypeName = "nvarchar(4000)")] //todo - use or remove
     public required string Namespace { get; set; }
 
-    [VectorStoreRecordData]
-    [Column(TypeName = "nvarchar(MAX)")] //todo - use or remove
-    public required string XmlSummary { get; set; }
+    [VectorStoreRecordData(IsFilterable = true)]
+    public required string Parent { get; set; }
+
+    [VectorStoreRecordData(IsFilterable = true)]
+    public required string ParentKind { get; set; }
+
+    [VectorStoreRecordData] public required string XmlSummary { get; set; }
 
     public string? GetLocalFilePath(Project project)
     {
@@ -42,6 +45,7 @@ public class CSharpCodeEntity : BaseVectorEntity
         {
             rootUrl = rootUrl[..^1];
         }
+
         string suffix = SourcePath.Replace("\\", "/");
         if (suffix.StartsWith("/"))
         {
@@ -59,5 +63,17 @@ public class CSharpCodeEntity : BaseVectorEntity
     public DocumentationSource? GetSource(Project project)
     {
         return project.DocumentationSources.FirstOrDefault(x => x.Id.ToString() == SourceId);
+    }
+
+    public string GetTargetMarkdownFilename()
+    {
+        if (Kind == CSharpKind.Method.ToString() || Kind == CSharpKind.Property)
+        {
+            return $"{Namespace}-{Parent}.{Name}.md";
+        }
+        else
+        {
+            return $"{Namespace}-{Name}.md";
+        }
     }
 }

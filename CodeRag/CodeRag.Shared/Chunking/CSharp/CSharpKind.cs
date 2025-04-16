@@ -1,6 +1,6 @@
 ﻿namespace CodeRag.Shared.Chunking.CSharp;
 
-public enum CSharpChunkKind
+public enum CSharpKind
 {
     None,
     Interface,
@@ -9,5 +9,6 @@ public enum CSharpChunkKind
     Method,
     Class,
     Struct,
-    Record
+    Record,
+    Property //todo - Begin to use (And should Event, Constant, Constructor and others be added?)
 }

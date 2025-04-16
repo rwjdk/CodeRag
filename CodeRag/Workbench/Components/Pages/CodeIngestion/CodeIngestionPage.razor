@@ -7,6 +7,12 @@
     {
         <MudTabPanel Text="@(source.Name)">
             <RButton OnClick="() => Ingest(source)">Ingest @source.Name</RButton>
+            <MudProgressLinear Color="Color.Primary" Size="Size.Small" Value="25" Class="my-7">
+                <MudText Typo="Typo.subtitle1" Color="Color.Default">
+                    <b>122/671</b>
+                </MudText>
+            </MudProgressLinear>
+
         </MudTabPanel>
     }
 </MudTabs>
