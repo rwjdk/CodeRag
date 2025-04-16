@@ -14,10 +14,10 @@ public class CSharpCodeEntity : BaseVectorEntity
     public required string Namespace { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
-    public required string Parent { get; set; }
+    public required string? Parent { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
-    public required string ParentKind { get; set; }
+    public required string? ParentKind { get; set; }
 
     [VectorStoreRecordData] public required string XmlSummary { get; set; }
 
@@ -67,13 +67,23 @@ public class CSharpCodeEntity : BaseVectorEntity
 
     public string GetTargetMarkdownFilename()
     {
-        if (Kind == CSharpKind.Method.ToString() || Kind == CSharpKind.Property)
+        if (Kind == CSharpKind.Method.ToString() || Kind == CSharpKind.Property.ToString() || Kind == CSharpKind.Constant.ToString())
         {
             return $"{Namespace}-{Parent}.{Name}.md";
         }
-        else
+
+        // ReSharper disable once ConvertIfStatementToReturnStatement
+        if (Kind == CSharpKind.Constructor.ToString())
         {
-            return $"{Namespace}-{Name}.md";
+            return $"{Namespace}-{Parent}.{Name}.ctor.md";
         }
+
+        return $"{Namespace}-{Name}.md";
+    }
+
+    public override string GetContentCompareKey()
+    {
+        //Make a string that represent all content for comparison
+        return Kind + Namespace + Parent + ParentKind + XmlSummary + Content + Name + SourcePath;
     }
 }

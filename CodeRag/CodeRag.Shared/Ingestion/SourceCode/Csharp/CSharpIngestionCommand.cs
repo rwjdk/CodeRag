@@ -3,7 +3,6 @@ using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.Chunking.CSharp;
 using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.EntityFramework.Entities;
-using CodeRag.Shared.Ingestion.SourceCode;
 using CodeRag.Shared.Interfaces;
 using CodeRag.Shared.VectorStore;
 using CodeRag.Shared.VectorStore.SourceCode;
@@ -17,14 +16,14 @@ namespace CodeRag.Shared.Ingestion.SourceCode.Csharp;
 [UsedImplicitly]
 public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery semanticKernelQuery, IDbContextFactory<SqlDbContext> dbContextFactory) : ProgressNotificationBase, IScopedService
 {
-    public async Task Ingest(Project project, CodeSource source, bool deletePreviousDataInCollection)
+    public async Task Ingest(Project project, CodeSource source)
     {
         string[] sourceCodeFiles = Directory.GetFiles(source.SourcePath, "*.cs", SearchOption.AllDirectories);
         OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
         ITextEmbeddingGenerationService embeddingGenerationService = semanticKernelQuery.GetTextEmbeddingGenerationService(project);
         VectorStoreCommand vectorStoreCommand = new(embeddingGenerationService);
         SqlServerVectorStoreQuery vectorStoreQuery = new(project.SqlServerVectorStoreConnectionString, dbContextFactory);
-        IVectorStoreRecordCollection<string, CSharpCodeEntity> collection = vectorStoreQuery.GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharpCodeVectorCollection);
+        IVectorStoreRecordCollection<Guid, CSharpCodeEntity> collection = vectorStoreQuery.GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharpCodeVectorCollection);
 
         List<string> ignoredFiles = [];
         List<CSharpChunk> codeEntities = [];
@@ -73,19 +72,15 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
         }
 
         await collection.CreateCollectionIfNotExistsAsync();
-
-        if (deletePreviousDataInCollection)
-        {
-            string[] ids = await vectorStoreQuery.GetCSharpCodeIds(project.Id, source.Id);
-            await collection.DeleteBatchAsync(ids);
-        }
+        var existingData = await vectorStoreQuery.GetCSharpCode(project.Id, source.Id);
 
         int counter = 0;
+        List<Guid> idsToKeep = [];
         foreach (CSharpChunk codeEntity in codeEntities)
         {
             counter++;
 
-            OnNotifyProgress($"Processing {counter}/{codeEntities.Count}: {codeEntity.Path}");
+            OnNotifyProgress($"Processing: {codeEntity.Path}", counter, codeEntities.Count);
 
             StringBuilder content = new();
             content.AppendLine($"// Namespace: {codeEntity.Namespace}");
@@ -124,7 +119,23 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
                 Content = content.ToString(),
             };
 
-            await vectorStoreCommand.Upsert(project.Id, source.Id, collection, entry);
+            var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
+            if (existing == null)
+            {
+                await vectorStoreCommand.Upsert(project.Id, source.Id, collection, entry);
+            }
+            else
+            {
+                OnNotifyProgress("Skipped as data is up to date");
+                idsToKeep.Add(existing.Id);
+            }
+        }
+
+        var idsToDelete = existingData.Select(x => x.Id).Except(idsToKeep).ToList();
+        if (idsToDelete.Count != 0)
+        {
+            OnNotifyProgress("Removing entities that are no longer in source");
+            await collection.DeleteBatchAsync(idsToDelete);
         }
 
         OnNotifyProgress("Done");

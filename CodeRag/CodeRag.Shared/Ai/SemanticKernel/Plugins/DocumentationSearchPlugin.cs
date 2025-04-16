@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace CodeRag.Shared.Ai.SemanticKernel.Plugins;
 
-public class DocumentationSearchPlugin(Project project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<string, DocumentationVectorEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
+public class DocumentationSearchPlugin(Project project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, DocumentationVectorEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
     [UsedImplicitly]
     [KernelFunction]
@@ -29,7 +29,7 @@ public class DocumentationSearchPlugin(Project project, ITextEmbeddingGeneration
         {
             results.Add(record);
             StringBuilder sb = new();
-            sb.AppendLine($"Citation: {record.Record.GetUrl(project)} \n***\n"+record.Record.Content);
+            sb.AppendLine($"Citation: {record.Record.GetUrl(project)} \n***\n" + record.Record.Content);
             sb.AppendLine("***");
 
             searchResults.Add(sb.ToString());

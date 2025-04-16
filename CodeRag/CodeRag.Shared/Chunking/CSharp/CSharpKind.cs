@@ -10,5 +10,10 @@ public enum CSharpKind
     Class,
     Struct,
     Record,
-    Property //todo - Begin to use (And should Event, Constant, Constructor and others be added?)
+    Property,
+    Constructor
+
+    //todo - Event
+    ,
+    Constant
 }

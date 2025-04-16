@@ -6,20 +6,17 @@ namespace CodeRag.Shared.VectorStore;
 
 public abstract class BaseVectorEntity
 {
-    [VectorStoreRecordKey]
-    public string? Id { get; set; }
+    [VectorStoreRecordKey] public Guid Id { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
     public required string Name { get; init; }
 
-    [VectorStoreRecordData]
-    public required string Content { get; init; }
+    [VectorStoreRecordData] public required string Content { get; init; }
 
     [VectorStoreRecordData(IsFilterable = true)]
     public required string SourcePath { get; init; }
 
-    [VectorStoreRecordData]
-    public DateTime TimeOfIngestion { get; set; }
+    [VectorStoreRecordData] public DateTime TimeOfIngestion { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
     public string? ProjectId { get; set; }
@@ -31,4 +28,6 @@ public abstract class BaseVectorEntity
     [VectorStoreRecordVector(Dimensions: 1536, DistanceFunction.CosineDistance, IndexKind.Flat)]
     [NotMapped]
     public ReadOnlyMemory<float>? Vector { get; set; }
+
+    public abstract string GetContentCompareKey();
 }

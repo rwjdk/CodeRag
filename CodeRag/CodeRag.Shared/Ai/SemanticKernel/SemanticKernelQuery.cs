@@ -77,10 +77,10 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
         return embeddingGenerationService;
     }
 
-    private void AddDocumentationSearchPluginToKernel(int maxNumberOfAnswersBackFromDoucumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
+    private void AddDocumentationSearchPluginToKernel(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
         var documentationCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<DocumentationVectorEntity>(Constants.VectorCollections.MarkdownVectorCollection);
-        var docsPlugin = new DocumentationSearchPlugin(project, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDoucumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
+        var docsPlugin = new DocumentationSearchPlugin(project, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
         kernel.ImportPluginFromObject(docsPlugin, Constants.DocumentationSearchPluginName);
     }
 

@@ -110,7 +110,7 @@ namespace CodeRag.Shared.Chunking.Markdown
 
             //Add last chunk
             AddContentCollectedSoFar();
-            return chunks.ToArray();
+            return chunks.Where(x => !string.IsNullOrWhiteSpace(x.Content)).ToArray();
 
             void AddContentCollectedSoFar()
             {

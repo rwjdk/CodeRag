@@ -23,6 +23,7 @@ hr {
 div > pre {
     margin-top: 10px;
     margin-bottom: 10px;
+    overflow-x: scroll;
 }
 
 a {

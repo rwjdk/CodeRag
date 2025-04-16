@@ -1,5 +1,4 @@
-﻿using System.Text;
-using CodeRag.Shared.Interfaces;
+﻿using CodeRag.Shared.Interfaces;
 using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -8,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace CodeRag.Shared.Chunking.CSharp
 {
     [UsedImplicitly]
-    public class CSharpChunker : IScopedService
+    public class CSharpChunker_FullSplit : IScopedService
     {
         public List<CSharpChunk> GetCodeEntities(string code) //todo allow the passing of settings
         {
@@ -93,7 +92,7 @@ namespace CodeRag.Shared.Chunking.CSharp
             return result;
         }
 
-        private List<CSharpChunk> ProcessTypeDeclaration<T>(SyntaxNode root, CSharpKind kind) where T : TypeDeclarationSyntax
+        private List<CSharpChunk> ProcessTypeDeclaration<T>(SyntaxNode root, CSharpKind parentKind) where T : TypeDeclarationSyntax
         {
             List<CSharpChunk> result = [];
             T[] nodes = root.DescendantNodes()
@@ -101,10 +100,11 @@ namespace CodeRag.Shared.Chunking.CSharp
                 .ToArray();
             foreach (T node in nodes)
             {
-                if (!IsPublic(node.Modifiers)) //todo - support non-public content
+                if (!IsPublic(node.Modifiers))
                 {
                     continue;
                 }
+
                 /*todo Things yet to support inside Types
                         DestructorDeclarationSyntax – Destructors
                         EventDeclarationSyntax – Events declared with explicit accessors
@@ -123,66 +123,56 @@ namespace CodeRag.Shared.Chunking.CSharp
                 ConstructorDeclarationSyntax[] constructors = GetPublicConstructors(node.Members);
 
                 string ns = GetNamespace(node);
-
-                if (methods.Length != 0)
+                var nodeXmlSummary = GetXmlSummary(node);
+                var parentNodeName = node.Identifier.Text;
+                //Store the Type
+                switch (parentKind)
                 {
-                    //Store methods separately
-                    foreach (MethodDeclarationSyntax method in methods)
-                    {
-                        string name = method.Identifier.ValueText;
-                        string xmlSummary = GetXmlSummary(method);
-                        string content = (method.ToString().Replace(method.Body?.ToString() ?? Guid.NewGuid().ToString(), "").Trim() + " { /*...*/ }").Trim();
-                        string parent = node.Identifier.ValueText;
-                        CSharpKind parentKind = kind;
-                        List<string> dependencies = GetMethodDependencies(method);
-                        dependencies = dependencies.Distinct().ToList();
-
-                        result.Add(new CSharpChunk(CSharpKind.Method, ns, parent, parentKind, name, xmlSummary, content, dependencies));
-                    }
+                    case CSharpKind.Class:
+                        result.Add(new CSharpChunk(parentKind, ns, null, null, parentNodeName, nodeXmlSummary, "public class { /*...*/ }", []));
+                        break;
+                    case CSharpKind.Struct:
+                        result.Add(new CSharpChunk(parentKind, ns, null, null, parentNodeName, nodeXmlSummary, "public struct { /*...*/ }", []));
+                        break;
+                    case CSharpKind.Record:
+                        result.Add(new CSharpChunk(parentKind, ns, null, null, parentNodeName, nodeXmlSummary, "public record { /*...*/ }", []));
+                        break;
                 }
 
-                if (properties.Length != 0 || constants.Length != 0 || constructors.Length != 0)
+                foreach (MethodDeclarationSyntax method in methods)
                 {
-                    //Store the Type itself with everything but the Methods
-                    string name = node.Identifier.ValueText;
-                    List<string> dependencies = [];
-                    StringBuilder sb = new();
-                    sb.AppendLine($"public {kind.ToString().ToLowerInvariant()} {name}"); //Do this better (partial stuff support)!
-                    sb.AppendLine("{");
-
-                    foreach (ConstructorDeclarationSyntax constructor in constructors)
-                    {
-                        sb.Append(GetXmlSummary(constructor));
-                        ConstructorDeclarationSyntax constructorWithoutBody = constructor.WithBody(null);
-                        sb.AppendLine(constructorWithoutBody + " { /*...*/ }");
-                        sb.AppendLine();
-                        dependencies.AddRange(constructor.ParameterList.Parameters.Select(x => x.Type?.ToString() ?? "unknown"));
-                    }
-
-                    foreach (FieldDeclarationSyntax constant in constants)
-                    {
-                        sb.Append(GetXmlSummary(constant));
-                        sb.AppendLine(constant.ToString());
-                        sb.AppendLine();
-                        TypeSyntax type = constant.Declaration.Type;
-                        dependencies.Add(type.ToString());
-                    }
-
-                    foreach (PropertyDeclarationSyntax property in properties)
-                    {
-                        string xmlSummary = GetXmlSummary(property);
-                        sb.Append(xmlSummary);
-                        string value = RemoveAttributes(RemoveExpressionBody(property)).ToString(); //Todo - Make this configurable (remove attributes or not)
-                        sb.AppendLine(value);
-                        sb.AppendLine();
-                        TypeSyntax type = property.Type;
-                        dependencies.Add(type.ToString());
-                    }
-
-                    sb.AppendLine("}");
-                    string parent = string.Empty;
+                    string name = method.Identifier.ValueText;
+                    string xmlSummary = GetXmlSummary(method);
+                    string content = (method.ToString().Replace(method.Body?.ToString() ?? Guid.NewGuid().ToString(), "").Trim() + " { /*...*/ }").Trim();
+                    List<string> dependencies = GetMethodDependencies(method);
                     dependencies = dependencies.Distinct().ToList();
-                    result.Add(new CSharpChunk(kind, ns, parent, CSharpKind.None, name, GetXmlSummary(node), sb.ToString(), dependencies));
+
+                    result.Add(new CSharpChunk(CSharpKind.Method, ns, parentNodeName, parentKind, name, xmlSummary, content, dependencies));
+                }
+
+                foreach (ConstructorDeclarationSyntax constructor in constructors)
+                {
+                    var xmlSummary = GetXmlSummary(constructor);
+                    ConstructorDeclarationSyntax constructorWithoutBody = constructor.WithBody(null);
+                    var content = constructorWithoutBody + " { /*...*/ }";
+                    var dependencies = constructor.ParameterList.Parameters.Select(x => x.Type?.ToString() ?? "unknown").ToList();
+                    result.Add(new CSharpChunk(CSharpKind.Constructor, ns, parentNodeName, parentKind, parentNodeName, xmlSummary, content, dependencies));
+                }
+
+                foreach (FieldDeclarationSyntax constant in constants)
+                {
+                    var xmlSummary = GetXmlSummary(constant);
+                    var content = constant.ToString();
+                    TypeSyntax type = constant.Declaration.Type;
+                    result.Add(new CSharpChunk(CSharpKind.Constant, ns, parentNodeName, parentKind, parentNodeName, xmlSummary, content, [type.ToString()]));
+                }
+
+                foreach (PropertyDeclarationSyntax property in properties)
+                {
+                    string xmlSummary = GetXmlSummary(property);
+                    string content = RemoveAttributes(RemoveExpressionBody(property)).ToString(); //Todo - Make this configurable (remove attributes or not)
+                    TypeSyntax type = property.Type;
+                    result.Add(new CSharpChunk(CSharpKind.Property, ns, parentNodeName, parentKind, parentNodeName, xmlSummary, content, [type.ToString()]));
                 }
             }
 

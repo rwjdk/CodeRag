@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace CodeRag.Shared.Ai.SemanticKernel.Plugins;
 
-public class SourceCodeSearchPlugin(Project project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<string, CSharpCodeEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
+public class SourceCodeSearchPlugin(Project project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, CSharpCodeEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
     [UsedImplicitly]
     [KernelFunction]

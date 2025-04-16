@@ -8,6 +8,11 @@ public class DocumentationVectorEntity : BaseVectorEntity
     [VectorStoreRecordData(IsFilterable = true)]
     public string? ChunkId { get; init; }
 
+    public override string GetContentCompareKey()
+    {
+        return ChunkId + Content + Name + SourcePath;
+    }
+
     public string? GetLocalFilePath(Project project)
     {
         var source = project.DocumentationSources.FirstOrDefault(x => x.Id.ToString() == SourceId);
@@ -32,6 +37,7 @@ public class DocumentationVectorEntity : BaseVectorEntity
         {
             rootUrl = rootUrl[..^1];
         }
+
         string suffix = SourcePath.Replace("\\", "/");
         if (suffix.StartsWith("/"))
         {

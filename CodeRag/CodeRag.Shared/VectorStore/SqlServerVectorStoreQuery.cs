@@ -10,11 +10,11 @@ namespace CodeRag.Shared.VectorStore;
 
 public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactory<SqlDbContext> dbContextFactory)
 {
-    public IVectorStoreRecordCollection<string, T> GetCollection<T>(string collectionName)
+    public IVectorStoreRecordCollection<Guid, T> GetCollection<T>(string collectionName)
     {
         IVectorStore vectorStore = new Microsoft.SemanticKernel.Connectors.SqlServer.SqlServerVectorStore(connectionString);
 
-        return vectorStore.GetCollection<string, T>(collectionName);
+        return vectorStore.GetCollection<Guid, T>(collectionName);
     }
 
     public async Task<string[]> GetDocumentationIds(Guid projectId, Guid sourceId)

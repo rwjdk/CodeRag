@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace CodeRag.Shared.Chunking.CSharp
 {
     [UsedImplicitly]
-    public class CSharpChunker : IScopedService
+    public class CSharpChunker_Mix : IScopedService
     {
         public List<CSharpChunk> GetCodeEntities(string code) //todo allow the passing of settings
         {
@@ -106,16 +106,16 @@ namespace CodeRag.Shared.Chunking.CSharp
                     continue;
                 }
                 /*todo Things yet to support inside Types
-                        DestructorDeclarationSyntax – Destructors
-                        EventDeclarationSyntax – Events declared with explicit accessors
-                        IndexerDeclarationSyntax – Indexers
-                        OperatorDeclarationSyntax – Operator overloads
-                        ConversionOperatorDeclarationSyntax – Implicit/explicit conversion operators
-                        ClassDeclarationSyntax – Nested classes
-                        StructDeclarationSyntax – Nested structs
-                        InterfaceDeclarationSyntax – Nested interfaces
-                        RecordDeclarationSyntax – Nested records
-                    */
+        DestructorDeclarationSyntax – Destructors
+        EventDeclarationSyntax – Events declared with explicit accessors
+        IndexerDeclarationSyntax – Indexers
+        OperatorDeclarationSyntax – Operator overloads
+        ConversionOperatorDeclarationSyntax – Implicit/explicit conversion operators
+        ClassDeclarationSyntax – Nested classes
+        StructDeclarationSyntax – Nested structs
+        InterfaceDeclarationSyntax – Nested interfaces
+        RecordDeclarationSyntax – Nested records
+    */
 
                 PropertyDeclarationSyntax[] properties = GetPublicProperties(node.Members);
                 MethodDeclarationSyntax[] methods = GetPublicMethods(node.Members);
@@ -123,7 +123,6 @@ namespace CodeRag.Shared.Chunking.CSharp
                 ConstructorDeclarationSyntax[] constructors = GetPublicConstructors(node.Members);
 
                 string ns = GetNamespace(node);
-
                 if (methods.Length != 0)
                 {
                     //Store methods separately
@@ -131,13 +130,13 @@ namespace CodeRag.Shared.Chunking.CSharp
                     {
                         string name = method.Identifier.ValueText;
                         string xmlSummary = GetXmlSummary(method);
-                        string content = (method.ToString().Replace(method.Body?.ToString() ?? Guid.NewGuid().ToString(), "").Trim() + " { /*...*/ }").Trim();
+                        string metodSignature = (method.ToString().Replace(method.Body?.ToString() ?? Guid.NewGuid().ToString(), "").Trim() + " { /*...*/ }").Trim();
                         string parent = node.Identifier.ValueText;
                         CSharpKind parentKind = kind;
                         List<string> dependencies = GetMethodDependencies(method);
                         dependencies = dependencies.Distinct().ToList();
 
-                        result.Add(new CSharpChunk(CSharpKind.Method, ns, parent, parentKind, name, xmlSummary, content, dependencies));
+                        result.Add(new CSharpChunk(CSharpKind.Method, ns, parent, parentKind, name, xmlSummary, metodSignature, dependencies));
                     }
                 }
 
@@ -147,37 +146,48 @@ namespace CodeRag.Shared.Chunking.CSharp
                     string name = node.Identifier.ValueText;
                     List<string> dependencies = [];
                     StringBuilder sb = new();
-                    sb.AppendLine($"public {kind.ToString().ToLowerInvariant()} {name}"); //Do this better (partial stuff support)!
+                    sb.AppendLine($"public {kind} {name}"); //Do this better!
                     sb.AppendLine("{");
 
-                    foreach (ConstructorDeclarationSyntax constructor in constructors)
+                    if (constructors.Length != 0)
                     {
-                        sb.Append(GetXmlSummary(constructor));
-                        ConstructorDeclarationSyntax constructorWithoutBody = constructor.WithBody(null);
-                        sb.AppendLine(constructorWithoutBody + " { /*...*/ }");
-                        sb.AppendLine();
-                        dependencies.AddRange(constructor.ParameterList.Parameters.Select(x => x.Type?.ToString() ?? "unknown"));
+                        foreach (ConstructorDeclarationSyntax constructor in constructors)
+                        {
+                            sb.Append(GetXmlSummary(constructor));
+                            ConstructorDeclarationSyntax constructorWithoutBody = constructor.WithBody(null);
+                            sb.AppendLine(constructorWithoutBody + " { /*...*/ }");
+                            sb.AppendLine();
+                            dependencies.AddRange(constructor.ParameterList.Parameters.Select(x => x.Type?.ToString() ?? "unknown"));
+                        }
                     }
 
-                    foreach (FieldDeclarationSyntax constant in constants)
+                    if (constants.Length != 0)
                     {
-                        sb.Append(GetXmlSummary(constant));
-                        sb.AppendLine(constant.ToString());
-                        sb.AppendLine();
-                        TypeSyntax type = constant.Declaration.Type;
-                        dependencies.Add(type.ToString());
+                        foreach (FieldDeclarationSyntax constant in constants)
+                        {
+                            sb.Append(GetXmlSummary(constant));
+                            sb.AppendLine(constant.ToString());
+                            sb.AppendLine();
+                            TypeSyntax type = constant.Declaration.Type;
+                            dependencies.Add(type.ToString());
+                        }
                     }
 
-                    foreach (PropertyDeclarationSyntax property in properties)
+                    if (properties.Length != 0)
                     {
-                        string xmlSummary = GetXmlSummary(property);
-                        sb.Append(xmlSummary);
-                        string value = RemoveAttributes(RemoveExpressionBody(property)).ToString(); //Todo - Make this configurable (remove attributes or not)
-                        sb.AppendLine(value);
-                        sb.AppendLine();
-                        TypeSyntax type = property.Type;
-                        dependencies.Add(type.ToString());
+                        foreach (PropertyDeclarationSyntax property in properties)
+                        {
+                            string xmlSummary = GetXmlSummary(property);
+                            sb.Append(xmlSummary);
+                            string value = RemoveAttributes(RemoveExpressionBody(property)).ToString(); //Todo - Make this configurable (remove attributes or not)
+                            sb.AppendLine(value);
+                            sb.AppendLine();
+                            TypeSyntax type = property.Type;
+                            dependencies.Add(type.ToString());
+                        }
                     }
+
+                    //todo - Also add methods here
 
                     sb.AppendLine("}");
                     string parent = string.Empty;
@@ -237,9 +247,9 @@ namespace CodeRag.Shared.Chunking.CSharp
         /// <returns></returns>
         private static string GetXmlSummary(SyntaxNode node)
         {
-            //#if DEBUG
-            //            return string.Empty; //todo- remove again after test
-            //#endif
+//#if DEBUG
+//            return string.Empty; //todo- remove again after test
+//#endif
 
             DocumentationCommentTriviaSyntax? trivia = node.GetLeadingTrivia().Select(t => t.GetStructure()).OfType<DocumentationCommentTriviaSyntax>().FirstOrDefault();
             if (trivia == null)

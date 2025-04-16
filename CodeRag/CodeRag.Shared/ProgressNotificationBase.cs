@@ -8,9 +8,9 @@ public class ProgressNotificationBase
 {
     public event Action<ProgressNotification>? NotifyProgress;
 
-    protected void OnNotifyProgress(string message)
+    protected void OnNotifyProgress(string message, int current = 0, int total = 0)
     {
-        NotifyProgress?.Invoke(new ProgressNotification(DateTimeOffset.UtcNow, message));
+        NotifyProgress?.Invoke(new ProgressNotification(DateTimeOffset.UtcNow, message, current, total));
     }
 
     public void OnNotifyProgress(ProgressNotification notification)
@@ -19,7 +19,7 @@ public class ProgressNotificationBase
     }
 }
 
-public record ProgressNotification(DateTimeOffset Timestamp, string Message)
+public record ProgressNotification(DateTimeOffset Timestamp, string Message, int Current = 0, int Total = 0)
 {
     public List<VectorSearchResult<CSharpCodeEntity>>? SourceCodeSearchResults { get; set; }
     public List<VectorSearchResult<DocumentationVectorEntity>>? DocumentSearchResults { get; set; }
