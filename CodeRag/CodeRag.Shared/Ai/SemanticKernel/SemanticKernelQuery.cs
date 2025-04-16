@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 using CodeRag.Shared.Ai.SemanticKernel.Plugins;
@@ -32,12 +33,12 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
 
     public async Task<ChatMessageContent?> GetAnswer(
         AzureOpenAiChatCompletionDeployment chatModel,
-        List<ChatMessageContent> converstation,
+        List<ChatMessageContent> conversation,
         bool useSourceCodeSearch,
         bool useDocumentationSearch,
         int maxNumberOfAnswersBackFromSourceCodeSearch,
         double scoreShouldBeLowerThanThisInSourceCodeSearch,
-        int maxNumberOfAnswersBackFromDoucumentationSearch,
+        int maxNumberOfAnswersBackFromDocumentationSearch,
         double scoreShouldBeLowerThanThisInDocumentSearch,
         Project project) //todo - support get a streaming answer
     {
@@ -53,7 +54,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
 
         if (useDocumentationSearch)
         {
-            AddDocumentationSearchPluginToKernel(maxNumberOfAnswersBackFromDoucumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
+            AddDocumentationSearchPluginToKernel(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
         }
 
         ChatCompletionAgent answerAgent = GetAgent(chatModel, project, project.TestChatDeveloperInstructions, kernel);
@@ -61,7 +62,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
         ChatMessageContent chatMessageContent = null!;
 
         OnNotifyProgress("Sending Request to AI");
-        await foreach (AgentResponseItem<ChatMessageContent> item in answerAgent.InvokeAsync(converstation))
+        await foreach (AgentResponseItem<ChatMessageContent> item in answerAgent.InvokeAsync(conversation))
         {
             chatMessageContent = item.Message;
         }
@@ -229,7 +230,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
 
     public async Task<string?> GenerateCodeWikiEntryForMethod(Project project, CSharpCodeEntity code)
     {
-        string prompt = Prompting.Prompt.Create("You are an C# Expert that can given Code and existing wiki content generates Markdown that documents the Code")
+        string prompt = Prompt.Create("You are an C# Expert that can given Code and existing wiki content generates Markdown that documents the Code")
             .AddRule($"Always use all tools available ('{Constants.SourceCodeSearchPluginName}' and '{Constants.DocumentationSearchPluginName}') before you provide your answer")
             .AddRule("Always report back in Markdown")
             .AddRule("Do not mention that the method is asynchronously and that the Cancellation-token can be used")
@@ -239,7 +240,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
             project: project,
             model: model,
             instructions: prompt,
-            input: "Generate XML Summary for this code Entity: " + code.Content,
+            input: $"Generate XML Summary for this code Method: {code.Name} in {nameof(BaseVectorEntity.SourcePath)} '{code.SourcePath}'",
             useSourceCodeSearch: true,
             useDocumentationSearch: true);
         return response.ToMarkdown();
@@ -256,8 +257,8 @@ public class WikiMethodEntry
     [Description("Describe in at least 100 chars but max 500 chars what the Method is designed to do, Describe the various notes and ways this method can be called. Do not include things like the method need to be called async. Do not repeat yourself. Do not mention the method-name")]
     public required string WhatDoesTheMethodDo { get; set; }
 
-    [Description("Always exclude the 'public' keyword, include the async keyword, also exclude the 'CancellationToken cancellationToken = default' parameter. Include the XML Summary")]
-    public required string MethodSignature { get; set; }
+    [Description("One or more MethodSignatures (if there are various overloads). Always exclude the 'public' keyword, include the async keyword, also exclude the 'CancellationToken cancellationToken = default' parameter. Include the XML Summary")]
+    public required string[] MethodSignatures { get; set; }
 
     [Description("Surround each parameter with ``<name>`` If a parameter is a GetCardOptions then describe it in full instead of just a bulletlist entry. Exclude the cancellationToken")]
     public required string[]? ParameterDescriptions { get; set; }
@@ -274,11 +275,32 @@ public class WikiMethodEntry
         sb.AppendLine(AddLinks(WhatDoesTheMethodDo));
         sb.AppendLine();
 
-        sb.AppendLine("## Method Signature");
-        sb.AppendLine("```csharp");
-        sb.AppendLine(MethodSignature);
-        sb.AppendLine("```");
-        sb.AppendLine();
+        if (MethodSignatures.Length == 1)
+        {
+            sb.AppendLine("## Method Signature");
+            sb.AppendLine("```csharp");
+            sb.AppendLine(MethodSignatures.First());
+            sb.AppendLine("```");
+            sb.AppendLine();
+        }
+        else
+        {
+            sb.AppendLine("## Method Signatures");
+            sb.AppendLine("```csharp");
+            foreach (var methodSignature in MethodSignatures)
+            {
+                sb.AppendLine(methodSignature);
+                if (methodSignature != MethodSignatures.Last())
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("***");
+                    sb.AppendLine();
+                }
+            }
+
+            sb.AppendLine("```");
+            sb.AppendLine();
+        }
 
         if (ParameterDescriptions != null)
         {

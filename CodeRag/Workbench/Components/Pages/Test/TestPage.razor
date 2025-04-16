@@ -16,7 +16,7 @@
                 <div style="height: calc(100vh - 200px); overflow-y: scroll; padding-left: 0; padding-right: 50px; margin-top: 10px">
 
 
-                    @foreach (var message in _converstation)
+                    @foreach (var message in _conversation)
                     {
                         <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == AuthorRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
                             <MudChatBubble>
@@ -79,7 +79,7 @@
                         <RCheckBox @bind-Value="_useDocumentationSearch" Label="Use" />
                     </MudItem>
                     <MudItem>
-                        <MudSlider Min="1" Max="100" @bind-Value="_maxNumberOfAnswersBackFromDoucumentationSearch">Max Records (@_maxNumberOfAnswersBackFromDoucumentationSearch)</MudSlider>
+                        <MudSlider Min="1" Max="100" @bind-Value="_maxNumberOfAnswersBackFromDocumentationSearch">Max Records (@_maxNumberOfAnswersBackFromDocumentationSearch)</MudSlider>
                     </MudItem>
                     <MudItem>
                         <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">

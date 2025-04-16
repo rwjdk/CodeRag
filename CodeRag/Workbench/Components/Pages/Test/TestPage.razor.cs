@@ -1,16 +1,11 @@
 ﻿using Blazor.Shared.Components;
 using Blazor.Shared;
-using Markdig;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
-using System.Text.RegularExpressions;
 using CodeRag.Shared;
-using Markdown.ColorCode;
 using Microsoft.SemanticKernel;
-using Microsoft.Extensions.VectorData;
-using Blazor.Shared.Components.Dialogs;
 using Workbench.Components.Dialogs;
 using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.EntityFramework.Entities;
@@ -20,30 +15,28 @@ namespace Workbench.Components.Pages.Test;
 
 public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogService dialogService) : IDisposable
 {
-    [CascadingParameter]
-    public required BlazorUtils BlazorUtils { get; set; }
+    [CascadingParameter] public required BlazorUtils BlazorUtils { get; set; }
 
-    [CascadingParameter]
-    public required Project Project { get; set; }
+    [CascadingParameter] public required Project Project { get; set; }
 
     private RTextField? _chatInput;
     private string? _chatInputMessage;
     private bool _currentMessageIsProcessing;
     private bool _shouldRender = true;
 
-    private readonly List<ChatMessageContent> _converstation = new List<ChatMessageContent>();
+    private readonly List<ChatMessageContent> _conversation = new List<ChatMessageContent>();
     private AzureOpenAiChatCompletionDeployment? _chatModel;
     private bool _useSourceCodeSearch = true;
     private bool _useDocumentationSearch = true;
     private int _maxNumberOfAnswersBackFromSourceCodeSearch = 50;
     private double _scoreShouldBeLowerThanThisInSourceCodeSearch = 0.7;
-    private int _maxNumberOfAnswersBackFromDoucumentationSearch = 50;
+    private int _maxNumberOfAnswersBackFromDocumentationSearch = 50;
     private double _scoreShouldBeLowerThanThisInDocumentSearch = 0.5;
     private readonly List<ProgressNotification> _log = [];
 
     private async Task SubmitIfEnter(KeyboardEventArgs args, string? messageToSend)
     {
-        if (!args.ShiftKey && args.Key is "Enter" or "NumppadEnter")
+        if (args is { ShiftKey: false, Key: "Enter" or "NumppadEnter" })
         {
             await SendMessage(messageToSend);
         }
@@ -79,22 +72,22 @@ public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogSe
             try
             {
                 ChatMessageContent input = new(AuthorRole.User, messageToSend);
-                _converstation.Add(input);
+                _conversation.Add(input);
                 await _chatInput.Clear();
 
                 ChatMessageContent? output = await semanticKernelQuery.GetAnswer(
                     _chatModel,
-                    _converstation,
+                    _conversation,
                     _useSourceCodeSearch,
                     _useDocumentationSearch,
                     _maxNumberOfAnswersBackFromSourceCodeSearch,
                     _scoreShouldBeLowerThanThisInSourceCodeSearch,
-                    _maxNumberOfAnswersBackFromDoucumentationSearch,
+                    _maxNumberOfAnswersBackFromDocumentationSearch,
                     _scoreShouldBeLowerThanThisInDocumentSearch,
                     Project);
                 if (output != null)
                 {
-                    _converstation.Add(output);
+                    _conversation.Add(output);
                 }
             }
             catch (Exception e)
@@ -110,7 +103,7 @@ public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogSe
 
     private void NewChat()
     {
-        _converstation.Clear();
+        _conversation.Clear();
         BlazorUtils.ShowSuccess("New Chat initiated", 3, Defaults.Classes.Position.TopCenter);
     }
 
