@@ -27,4 +27,6 @@ public class Project
     public required string TestChatDeveloperInstructions { get; init; }
 
     public string? DefaultTestChatInput { get; set; }
+
+    public string? GitHubToken { get; set; }
 }

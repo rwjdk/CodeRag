@@ -24,12 +24,12 @@ public class CSharpCodeEntity : BaseVectorEntity
     public string? GetLocalFilePath(Project project)
     {
         var source = project.CodeSources.FirstOrDefault(x => x.Id.ToString() == SourceId);
-        if (source == null || string.IsNullOrWhiteSpace(source.SourcePath))
+        if (source == null || string.IsNullOrWhiteSpace(source.LocalSourceCodePath))
         {
             return null;
         }
 
-        return source.SourcePath + SourcePath;
+        return source.LocalSourceCodePath + SourcePath;
     }
 
     public string? GetUrl(Project project)
