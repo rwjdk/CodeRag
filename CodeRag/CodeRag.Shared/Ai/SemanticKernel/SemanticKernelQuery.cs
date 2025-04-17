@@ -57,7 +57,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
             AddDocumentationSearchPluginToKernel(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
         }
 
-        ChatCompletionAgent answerAgent = GetAgent(chatModel, project, project.TestChatDeveloperInstructions, kernel);
+        ChatCompletionAgent answerAgent = GetAgent(chatModel, project, project.GetFormattedTestChatInstructions(), kernel);
 
         ChatMessageContent chatMessageContent = null!;
 

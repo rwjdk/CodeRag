@@ -3,11 +3,13 @@ using Blazored.LocalStorage;
 using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Prompting;
 using Microsoft.AspNetCore.Components;
+using MudBlazor;
 using OpenAI.Chat;
+using Workbench.Components.Dialogs;
 
 namespace Workbench.Components.Layout.Components;
 
-public partial class MainLayoutProjectSelector(ILocalStorageService localStorage, IConfiguration configuration)
+public partial class MainLayoutProjectSelector(ILocalStorageService localStorage, IDialogService dialogService, IConfiguration configuration)
 {
     [CascadingParameter] public required BlazorUtils Utils { get; set; }
 
@@ -236,13 +238,27 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
 
     private async Task NewProject()
     {
-        await Task.CompletedTask; //todo-remove
-        Utils.ShowNotImplemented("New Project"); //todo - implement
+        await ShowProjectSettings(null);
     }
 
-    private async Task ShowProjectSettings()
+    private async Task ShowProjectSettings(Project? project)
     {
-        await Task.CompletedTask; //todo-remove
-        Utils.ShowNotImplemented("Show Project Settings"); //todo - implement
+        var parameters = new DialogParameters<ProjectDialog>
+        {
+            { x => x.Project, project ?? Project.Empty() },
+        };
+
+        DialogOptions dialogOptions = new()
+        {
+            Position = DialogPosition.TopCenter,
+            BackdropClick = false,
+            CloseButton = true,
+        };
+        var reference = await dialogService.ShowAsync<ProjectDialog>(project?.Name ?? "New Project", parameters, dialogOptions);
+        var result = await reference.Result;
+        if (result is { Canceled: false })
+        {
+            //todo - reload projects
+        }
     }
 }
