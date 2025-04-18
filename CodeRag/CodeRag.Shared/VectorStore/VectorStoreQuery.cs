@@ -10,82 +10,49 @@ namespace CodeRag.Shared.VectorStore;
 [UsedImplicitly]
 public class VectorStoreQuery(IVectorStore vectorStore, IDbContextFactory<SqlDbContext> dbContextFactory) : IScopedService
 {
-    public IVectorStoreRecordCollection<Guid, T> GetCollection<T>(string collectionName)
+    public IVectorStoreRecordCollection<Guid, VectorEntity> GetCollection()
     {
-        return vectorStore.GetCollection<Guid, T>(collectionName);
+        return vectorStore.GetCollection<Guid, VectorEntity>(Constants.VectorCollections.VectorSources);
     }
 
-    public async Task<MarkdownVectorEntity[]> GetMarkdown(Guid projectId, Guid? sourceId = null)
+    public async Task<VectorEntity[]> GetExisting(Guid projectId, Guid? sourceId = null)
     {
         SqlDbContext context = await dbContextFactory.CreateDbContextAsync();
 
         StringBuilder sql = new();
         sql.AppendLine("SELECT ");
-        sql.AppendLine($"[{nameof(MarkdownVectorEntity.Id)}], ");
-        sql.AppendLine($"[{nameof(MarkdownVectorEntity.ProjectId)}], ");
-        sql.AppendLine($"[{nameof(MarkdownVectorEntity.SourceId)}], ");
-        sql.AppendLine($"[{nameof(MarkdownVectorEntity.ChunkId)}], ");
-        sql.AppendLine($"[{nameof(MarkdownVectorEntity.TimeOfIngestion)}], ");
-        sql.AppendLine($"[{nameof(MarkdownVectorEntity.Name)}], ");
-        sql.AppendLine($"[{nameof(MarkdownVectorEntity.Content)}], ");
-        sql.AppendLine($"[{nameof(MarkdownVectorEntity.SourcePath)}] ");
-        sql.AppendLine($"FROM [{Constants.VectorCollections.Markdown}]");
-        sql.AppendLine($"WHERE [{nameof(MarkdownVectorEntity.ProjectId)}] = {{0}}");
+        sql.AppendLine($"[{nameof(VectorEntity.VectorId)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.Id)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.Kind)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.Name)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.Parent)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.ParentKind)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.Namespace)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.Summary)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.Content)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.SourcePath)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.TimeOfIngestion)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.ProjectId)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.DataType)}], ");
+        sql.AppendLine($"[{nameof(VectorEntity.SourceId)}] ");
+        sql.AppendLine($"FROM [{Constants.VectorCollections.VectorSources}]");
+        sql.AppendLine($"WHERE [{nameof(VectorEntity.ProjectId)}] = {{0}}");
         if (sourceId.HasValue)
         {
-            sql.AppendLine($"AND [{nameof(MarkdownVectorEntity.SourceId)}] = {{1}}");
+            sql.AppendLine($"AND [{nameof(VectorEntity.SourceId)}] = {{1}}");
         }
 
-        List<MarkdownVectorEntity> result;
+        List<VectorEntity> result;
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
         if (sourceId.HasValue)
         {
-            result = context.Database.SqlQuery<MarkdownVectorEntity>(FormattableStringFactory.Create(sql.ToString(), projectId, sourceId.Value)).ToList();
+            result = context.Database.SqlQuery<VectorEntity>(FormattableStringFactory.Create(sql.ToString(), projectId, sourceId.Value)).ToList();
         }
         else
         {
-            result = context.Database.SqlQuery<MarkdownVectorEntity>(FormattableStringFactory.Create(sql.ToString(), projectId)).ToList();
+            result = context.Database.SqlQuery<VectorEntity>(FormattableStringFactory.Create(sql.ToString(), projectId)).ToList();
         }
 
-
-        return result.ToArray();
-    }
-
-    public async Task<CSharpCodeEntity[]> GetCSharpCode(Guid projectId, Guid? sourceId = null)
-    {
-        SqlDbContext context = await dbContextFactory.CreateDbContextAsync();
-
-        StringBuilder sql = new();
-        sql.AppendLine("SELECT ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.Id)}], ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.ProjectId)}], ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.SourceId)}], ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.TimeOfIngestion)}], ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.Name)}], ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.Parent)}], ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.ParentKind)}], ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.Namespace)}], ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.XmlSummary)}], ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.Kind)}], ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.Content)}], ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.SourcePath)}] ");
-        sql.AppendLine($"FROM [{Constants.VectorCollections.CSharp}]");
-        sql.AppendLine($"WHERE [{nameof(CSharpCodeEntity.ProjectId)}] = {{0}}");
-        if (sourceId.HasValue)
-        {
-            sql.AppendLine($"AND [{nameof(CSharpCodeEntity.SourceId)}] = {{1}}");
-        }
-
-        List<CSharpCodeEntity> result;
-        // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-        if (sourceId.HasValue)
-        {
-            result = context.Database.SqlQuery<CSharpCodeEntity>(FormattableStringFactory.Create(sql.ToString(), projectId, sourceId.Value)).ToList();
-        }
-        else
-        {
-            result = context.Database.SqlQuery<CSharpCodeEntity>(FormattableStringFactory.Create(sql.ToString(), projectId)).ToList();
-        }
 
         return result.ToArray();
     }

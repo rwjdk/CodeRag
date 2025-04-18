@@ -1,15 +1,34 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using CodeRag.Shared.Chunking.CSharp;
 using CodeRag.Shared.Configuration;
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Agents;
 
 namespace CodeRag.Shared.VectorStore;
 
-public abstract class VectorEntity
+public class VectorEntity
 {
-    [VectorStoreRecordKey] public Guid Id { get; set; }
+    [VectorStoreRecordKey] public Guid VectorId { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
-    public required string Name { get; init; }
+    public string? Id { get; init; }
+
+    [VectorStoreRecordData(IsFilterable = true)]
+    public required string? Kind { get; init; }
+
+    [VectorStoreRecordData(IsFilterable = true)]
+    public string? Name { get; init; }
+
+    [VectorStoreRecordData(IsFilterable = true)]
+    public string? Parent { get; set; }
+
+    [VectorStoreRecordData(IsFilterable = true)]
+    public string? ParentKind { get; set; }
+
+    [VectorStoreRecordData(IsFilterable = true)]
+    public string? Namespace { get; set; }
+
+    [VectorStoreRecordData] public string? Summary { get; set; }
 
     [VectorStoreRecordData] public required string Content { get; init; }
 
@@ -19,18 +38,86 @@ public abstract class VectorEntity
     [VectorStoreRecordData] public DateTime TimeOfIngestion { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
-    public string? ProjectId { get; set; }
-
+    public Guid ProjectId { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
-    public string? SourceId { get; set; }
+    public string DataType { get; set; }
+
+    [VectorStoreRecordData(IsFilterable = true)]
+    public Guid SourceId { get; set; }
 
     [VectorStoreRecordVector(Dimensions: 1536, DistanceFunction.CosineDistance, IndexKind.Flat)]
     [NotMapped]
     public ReadOnlyMemory<float>? Vector { get; set; }
 
-    public abstract string GetContentCompareKey();
+    public string GetContentCompareKey()
+    {
+        var contentCompareKey = Id + Kind + Name + Parent + ParentKind + Namespace + Summary + Content + SourcePath;
+        return contentCompareKey;
+    }
 
-    public abstract string? GetUrl(Project project);
-    public abstract string? GetLocalFilePath(Project project);
+    public string? GetLocalFilePath(Project project)
+    {
+        var source = project.Sources.FirstOrDefault(x => x.Id == SourceId);
+        if (source == null || string.IsNullOrWhiteSpace(source.Path))
+        {
+            return null;
+        }
+
+        return source.Path + SourcePath;
+    }
+
+    public string? GetUrl(Project project)
+    {
+        var source = project.Sources.FirstOrDefault(x => x.Id == SourceId);
+        if (source == null || string.IsNullOrWhiteSpace(source.RootUrl))
+        {
+            return null;
+        }
+
+        string rootUrl = source.RootUrl;
+        if (rootUrl.EndsWith("/"))
+        {
+            rootUrl = rootUrl[..^1];
+        }
+
+        string suffix = SourcePath.Replace("\\", "/");
+        if (suffix.StartsWith("/"))
+        {
+            suffix = suffix[1..];
+        }
+
+        if (source.MarkdownFilenameEqualDocUrlSubpage)
+        {
+            suffix = Path.GetFileNameWithoutExtension(suffix);
+        }
+
+        if (!string.IsNullOrWhiteSpace(Id))
+        {
+            suffix = $"{suffix}#{Id}";
+        }
+
+        return rootUrl + "/" + suffix;
+    }
+
+    public string GetTargetMarkdownFilename()
+    {
+        if (Kind == CSharpKind.Method.ToString() || Kind == CSharpKind.Property.ToString() || Kind == CSharpKind.Constant.ToString())
+        {
+            return $"{Namespace}-{Parent}.{Name}.md";
+        }
+
+        // ReSharper disable once ConvertIfStatementToReturnStatement
+        if (Kind == CSharpKind.Constructor.ToString())
+        {
+            return $"{Namespace}-{Parent}.{Name}.ctor.md";
+        }
+
+        return $"{Namespace}-{Name}.md";
+    }
+
+    public override string ToString()
+    {
+        return Name ?? "???";
+    }
 }

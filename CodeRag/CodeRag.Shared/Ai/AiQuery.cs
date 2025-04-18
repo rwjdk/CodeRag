@@ -68,15 +68,15 @@ public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorSto
 
     private void AddDocumentationSearchPluginToKernel(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
-        var documentationCollection = vectorStoreQuery.GetCollection<MarkdownVectorEntity>(Constants.VectorCollections.Markdown);
-        var docsTool = new MarkdownSearchTool(project, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
+        var collection = vectorStoreQuery.GetCollection();
+        var docsTool = new SearchTool(VectorStoreDataType.Documentation, project, embeddingGenerationService, collection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
         kernel.ImportPluginFromObject(docsTool, Constants.Tools.Markdown);
     }
 
     private void AddCodeSearchPluginToKernel(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
-        var cSharpCollection = vectorStoreQuery.GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharp);
-        var codePlugin = new CSharpSearchTool(project, embeddingGenerationService, cSharpCollection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
+        var collection = vectorStoreQuery.GetCollection();
+        var codePlugin = new SearchTool(VectorStoreDataType.Code, project, embeddingGenerationService, collection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
         kernel.ImportPluginFromObject(codePlugin, Constants.Tools.CSharp);
     }
 
@@ -193,14 +193,14 @@ public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorSto
         return JsonSerializer.Deserialize<T>(json)!;
     }
 
-    public async Task<string?> GenerateCSharpXmlSummary(Project project, CSharpCodeEntity code)
+    public async Task<string?> GenerateCSharpXmlSummary(Project project, VectorEntity entity)
     {
         string prompt = Prompt.Create("You are an C# Expert that can generate XML Summaries.")
             .AddRule($"Always use all tools available ('{Constants.Tools.CSharp}' and '{Constants.Tools.Markdown}') before you provide your answer")
             .AddRule("Always report back in C# XML Summary Format")
             .AddRule("Do not mention that the method is asynchronously and that the Cancellation-token can be used")
             .AddRule("The description should be short and focus on what the C# entity do")
-            .AddRule("CancellationToken params should just be refered to as 'Cancellation Token'")
+            .AddRule("CancellationToken params should just be referred to as 'Cancellation Token'")
             .AddRule("Do not use cref")
             .AddRule("Don't use wording 'with the specified options' and similar. Be short and on point")
             .AddRule("Don't end the sentences with '.'")
@@ -210,13 +210,13 @@ public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorSto
             project: project,
             model: model,
             instructions: prompt,
-            input: "Generate XML Summary for this code Entity: " + code.Content,
+            input: "Generate XML Summary for this code Entity: " + entity.Content,
             useSourceCodeSearch: true,
             useDocumentationSearch: true);
         return response.XmlSummary;
     }
 
-    public async Task<string?> GenerateCodeWikiEntryForMethod(Project project, CSharpCodeEntity code)
+    public async Task<string?> GenerateCodeWikiEntryForMethod(Project project, VectorEntity entity)
     {
         string prompt = Prompt.Create("You are an C# Expert that can given Code and existing wiki content generates Markdown that documents the Code")
             .AddRule($"Always use all tools available ('{Constants.Tools.CSharp}' and '{Constants.Tools.Markdown}') before you provide your answer")
@@ -228,7 +228,7 @@ public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorSto
             project: project,
             model: model,
             instructions: prompt,
-            input: $"Generate XML Summary for this code Method: {code.Name} in {nameof(VectorEntity.SourcePath)} '{code.SourcePath}'",
+            input: $"Generate XML Summary for this code Method: {entity.Name} in {nameof(VectorEntity.SourcePath)} '{entity.SourcePath}'",
             useSourceCodeSearch: true,
             useDocumentationSearch: true);
         return response.ToMarkdown();

@@ -10,8 +10,7 @@ public static class Constants
 
     public static class VectorCollections
     {
-        public const string CSharp = "vector_source_csharp";
-        public const string Markdown = "vector_source_markdown";
+        public const string VectorSources = "vector_sources";
     }
 
     public static class Keywords

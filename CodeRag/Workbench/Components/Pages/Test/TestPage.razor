@@ -98,9 +98,9 @@
                             <PropertyColumn Property="x => x.Message" />
                         </Columns>
                         <ChildRowContent>
-                            @if (context.Item.SourceCodeSearchResults != null && context.Item.SourceCodeSearchResults.Count != 0)
+                            @if (context.Item.SearchResults != null && context.Item.SearchResults.Count != 0)
                             {
-                                <MudDataGrid Dense Striped Items="context.Item.SourceCodeSearchResults" SortMode="SortMode.None" Filterable="false">
+                                <MudDataGrid Dense Striped Items="context.Item.SearchResults" SortMode="SortMode.None" Filterable="false">
                                     <Columns>
                                         <TemplateColumn Title="Details" Context="row">
                                             <CellTemplate>
@@ -114,20 +114,6 @@
                                         <TemplateColumn Context="row">
                                             <CellTemplate>
                                                 <RIconButton Href="@row.Item.Record.GetUrl(Project)" Target="_blank" Icon="@Icons.Material.Filled.Launch" />
-                                            </CellTemplate>
-                                        </TemplateColumn>
-                                    </Columns>
-                                </MudDataGrid>
-                            }
-                            @if (context.Item.DocumentSearchResults != null && context.Item.DocumentSearchResults.Count != 0)
-                            {
-                                <MudDataGrid Dense Striped Items="context.Item.DocumentSearchResults" SortMode="SortMode.None" Filterable="false">
-                                    <Columns>
-                                        <PropertyColumn Property="x => Math.Round(Convert.ToDecimal(x.Score), 2).ToString(CultureInfo.InvariantCulture)" />
-                                        <TemplateColumn Title="Details" Context="row">
-                                            <CellTemplate>
-                                                <div>@row.Item.Record.SourcePath</div>
-                                                <a href="@row.Item.Record.GetUrl(Project)" target="_blank">@row.Item.Record.Name</a>
                                             </CellTemplate>
                                         </TemplateColumn>
                                     </Columns>

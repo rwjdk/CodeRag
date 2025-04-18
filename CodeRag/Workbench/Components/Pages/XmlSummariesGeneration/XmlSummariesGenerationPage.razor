@@ -14,7 +14,7 @@
                         {
                             var onlyUndocumented = _onlyUndocumentedCheckStates[dataEntry.Kind];
                             <RCheckBox Value="@onlyUndocumented" Label="Only list undocumented" ValueChanged="x => SwitchAllUndocumentedState(dataEntry.Kind, x)"/>
-                            <CSharpCodeEntitySelectionList Items="@(onlyUndocumented ? dataEntry.UnDocumented : dataEntry.All)" SelectedItemChanged="x => SwitchSelectedItem(x)"/>
+                            <VectorEntitySelectionList Items="@(onlyUndocumented ? dataEntry.UnDocumented : dataEntry.All)" SelectedItemChanged="x => SwitchSelectedItem(x)"/>
                         }
                     </MudItem>
                     <MudItem xs="10">

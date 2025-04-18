@@ -1,4 +1,5 @@
 ﻿using CodeRag.Shared.Ai;
+using CodeRag.Shared.Configuration;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -11,13 +12,26 @@ public class VectorStoreCommand(AiConfiguration aiConfiguration) : IScopedServic
 {
     private readonly AzureOpenAITextEmbeddingGenerationService _embeddingGenerationService = new(aiConfiguration.EmbeddingModelDeploymentName, aiConfiguration.Endpoint, aiConfiguration.Key);
 
-    public async Task Upsert<T>(Guid projectId, Guid sourceId, IVectorStoreRecordCollection<Guid, T> collection, T entry) where T : VectorEntity
+    public async Task Upsert<T>(Guid projectId, ProjectSource source, IVectorStoreRecordCollection<Guid, T> collection, T entry) where T : VectorEntity
     {
         try
         {
-            entry.Id = Guid.NewGuid();
-            entry.ProjectId = projectId.ToString();
-            entry.SourceId = sourceId.ToString();
+            entry.VectorId = Guid.NewGuid();
+            entry.ProjectId = projectId;
+            entry.SourceId = source.Id;
+
+            switch (source.Kind)
+            {
+                case ProjectSourceKind.CSharpCode:
+                    entry.DataType = VectorStoreDataType.Code.ToString();
+                    break;
+                case ProjectSourceKind.Markdown:
+                    entry.DataType = VectorStoreDataType.Documentation.ToString();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
             ReadOnlyMemory<float> vector = await _embeddingGenerationService.GenerateEmbeddingAsync(entry.Content);
             entry.Vector = vector.ToArray();
             entry.TimeOfIngestion = DateTime.UtcNow;

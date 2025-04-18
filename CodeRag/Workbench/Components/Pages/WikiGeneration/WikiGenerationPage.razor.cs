@@ -12,7 +12,7 @@ public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQue
 
     private List<Data>? _data;
     private Dictionary<string, bool>? _onlyUndocumentedCheckStates;
-    private CSharpCodeEntity? _selectEntry;
+    private VectorEntity? _selectEntry;
     private string? _markdown;
     private ProjectSource? _source;
 
@@ -24,17 +24,17 @@ public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQue
         if (_source != null)
         {
             var mdFilenames = Directory.GetFiles(_source.Path).Select(Path.GetFileNameWithoutExtension);
-            CSharpCodeEntity[] sourceCode = await vectorStoreQuery.GetCSharpCode(Project.Id);
+            VectorEntity[] existing = await vectorStoreQuery.GetExisting(Project.Id);
 
-            string[] kinds = sourceCode.Select(x => x.Kind).Distinct().ToArray();
+            string[] kinds = existing.Where(x => !string.IsNullOrWhiteSpace(x.Kind)).Select(x => x.Kind!).Distinct().ToArray();
 
             List<Data> data = [];
-            Dictionary<string, bool>? onlyUndocumentedCheckStates = [];
+            Dictionary<string, bool> onlyUndocumentedCheckStates = [];
             foreach (string kind in kinds)
             {
-                CSharpCodeEntity[] allOfKind = sourceCode.Where(x => x.Kind == kind).OrderBy(x => x.Name).ToArray();
-                CSharpCodeEntity[] undocumentedOfKind = allOfKind.Where(x => !mdFilenames.Contains(x.GetTargetMarkdownFilename())).OrderBy(x => x.Name).ToArray();
-                CSharpCodeEntity[] documentedOfKind = allOfKind.Except(undocumentedOfKind).ToArray();
+                VectorEntity[] allOfKind = existing.Where(x => x.Kind == kind).OrderBy(x => x.Name).ToArray();
+                VectorEntity[] undocumentedOfKind = allOfKind.Where(x => !mdFilenames.Contains(x.GetTargetMarkdownFilename())).OrderBy(x => x.Name).ToArray();
+                VectorEntity[] documentedOfKind = allOfKind.Except(undocumentedOfKind).ToArray();
                 data.Add(new Data(kind, allOfKind, documentedOfKind, undocumentedOfKind));
                 onlyUndocumentedCheckStates.Add(kind, true);
             }
@@ -44,7 +44,7 @@ public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQue
         }
     }
 
-    private record Data(string Kind, CSharpCodeEntity[] All, CSharpCodeEntity[] Documented, CSharpCodeEntity[] UnDocumented)
+    private record Data(string Kind, VectorEntity[] All, VectorEntity[] Documented, VectorEntity[] UnDocumented)
     {
         public int Order => 1; //todo - set order based on importance of kind
         public string TabCaption => $"{KindPlural} ({(Documented.Length)}/{All.Length})";
@@ -60,11 +60,11 @@ public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQue
         }
     }
 
-    private void SwitchSelectedItem(CSharpCodeEntity cSharpCodeEntity)
+    private void SwitchSelectedItem(VectorEntity VectorEntity)
     {
-        if (_selectEntry?.Id != cSharpCodeEntity.Id)
+        if (_selectEntry?.VectorId != VectorEntity.VectorId)
         {
-            _selectEntry = cSharpCodeEntity;
+            _selectEntry = VectorEntity;
             _markdown = null;
         }
     }

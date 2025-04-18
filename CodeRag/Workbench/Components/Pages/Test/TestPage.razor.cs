@@ -8,8 +8,8 @@ using CodeRag.Shared;
 using Microsoft.SemanticKernel;
 using Workbench.Components.Dialogs;
 using CodeRag.Shared.Configuration;
-using CodeRag.Shared.VectorStore;
 using CodeRag.Shared.Ai;
+using CodeRag.Shared.VectorStore;
 
 namespace Workbench.Components.Pages.Test;
 
@@ -31,7 +31,7 @@ public partial class TestPage(AiQuery aiQuery, IDialogService dialogService) : I
     private int _maxNumberOfAnswersBackFromSourceCodeSearch = 50;
     private double _scoreShouldBeLowerThanThisInSourceCodeSearch = 0.7;
     private int _maxNumberOfAnswersBackFromDocumentationSearch = 50;
-    private double _scoreShouldBeLowerThanThisInDocumentSearch = 0.5;
+    private double _scoreShouldBeLowerThanThisInDocumentSearch = 0.7;
     private readonly List<ProgressNotification> _log = [];
 
     private async Task SubmitIfEnter(KeyboardEventArgs args, string? messageToSend)
@@ -112,9 +112,9 @@ public partial class TestPage(AiQuery aiQuery, IDialogService dialogService) : I
         aiQuery.NotifyProgress -= SemanticKernelQueryNotifyProgress;
     }
 
-    private async Task ShowSourceCodeVectorEntry(CSharpCodeEntity entity)
+    private async Task ShowSourceCodeVectorEntry(VectorEntity entity)
     {
-        var parameters = new DialogParameters<ShowCSharpCodeEntityDialog>
+        var parameters = new DialogParameters<ShowVectorEntityDialog>
         {
             { x => x.Entity, entity },
         };
@@ -123,6 +123,6 @@ public partial class TestPage(AiQuery aiQuery, IDialogService dialogService) : I
         {
             CloseButton = true,
         };
-        await dialogService.ShowAsync<ShowCSharpCodeEntityDialog>(entity.SourcePath, parameters, dialogOptions);
+        await dialogService.ShowAsync<ShowVectorEntityDialog>(entity.SourcePath, parameters, dialogOptions);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 using CodeRag.Shared.Configuration;
 using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
@@ -8,24 +9,26 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace CodeRag.Shared.Ai.Tools;
 
-public class SearchTool<T>(Project project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, T> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent) where T : VectorEntity
+public class SearchTool(VectorStoreDataType dataType, Project project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, VectorEntity> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
     [UsedImplicitly]
     [KernelFunction]
     public async Task<string[]> Search(string searchQuery)
     {
-        string projectToSearch = project.Id.ToString();
         List<string> searchResults = [];
+        Guid projectId = project.Id;
+        var dataTypeAsString = dataType.ToString();
         ReadOnlyMemory<float> searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchQuery);
-        VectorSearchResults<T> searchResult = await collection.VectorizedSearchAsync(searchVector, new VectorSearchOptions<T>
+        VectorSearchResults<VectorEntity> searchResult = await collection.VectorizedSearchAsync(searchVector, new VectorSearchOptions<VectorEntity>
         {
             Top = numberOfResultsBack,
-            Filter = entity => entity.ProjectId == projectToSearch,
+            Filter = entity => entity.ProjectId == projectId && entity.DataType == dataTypeAsString,
             IncludeVectors = false
         });
 
-        List<VectorSearchResult<T>>? results = [];
-        await foreach (VectorSearchResult<T> record in searchResult.Results.Where(x => x.Score < scoreShouldBeBelowThis))
+        List<VectorSearchResult<VectorEntity>> results = [];
+
+        await foreach (VectorSearchResult<VectorEntity> record in searchResult.Results.Where(x => x.Score < scoreShouldBeBelowThis))
         {
             results.Add(record);
             StringBuilder sb = new();
@@ -35,9 +38,9 @@ public class SearchTool<T>(Project project, ITextEmbeddingGenerationService embe
             searchResults.Add(sb.ToString());
         }
 
-        ProgressNotification notification = new(DateTimeOffset.UtcNow, $"{typeof(T).Name} Search Called ({results.Count} Results)")
+        ProgressNotification notification = new(DateTimeOffset.UtcNow, $"{dataType} Search Called ({results.Count} Results)")
         {
-            //todo - return results somehow
+            SearchResults = results
         };
         parent.OnNotifyProgress(notification);
         return searchResults.ToArray();

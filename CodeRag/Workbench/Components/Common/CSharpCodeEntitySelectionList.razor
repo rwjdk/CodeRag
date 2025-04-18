@@ -1,10 +1,10 @@
 ﻿@using CodeRag.Shared.VectorStore
 
-<MudDataGrid T="CSharpCodeEntity" Items="Items" Dense SelectedItem="_selectEntry" SelectedItemChanged="x => SwitchSelectedItem(x)" Height="70vh">
+<MudDataGrid T="VectorEntity" Items="Items" Dense SelectedItem="_selectEntry" SelectedItemChanged="x => SwitchSelectedItem(x)" Height="70vh">
     <Columns>
-        <TemplateColumn T="CSharpCodeEntity">
+        <TemplateColumn T="VectorEntity">
             <CellTemplate>
-                @if (context.Item.Id == _selectEntry?.Id)
+                @if (context.Item.VectorId == _selectEntry?.VectorId)
                 {
                     <div style="color: var(--mud-palette-primary)"><strong>@context.Item.Name</strong></div>
                     <div class="font-size-10">@context.Item.SourcePath</div>
@@ -20,22 +20,22 @@
 </MudDataGrid>
 
 @code {
-    private CSharpCodeEntity? _selectEntry;
+    private VectorEntity? _selectEntry;
 
     [Parameter, EditorRequired]
-    public required CSharpCodeEntity[] Items { get; set; }
+    public required VectorEntity[] Items { get; set; }
 
     [Parameter, EditorRequired]
-    public required EventCallback<CSharpCodeEntity> SelectedItemChanged { get; set; }
+    public required EventCallback<VectorEntity> SelectedItemChanged { get; set; }
 
-    private async Task SwitchSelectedItem(CSharpCodeEntity? entity)
+    private async Task SwitchSelectedItem(VectorEntity? entity)
     {
         if (entity == null)
         {
             return;
         }
 
-        if (_selectEntry?.Id != entity.Id)
+        if (_selectEntry?.VectorId != entity.VectorId)
         {
             _selectEntry = entity;
             await SelectedItemChanged.InvokeAsync(_selectEntry);

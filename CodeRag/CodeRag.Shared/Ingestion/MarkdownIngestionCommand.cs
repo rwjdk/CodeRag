@@ -28,12 +28,12 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
             throw new NotSupportedException("Location 'GitHub' not yet supported for Markdown Ingestion");
         }
 
-        IVectorStoreRecordCollection<Guid, MarkdownVectorEntity> collection = vectorStoreQuery.GetCollection<MarkdownVectorEntity>(Constants.VectorCollections.Markdown);
+        IVectorStoreRecordCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection();
 
         await collection.CreateCollectionIfNotExistsAsync();
 
         string[] paths = Directory.GetFiles(source.Path, "*.md", source.PathSearchRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-        List<MarkdownVectorEntity> entries = [];
+        List<VectorEntity> entries = [];
 
         foreach (string path in paths)
         {
@@ -67,7 +67,8 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
                 content = Regex.Replace(content, @"^::: zone pivot=""programming-language-csharp"".*$|^::: zone-end.*$", "", RegexOptions.Multiline);
             }
 
-            content = Regex.Replace(content, @"\r\n[\r\n]+|\r[\r]+|\n[\n]+", Environment.NewLine + Environment.NewLine);
+            var newLine = Environment.NewLine;
+            content = Regex.Replace(content, @"\r\n[\r\n]+|\r[\r]+|\n[\n]+", newLine + newLine);
             content = content.Trim();
 
             var numberOfLine = content.Split([source.MarkdownLineSplitter ?? "\n"], StringSplitOptions.RemoveEmptyEntries).Length;
@@ -85,26 +86,28 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
                     source.MarkdownIgnoreImages,
                     source.MarkdownChunkIgnoreIfLessThanThisAmountOfChars);
 
-                entries.AddRange(chunks.Select(x => new MarkdownVectorEntity
+                entries.AddRange(chunks.Select(x => new VectorEntity
                 {
-                    Content = x.Name + Environment.NewLine + "---" + Environment.NewLine + x.Content,
+                    Kind = "Markdown",
+                    Content = $"{fileNameWithoutExtension} - {x.Name}{newLine}---{newLine}{x.Content}",
                     SourcePath = sourcePath,
-                    ChunkId = x.ChunkId,
+                    Id = x.ChunkId,
                     Name = x.Name,
                 }));
             }
             else
             {
-                entries.Add(new MarkdownVectorEntity
+                entries.Add(new VectorEntity
                 {
-                    Content = fileNameWithoutExtension + Environment.NewLine + "---" + Environment.NewLine + content,
+                    Kind = "Markdown",
+                    Content = $"{fileNameWithoutExtension}{newLine}---{newLine}{content}",
                     SourcePath = sourcePath,
                     Name = fileNameWithoutExtension,
                 });
             }
         }
 
-        var existingData = await vectorStoreQuery.GetMarkdown(project.Id, source.Id);
+        var existingData = await vectorStoreQuery.GetExisting(project.Id, source.Id);
 
         int counter = 0;
         List<Guid> idsToKeep = [];
@@ -115,16 +118,16 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
             if (existing == null)
             {
-                await VectorStoreCommand.Upsert(project.Id, source.Id, collection, entry);
+                await VectorStoreCommand.Upsert(project.Id, source, collection, entry);
             }
             else
             {
                 OnNotifyProgress("Skipped as data is up to date");
-                idsToKeep.Add(existing.Id);
+                idsToKeep.Add(existing.VectorId);
             }
         }
 
-        var idsToDelete = existingData.Select(x => x.Id).Except(idsToKeep).ToList();
+        var idsToDelete = existingData.Select(x => x.VectorId).Except(idsToKeep).ToList();
         if (idsToDelete.Count != 0)
         {
             OnNotifyProgress("Removing entities that are no longer in source");

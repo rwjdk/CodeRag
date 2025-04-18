@@ -42,7 +42,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
                 throw new ArgumentOutOfRangeException(nameof(source.Location));
         }
 
-        IVectorStoreRecordCollection<Guid, CSharpCodeEntity> collection = vectorStoreQuery.GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharp);
+        IVectorStoreRecordCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection();
 
         //Creating References
         foreach (CSharpChunk codeEntity in codeEntities)
@@ -59,7 +59,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         }
 
         await collection.CreateCollectionIfNotExistsAsync();
-        var existingData = await vectorStoreQuery.GetCSharpCode(project.Id, source.Id);
+        var existingData = await vectorStoreQuery.GetExisting(project.Id, source.Id);
 
         int counter = 0;
         List<Guid> idsToKeep = [];
@@ -94,14 +94,14 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
                 content.AppendLine(string.Join(Environment.NewLine, codeEntity.References.Select(x => "- " + x.Path)));
             }
 
-            CSharpCodeEntity entry = new()
+            VectorEntity entry = new()
             {
                 Kind = codeEntity.KindAsString,
                 Namespace = codeEntity.Namespace,
                 Name = codeEntity.Name,
                 Parent = codeEntity.Parent,
                 ParentKind = codeEntity.ParentKindAsString,
-                XmlSummary = codeEntity.XmlSummary,
+                Summary = codeEntity.XmlSummary,
                 SourcePath = codeEntity.LocalSourcePath!,
                 Content = content.ToString(),
             };
@@ -109,16 +109,16 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
             if (existing == null)
             {
-                await VectorStoreCommand.Upsert(project.Id, source.Id, collection, entry);
+                await VectorStoreCommand.Upsert(project.Id, source, collection, entry);
             }
             else
             {
                 OnNotifyProgress("Skipped as data is up to date");
-                idsToKeep.Add(existing.Id);
+                idsToKeep.Add(existing.VectorId);
             }
         }
 
-        var idsToDelete = existingData.Select(x => x.Id).Except(idsToKeep).ToList();
+        var idsToDelete = existingData.Select(x => x.VectorId).Except(idsToKeep).ToList();
         if (idsToDelete.Count != 0)
         {
             OnNotifyProgress("Removing entities that are no longer in source");

@@ -20,7 +20,6 @@ public class ProgressNotificationBase
 
 public record ProgressNotification(DateTimeOffset Timestamp, string Message, int Current = 0, int Total = 0)
 {
-    public List<VectorSearchResult<CSharpCodeEntity>>? SourceCodeSearchResults { get; set; }
-    public List<VectorSearchResult<MarkdownVectorEntity>>? DocumentSearchResults { get; set; }
-    public bool HasNoDetails => SourceCodeSearchResults?.Count is null or 0 && DocumentSearchResults?.Count is null or 0;
+    public List<VectorSearchResult<VectorEntity>>? SearchResults { get; set; }
+    public bool HasNoDetails => SearchResults?.Count is null or 0;
 }
