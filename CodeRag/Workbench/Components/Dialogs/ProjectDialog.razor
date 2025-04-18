@@ -9,15 +9,14 @@
                 <RTextField Label="Azure Open AI Embedding Model DeploymentName" @bind-Value="@Project.AzureOpenAiEmbeddingModelDeploymentName"/>
             </MudTabPanel>
             <MudTabPanel Text="GitHub">
+                <RTextField Label="GitHub Owner" @bind-Value="@Project.GitHubOwner" />
+                <RTextField Label="GitHub Repo" @bind-Value="@Project.GitHubRepo" />
                 <RTextField Label="GitHub Token" @bind-Value="@Project.GitHubToken" InputType="InputType.Password" /> @* todo: Allow adornment click to reveal *@
             </MudTabPanel>
             <MudTabPanel Text="Vector Store">
                 <RTextField Label="SQL Server ConnectionString" @bind-Value="@Project.SqlServerVectorStoreConnectionString" InputType="InputType.Password" /> @* todo: Allow adornment click to reveal *@
             </MudTabPanel>
-            <MudTabPanel Text="Code Sources">
-                TODO
-            </MudTabPanel>
-            <MudTabPanel Text="Documentation Sources">
+            <MudTabPanel Text="Sources">
                 TODO
             </MudTabPanel>
             <MudTabPanel Text="Test Chat">
@@ -27,7 +26,7 @@
         </MudTabs>
     </DialogContent>
     <DialogActions>
-        <RButton Color="Color.Default">Cancel</RButton>
+        <RButton Color="Color.Default" OnClick="Dialog.Cancel">Cancel</RButton>
         <RButton OnClick="Save">Save</RButton>
     </DialogActions>
 </MudDialog>

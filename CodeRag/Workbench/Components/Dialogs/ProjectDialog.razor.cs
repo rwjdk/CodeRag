@@ -15,13 +15,13 @@ public partial class ProjectDialog
     {
         //todo - Validation
         //todo - add other save locations like custom location, DB, shared drives or KeyVault. For now we just use app-data
-        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CodeRag", "Projects");
+        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Sensum365", "CodeRag", "Projects");
         if (!Directory.Exists(folder))
         {
             Directory.CreateDirectory(folder);
         }
 
-        var path = Path.Combine(folder, Project.Id.ToString()) + ".codeRagProject";
+        var path = Path.Combine(folder, Project.Id.ToString()) + ".json";
         var json = JsonSerializer.Serialize(Project);
         await File.WriteAllTextAsync(path, json);
         Dialog.Close();

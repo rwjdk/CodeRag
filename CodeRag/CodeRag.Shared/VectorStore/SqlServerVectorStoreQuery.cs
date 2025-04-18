@@ -1,6 +1,4 @@
 ﻿using CodeRag.Shared.EntityFramework;
-using CodeRag.Shared.VectorStore.Documentation;
-using CodeRag.Shared.VectorStore.SourceCode;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
 using System.Runtime.CompilerServices;
@@ -22,10 +20,10 @@ public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactor
         SqlDbContext context = await dbContextFactory.CreateDbContextAsync();
         StringBuilder sql = new();
         sql.AppendLine("SELECT ");
-        sql.AppendLine($"[{nameof(DocumentationVectorEntity.Id)}] ");
+        sql.AppendLine($"[{nameof(MarkdownVectorEntity.Id)}] ");
         sql.AppendLine($"FROM [{Constants.VectorCollections.MarkdownVectorCollection}]");
-        sql.AppendLine($"WHERE [{nameof(DocumentationVectorEntity.ProjectId)}] = {{0}}");
-        sql.AppendLine($"AND [{nameof(DocumentationVectorEntity.SourceId)}] = {{1}}");
+        sql.AppendLine($"WHERE [{nameof(MarkdownVectorEntity.ProjectId)}] = {{0}}");
+        sql.AppendLine($"AND [{nameof(MarkdownVectorEntity.SourceId)}] = {{1}}");
 
         List<string> result = context.Database.SqlQuery<string>(FormattableStringFactory.Create(sql.ToString(), projectId, sourceId)).ToList();
 
@@ -47,36 +45,36 @@ public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactor
         return result.ToArray();
     }
 
-    public async Task<DocumentationVectorEntity[]> GetDocumentation(Guid projectId, Guid? sourceId = null)
+    public async Task<MarkdownVectorEntity[]> GetDocumentation(Guid projectId, Guid? sourceId = null)
     {
         SqlDbContext context = await dbContextFactory.CreateDbContextAsync();
 
         StringBuilder sql = new();
         sql.AppendLine("SELECT ");
-        sql.AppendLine($"[{nameof(DocumentationVectorEntity.Id)}], ");
-        sql.AppendLine($"[{nameof(DocumentationVectorEntity.ProjectId)}], ");
-        sql.AppendLine($"[{nameof(DocumentationVectorEntity.SourceId)}], ");
-        sql.AppendLine($"[{nameof(DocumentationVectorEntity.ChunkId)}], ");
-        sql.AppendLine($"[{nameof(DocumentationVectorEntity.TimeOfIngestion)}], ");
-        sql.AppendLine($"[{nameof(DocumentationVectorEntity.Name)}], ");
-        sql.AppendLine($"[{nameof(DocumentationVectorEntity.Content)}], ");
-        sql.AppendLine($"[{nameof(DocumentationVectorEntity.SourcePath)}] ");
+        sql.AppendLine($"[{nameof(MarkdownVectorEntity.Id)}], ");
+        sql.AppendLine($"[{nameof(MarkdownVectorEntity.ProjectId)}], ");
+        sql.AppendLine($"[{nameof(MarkdownVectorEntity.SourceId)}], ");
+        sql.AppendLine($"[{nameof(MarkdownVectorEntity.ChunkId)}], ");
+        sql.AppendLine($"[{nameof(MarkdownVectorEntity.TimeOfIngestion)}], ");
+        sql.AppendLine($"[{nameof(MarkdownVectorEntity.Name)}], ");
+        sql.AppendLine($"[{nameof(MarkdownVectorEntity.Content)}], ");
+        sql.AppendLine($"[{nameof(MarkdownVectorEntity.SourcePath)}] ");
         sql.AppendLine($"FROM [{Constants.VectorCollections.MarkdownVectorCollection}]");
-        sql.AppendLine($"WHERE [{nameof(DocumentationVectorEntity.ProjectId)}] = {{0}}");
+        sql.AppendLine($"WHERE [{nameof(MarkdownVectorEntity.ProjectId)}] = {{0}}");
         if (sourceId.HasValue)
         {
-            sql.AppendLine($"AND [{nameof(DocumentationVectorEntity.SourceId)}] = {{1}}");
+            sql.AppendLine($"AND [{nameof(MarkdownVectorEntity.SourceId)}] = {{1}}");
         }
 
-        List<DocumentationVectorEntity> result;
+        List<MarkdownVectorEntity> result;
         // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
         if (sourceId.HasValue)
         {
-            result = context.Database.SqlQuery<DocumentationVectorEntity>(FormattableStringFactory.Create(sql.ToString(), projectId, sourceId.Value)).ToList();
+            result = context.Database.SqlQuery<MarkdownVectorEntity>(FormattableStringFactory.Create(sql.ToString(), projectId, sourceId.Value)).ToList();
         }
         else
         {
-            result = context.Database.SqlQuery<DocumentationVectorEntity>(FormattableStringFactory.Create(sql.ToString(), projectId)).ToList();
+            result = context.Database.SqlQuery<MarkdownVectorEntity>(FormattableStringFactory.Create(sql.ToString(), projectId)).ToList();
         }
 
 

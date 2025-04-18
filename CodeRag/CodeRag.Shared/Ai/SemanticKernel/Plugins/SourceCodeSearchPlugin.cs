@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using CodeRag.Shared.Configuration;
-using CodeRag.Shared.VectorStore.SourceCode;
+using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;

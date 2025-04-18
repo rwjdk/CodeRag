@@ -2,10 +2,7 @@
 using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework;
-using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.VectorStore;
-using CodeRag.Shared.VectorStore.Documentation;
-using CodeRag.Shared.VectorStore.SourceCode;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,17 +16,17 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
     private Dictionary<string, bool>? _onlyUndocumentedCheckStates;
     private CSharpCodeEntity? _selectEntry;
     private string? _markdown;
-    private DocumentationSource? _documentationSource;
+    private ProjectSource? _source;
 
     [CascadingParameter] public required Project Project { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        _documentationSource = Project.DocumentationSources.SingleOrDefault(x => x.Type == DocumentationSourceType.GitHubCodeWiki);
-        if (_documentationSource != null)
+        _source = Project.Sources.FirstOrDefault(x => x.Kind == ProjectSourceKind.Markdown); //todo - rewrite this to allow multiple sources
+        if (_source != null)
         {
             SqlServerVectorStoreQuery vectorStoreQuery = new(Project.SqlServerVectorStoreConnectionString, dbContextFactory);
-            var mdFilenames = Directory.GetFiles(_documentationSource.SourcePath).Select(Path.GetFileNameWithoutExtension);
+            var mdFilenames = Directory.GetFiles(_source.Path).Select(Path.GetFileNameWithoutExtension);
             CSharpCodeEntity[] sourceCode = await vectorStoreQuery.GetCSharpCode(Project.Id);
 
             string[] kinds = sourceCode.Select(x => x.Kind).Distinct().ToArray();
@@ -82,9 +79,9 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
 
     private async Task AcceptMarkdown()
     {
-        var sourcePath = _documentationSource!.SourcePath;
+        var sourcePath = _source!.Path;
         var path = Path.Combine(sourcePath, _selectEntry.GetTargetMarkdownFilename());
         await File.WriteAllTextAsync(path, _markdown);
-        BlazorUtils.ShowSuccess($"{Path.GetFileName(path)} saved to {_documentationSource.SourcePath}");
+        BlazorUtils.ShowSuccess($"{Path.GetFileName(path)} saved to {_source.Path}");
     }
 }

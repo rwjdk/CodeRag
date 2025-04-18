@@ -1,9 +1,9 @@
 ﻿using CodeRag.Shared.Configuration;
 using Microsoft.Extensions.VectorData;
 
-namespace CodeRag.Shared.VectorStore.Documentation;
+namespace CodeRag.Shared.VectorStore;
 
-public class DocumentationVectorEntity : VectorEntity
+public class MarkdownVectorEntity : VectorEntity
 {
     [VectorStoreRecordData(IsFilterable = true)]
     public string? ChunkId { get; init; }
@@ -15,18 +15,18 @@ public class DocumentationVectorEntity : VectorEntity
 
     public string? GetLocalFilePath(Project project)
     {
-        var source = project.DocumentationSources.FirstOrDefault(x => x.Id.ToString() == SourceId);
-        if (source == null || string.IsNullOrWhiteSpace(source.SourcePath))
+        var source = project.Sources.FirstOrDefault(x => x.Id.ToString() == SourceId);
+        if (source == null || string.IsNullOrWhiteSpace(source.Path))
         {
             return null;
         }
 
-        return source.SourcePath + SourcePath;
+        return source.Path + SourcePath;
     }
 
     public string? GetUrl(Project project)
     {
-        var source = project.DocumentationSources.FirstOrDefault(x => x.Id.ToString() == SourceId);
+        var source = project.Sources.FirstOrDefault(x => x.Id.ToString() == SourceId);
         if (source == null || string.IsNullOrWhiteSpace(source.RootUrl))
         {
             return null;
@@ -44,7 +44,7 @@ public class DocumentationVectorEntity : VectorEntity
             suffix = suffix[1..];
         }
 
-        if (source.FilenameEqualDocUrlSubpage)
+        if (source.MarkdownFilenameEqualDocUrlSubpage)
         {
             suffix = Path.GetFileNameWithoutExtension(suffix);
         }

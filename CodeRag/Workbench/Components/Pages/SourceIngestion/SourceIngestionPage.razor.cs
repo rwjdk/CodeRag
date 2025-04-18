@@ -1,8 +1,7 @@
 ﻿using Blazor.Shared;
 using CodeRag.Shared;
 using CodeRag.Shared.Configuration;
-using CodeRag.Shared.Ingestion.Documentation.Markdown;
-using CodeRag.Shared.Ingestion.SourceCode.Csharp;
+using CodeRag.Shared.Ingestion;
 using Microsoft.AspNetCore.Components;
 
 namespace Workbench.Components.Pages.SourceIngestion;
@@ -52,6 +51,7 @@ public partial class SourceIngestionPage(CSharpIngestionCommand cSharpIngestionC
                 await cSharpIngestionCommand.Ingest(Project, source);
                 break;
             case ProjectSourceKind.Markdown:
+                await markdownIngestionCommand.Ingest(Project, source);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

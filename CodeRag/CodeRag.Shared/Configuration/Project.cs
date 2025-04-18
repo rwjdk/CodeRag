@@ -32,7 +32,11 @@ public class Project
 
     #endregion
 
-    #region GitHub
+    #region GitHub //todo - Support override of these on source level
+
+    public string? GitHubOwner { get; set; }
+
+    public string? GitHubRepo { get; set; }
 
     public string? GitHubToken { get; set; }
 
@@ -46,9 +50,6 @@ public class Project
 
     #endregion
 
-    public required List<DocumentationSource> DocumentationSources { get; set; }
-
-
     public static Project Empty()
     {
         return new Project
@@ -56,7 +57,6 @@ public class Project
             Id = Guid.NewGuid(),
             Name = string.Empty,
             Sources = [],
-            DocumentationSources = [],
             AzureOpenAiChatCompletionDeployments = [],
             TestChatDeveloperInstructions = Prompt
                 .Create("You are an C# expert in {{NAME}} ({{DESCRIPTION}}. Assume all questions are about {{NAME}} unless specified otherwise")

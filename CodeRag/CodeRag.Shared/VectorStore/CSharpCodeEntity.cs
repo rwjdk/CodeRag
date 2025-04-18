@@ -1,10 +1,8 @@
 ﻿using CodeRag.Shared.Chunking.CSharp;
 using CodeRag.Shared.Configuration;
-using CodeRag.Shared.EntityFramework.Entities;
 using Microsoft.Extensions.VectorData;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CodeRag.Shared.VectorStore.SourceCode;
+namespace CodeRag.Shared.VectorStore;
 
 public class CSharpCodeEntity : VectorEntity
 {
@@ -59,11 +57,6 @@ public class CSharpCodeEntity : VectorEntity
     public override string ToString()
     {
         return Name + $" ({Kind})";
-    }
-
-    public DocumentationSource? GetSource(Project project)
-    {
-        return project.DocumentationSources.FirstOrDefault(x => x.Id.ToString() == SourceId);
     }
 
     public string GetTargetMarkdownFilename()

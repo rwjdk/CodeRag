@@ -72,6 +72,8 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
             }
         ],
         SqlServerVectorStoreConnectionString = configuration["SqlServerConnectionString"]!,
+        GitHubOwner = "rwjdk",
+        GitHubRepo = "TrelloDotNet",
         GitHubToken = configuration["GitHubToken"],
         Sources =
         [
@@ -81,24 +83,23 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                 Id = new Guid("330e772c-7a58-4f60-83c9-f8351c322428"),
                 Location = ProjectSourceLocation.GitHub,
                 Name = "TrelloDotNet SourceCode",
-                GitHubOwner = "rwjdk",
-                GitHubRepo = "TrelloDotNet",
                 Path = "src/TrelloDotNet",
+                PathSearchRecursive = true,
                 RootUrl = "https://github.com/rwjdk/TrelloDotNet/tree/main/src/TrelloDotNet",
                 FilesToIgnore = ["Program.cs"],
+                MarkdownFilenameEqualDocUrlSubpage = true,
                 FilesWithTheseSuffixesToIgnore = ["Test.cs", "Tests.cs", "AssemblyAttributes.cs", "AssemblyInfo.cs"],
-            }
-        ],
-        DocumentationSources =
-        [
-            new DocumentationSource
+            },
+            new ProjectSource
             {
+                Kind = ProjectSourceKind.Markdown,
                 Id = new Guid("330e772c-7a58-5f60-83c9-f8351c422428"),
-                IgnoreCommentedOutContent = true,
-                IgnoreImages = true,
-                SourcePath = @"C:\CodeRag\SampleRepo",
-                Type = DocumentationSourceType.CodeRepoRootMarkdown,
-                Name = "SourceRepo Root Files"
+                Name = "SourceRepo Root Files",
+                MarkdownIgnoreCommentedOutContent = true,
+                MarkdownIgnoreImages = true,
+                Path = @"C:\CodeRag\SampleRepo",
+                PathSearchRecursive = true,
+                Location = ProjectSourceLocation.Local,
             }
         ],
         DefaultTestChatInput = "What is GetCardOptions? (use code)"
@@ -166,39 +167,41 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                 Location = ProjectSourceLocation.Local,
                 Name = "TrelloDotNet SourceCode",
                 Path = @"C:\CodeRag\SampleRepo\src",
+                PathSearchRecursive = true,
                 RootUrl = "https://github.com/rwjdk/TrelloDotNet/tree/main/src/TrelloDotNet",
                 FilesToIgnore = ["Program.cs"],
                 FilesWithTheseSuffixesToIgnore = ["Test.cs", "Tests.cs", "AssemblyAttributes.cs", "AssemblyInfo.cs"],
-            }
-        ],
-        DocumentationSources =
-        [
-            new DocumentationSource
-            {
-                Id = new Guid("230e772c-7a58-4f60-83c2-f8351c422428"),
-                SourcePath = @"C:\CodeRag\CodeWiki",
-                FilenameEqualDocUrlSubpage = true,
-                LineSplitter = Environment.NewLine,
-                FilesToIgnore = ["_Footer", "_Sidebar"],
-                IgnoreCommentedOutContent = true,
-                IgnoreImages = true,
-                IgnoreMicrosoftLearnNoneCsharpContent = false,
-                MarkdownLevelsToChunk = 2,
-                OnlyChunkIfMoreThanThisNumberOfLines = 50,
-                RootUrl = "https://github.com/rwjdk/TrelloDotNet/wiki",
-                ChunkIgnoreIfLessThanThisAmountOfChars = 25,
-                ChunkLineRegExPatternsToIgnore = [@"^\[Back to [^\]]+\]\([^\)]+\)"],
-                Name = "Code Wiki",
-                Type = DocumentationSourceType.GitHubCodeWiki,
             },
-            new DocumentationSource
+            new ProjectSource
             {
+                Kind = ProjectSourceKind.Markdown,
+                Id = new Guid("230e772c-7a58-4f60-83c2-f8351c422428"),
+                Path = @"C:\CodeRag\CodeWiki",
+                PathSearchRecursive = true,
+                MarkdownLineSplitter = Environment.NewLine,
+                FilesToIgnore = ["_Footer", "_Sidebar"],
+                MarkdownIgnoreCommentedOutContent = true,
+                MarkdownIgnoreImages = true,
+                MarkdownIgnoreMicrosoftLearnNoneCsharpContent = false,
+                MarkdownLevelsToChunk = 2,
+                MarkdownOnlyChunkIfMoreThanThisNumberOfLines = 50,
+                RootUrl = "https://github.com/rwjdk/TrelloDotNet/wiki",
+                MarkdownChunkIgnoreIfLessThanThisAmountOfChars = 25,
+                MarkdownChunkLineRegExPatternsToIgnore = [@"^\[Back to [^\]]+\]\([^\)]+\)"],
+                MarkdownFilenameEqualDocUrlSubpage = true,
+                Name = "Code Wiki",
+                Location = ProjectSourceLocation.Local,
+            },
+            new ProjectSource
+            {
+                Kind = ProjectSourceKind.Markdown,
                 Id = new Guid("230e772c-7a58-5f60-83c9-f8351c422428"),
-                IgnoreCommentedOutContent = true,
-                IgnoreImages = true,
-                SourcePath = @"C:\CodeRag\SampleRepo",
-                Type = DocumentationSourceType.CodeRepoRootMarkdown,
-                Name = "SourceRepo Root Files"
+                MarkdownIgnoreCommentedOutContent = true,
+                MarkdownIgnoreImages = true,
+                Path = @"C:\CodeRag\SampleRepo",
+                PathSearchRecursive = false,
+                Name = "SourceRepo Root Files",
+                Location = ProjectSourceLocation.Local
             }
         ],
         DefaultTestChatInput = "What is GetCardOptions? (use code)"

@@ -10,8 +10,6 @@ using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Interfaces;
 using CodeRag.Shared.Prompting;
 using CodeRag.Shared.VectorStore;
-using CodeRag.Shared.VectorStore.Documentation;
-using CodeRag.Shared.VectorStore.SourceCode;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
@@ -81,7 +79,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
 
     private void AddDocumentationSearchPluginToKernel(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
-        var documentationCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<DocumentationVectorEntity>(Constants.VectorCollections.MarkdownVectorCollection);
+        var documentationCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<MarkdownVectorEntity>(Constants.VectorCollections.MarkdownVectorCollection);
         var docsPlugin = new DocumentationSearchPlugin(project, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
         kernel.ImportPluginFromObject(docsPlugin, Constants.DocumentationSearchPluginName);
     }

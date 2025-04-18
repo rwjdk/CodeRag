@@ -1,13 +1,10 @@
 ﻿using System.Text;
-using Azure;
 using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.Chunking.CSharp;
 using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework;
-using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Interfaces;
 using CodeRag.Shared.VectorStore;
-using CodeRag.Shared.VectorStore.SourceCode;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
@@ -15,14 +12,31 @@ using Microsoft.SemanticKernel.Embeddings;
 using Octokit;
 using Project = CodeRag.Shared.Configuration.Project;
 
-namespace CodeRag.Shared.Ingestion.SourceCode.Csharp;
+namespace CodeRag.Shared.Ingestion;
 
 [UsedImplicitly]
 public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery semanticKernelQuery, IDbContextFactory<SqlDbContext> dbContextFactory) : IngestionCommand, IScopedService
 {
     public override async Task Ingest(Project project, ProjectSource source)
     {
+        if (source.Kind != ProjectSourceKind.CSharpCode)
+        {
+            throw new ArgumentException($"Invalid Kind. Expected '{nameof(ProjectSourceKind.CSharpCode)}' but received {source.Kind}", nameof(source.Kind));
+        }
+
         List<CSharpChunk> codeEntities;
+        if (string.IsNullOrWhiteSpace(project.SqlServerVectorStoreConnectionString))
+        {
+            OnNotifyProgress("Vector Store ConnectionString is not defined"); //todo - should this be an exception instead?
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(source.Path))
+        {
+            OnNotifyProgress("Source Path is not defined"); //todo - should this be an exception instead?
+            return;
+        }
+
         switch (source.Location)
         {
             case ProjectSourceLocation.GitHub:
@@ -129,11 +143,10 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
         List<CSharpChunk> codeEntities = [];
         if (string.IsNullOrWhiteSpace(source.Path))
         {
-            OnNotifyProgress($"Source Path is empty so no files retrieved");
-            return codeEntities;
+            return codeEntities; //todo - exception instead?
         }
 
-        string[] sourceCodeFiles = Directory.GetFiles(source.Path, "*.cs", SearchOption.AllDirectories);
+        string[] sourceCodeFiles = Directory.GetFiles(source.Path, "*.cs", source.PathSearchRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
         List<string> ignoredFiles = [];
         foreach (string sourceCodeFilePath in sourceCodeFiles)
@@ -167,17 +180,33 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
     private async Task<List<CSharpChunk>> GetCodeEntitiesFromPublicGithubRepo(Project project, ProjectSource source)
     {
         List<CSharpChunk> codeEntities = [];
+        if (string.IsNullOrWhiteSpace(source.Path))
+        {
+            return codeEntities; //todo - exception instead?
+        }
+
         GitHubClient client = new GitHubClient(new ProductHeaderValue("CodeRag"))
         {
             Credentials = new Credentials(project.GitHubToken)
         };
 
-        var repo = await client.Repository.Get(source.GitHubOwner, source.GitHubRepo);
+        var gitHubOwner = project.GitHubOwner;
+        var gitHubRepo = project.GitHubRepo;
+        var repo = await client.Repository.Get(gitHubOwner, gitHubRepo);
         var defaultBranch = repo.DefaultBranch; //todo - support other branches
 
-        var reference = await client.Git.Reference.Get(source.GitHubOwner, source.GitHubRepo, $"heads/{defaultBranch}");
-        var commit = await client.Git.Commit.Get(source.GitHubOwner, source.GitHubRepo, reference.Object.Sha);
-        var tree = await client.Git.Tree.GetRecursive(source.GitHubOwner, source.GitHubRepo, commit.Tree.Sha);
+        var reference = await client.Git.Reference.Get(gitHubOwner, gitHubRepo, $"heads/{defaultBranch}");
+        var commit = await client.Git.Commit.Get(gitHubOwner, gitHubRepo, reference.Object.Sha);
+        TreeResponse? tree;
+        if (source.PathSearchRecursive)
+        {
+            tree = await client.Git.Tree.GetRecursive(gitHubOwner, gitHubRepo, commit.Tree.Sha);
+        }
+        else
+        {
+            tree = await client.Git.Tree.Get(gitHubOwner, gitHubRepo, commit.Tree.Sha); //todo - have not tested this
+        }
+
         string prefix = source.Path;
         if (!prefix.EndsWith("/"))
         {
@@ -199,7 +228,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
 
             OnNotifyProgress($"{downloadCounter}/{sourceCodeFiles.Length} - Downloading '{sourceCodeFilePath}' from GitHub");
             var sourcePath = sourceCodeFilePath.Replace(source.Path, string.Empty);
-            byte[]? fileContent = await client.Repository.Content.GetRawContent(source.GitHubOwner, source.GitHubRepo, sourceCodeFilePath);
+            byte[]? fileContent = await client.Repository.Content.GetRawContent(gitHubOwner, gitHubRepo, sourceCodeFilePath);
             if (fileContent == null)
             {
                 continue;

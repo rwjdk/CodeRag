@@ -2,7 +2,6 @@
 using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.VectorStore;
-using CodeRag.Shared.VectorStore.SourceCode;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,8 +14,7 @@ public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> 
     private CSharpCodeEntity? _selectEntry;
     private string? _xmlSummary;
 
-    [CascadingParameter]
-    public required Project Project { get; set; }
+    [CascadingParameter] public required Project Project { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
