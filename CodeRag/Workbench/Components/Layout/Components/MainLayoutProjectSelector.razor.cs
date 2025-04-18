@@ -1,11 +1,9 @@
 ﻿using Blazor.Shared;
 using Blazored.LocalStorage;
 using CodeRag.Shared.Configuration;
-using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Prompting;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using OpenAI.Chat;
 using Workbench.Components.Dialogs;
 
 namespace Workbench.Components.Layout.Components;
@@ -40,32 +38,28 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
         AzureOpenAiEndpoint = "https://sensum365ai.openai.azure.com/",
         AzureOpenAiKey = configuration["AzureOpenAiKey"]!,
         AzureOpenAiEmbeddingModelDeploymentName = "text-embedding-3-small",
-        AzureOpenAiChatCompletionDeployments =
+        AzureOpenAiModelDeployments =
         [
-            new AzureOpenAiChatCompletionDeployment
+            new ProjectAiModel
             {
-                Id = new Guid("330e772c-7a58-4f60-83c9-f8351c422428"),
                 DeploymentName = "gpt-4.1",
                 Temperature = 0,
                 TimeoutInSeconds = 60
             },
-            new AzureOpenAiChatCompletionDeployment
+            new ProjectAiModel
             {
-                Id = new Guid("330e772c-7a58-4f60-83c9-f8351c422427"),
                 DeploymentName = "gpt-4o-mini",
                 Temperature = 0,
                 TimeoutInSeconds = 60
             },
-            new AzureOpenAiChatCompletionDeployment
+            new ProjectAiModel
             {
-                Id = new Guid("330e772c-7a58-4f60-83c9-f8351c422426"),
                 DeploymentName = "gpt-4o",
                 Temperature = 0,
                 TimeoutInSeconds = 60
             },
-            new AzureOpenAiChatCompletionDeployment
+            new ProjectAiModel
             {
-                Id = new Guid("330e772c-7a58-4f60-83c9-f8351c422424"),
                 DeploymentName = "o3-mini",
                 ReasoningEffortLevel = "high",
                 TimeoutInSeconds = 60 * 5
@@ -126,32 +120,28 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
         AzureOpenAiEndpoint = "https://sensum365ai.openai.azure.com/",
         AzureOpenAiKey = configuration["AzureOpenAiKey"]!,
         AzureOpenAiEmbeddingModelDeploymentName = "text-embedding-3-small",
-        AzureOpenAiChatCompletionDeployments =
+        AzureOpenAiModelDeployments =
         [
-            new AzureOpenAiChatCompletionDeployment
+            new ProjectAiModel
             {
-                Id = new Guid("230e772c-7a58-4f60-83c9-f8351c422428"),
                 DeploymentName = "gpt-4.1",
                 Temperature = 0,
                 TimeoutInSeconds = 60
             },
-            new AzureOpenAiChatCompletionDeployment
+            new ProjectAiModel
             {
-                Id = new Guid("230e772c-7a58-4f60-83c9-f8351c422427"),
                 DeploymentName = "gpt-4o-mini",
                 Temperature = 0,
                 TimeoutInSeconds = 60
             },
-            new AzureOpenAiChatCompletionDeployment
+            new ProjectAiModel
             {
-                Id = new Guid("230e772c-7a58-4f60-83c9-f8351c422426"),
                 DeploymentName = "gpt-4o",
                 Temperature = 0,
                 TimeoutInSeconds = 60
             },
-            new AzureOpenAiChatCompletionDeployment
+            new ProjectAiModel
             {
-                Id = new Guid("230e772c-7a58-4f60-83c9-f8351c422424"),
                 DeploymentName = "o3-mini",
                 ReasoningEffortLevel = "high",
                 TimeoutInSeconds = 60 * 5

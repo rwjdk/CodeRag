@@ -1,7 +1,7 @@
 ﻿@page "/Test"
 @using System.Globalization
 @using CodeRag.Shared
-@using CodeRag.Shared.EntityFramework.Entities
+@using CodeRag.Shared.Configuration
 @using Microsoft.SemanticKernel.ChatCompletion
 @using Workbench.Extensions
 <div>
@@ -56,7 +56,7 @@
                 </MudGrid>
                 <br/>
                 <div class="font-size-10">Model</div>
-                <RSelect T="AzureOpenAiChatCompletionDeployment" Items="Project.AzureOpenAiChatCompletionDeployments" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
+                <RSelect T="ProjectAiModel" Items="Project.AzureOpenAiModelDeployments" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
                 <hr />
                 <div class="font-size-10">Source Code Search</div>
                 <MudGrid>

@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Prompting;
 
 namespace CodeRag.Shared.Configuration;
@@ -22,7 +21,7 @@ public class Project
 
     public string? AzureOpenAiEmbeddingModelDeploymentName { get; set; }
 
-    public required List<AzureOpenAiChatCompletionDeployment> AzureOpenAiChatCompletionDeployments { get; set; }
+    public required List<ProjectAiModel> AzureOpenAiModelDeployments { get; set; }
 
     #endregion
 
@@ -57,7 +56,7 @@ public class Project
             Id = Guid.NewGuid(),
             Name = string.Empty,
             Sources = [],
-            AzureOpenAiChatCompletionDeployments = [],
+            AzureOpenAiModelDeployments = [],
             TestChatDeveloperInstructions = Prompt
                 .Create("You are an C# expert in {{NAME}} ({{DESCRIPTION}}. Assume all questions are about {{NAME}} unless specified otherwise")
                 .AddStep("Use tool '{{DOC_SEARCH_TOOL}}' to get an overview (break question down to keywords for the tool-usage but do NOT include words '{{NAME}}' in the tool request)")

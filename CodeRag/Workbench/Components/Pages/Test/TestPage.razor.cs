@@ -8,7 +8,6 @@ using CodeRag.Shared;
 using Microsoft.SemanticKernel;
 using Workbench.Components.Dialogs;
 using CodeRag.Shared.Ai.SemanticKernel;
-using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Configuration;
 using CodeRag.Shared.VectorStore;
 
@@ -26,7 +25,7 @@ public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogSe
     private bool _shouldRender = true;
 
     private readonly List<ChatMessageContent> _conversation = new List<ChatMessageContent>();
-    private AzureOpenAiChatCompletionDeployment? _chatModel;
+    private ProjectAiModel? _chatModel;
     private bool _useSourceCodeSearch = true;
     private bool _useDocumentationSearch = true;
     private int _maxNumberOfAnswersBackFromSourceCodeSearch = 50;
@@ -45,7 +44,7 @@ public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogSe
 
     protected override void OnInitialized()
     {
-        _chatModel = Project.AzureOpenAiChatCompletionDeployments.FirstOrDefault();
+        _chatModel = Project.AzureOpenAiModelDeployments.FirstOrDefault();
         semanticKernelQuery.NotifyProgress += SemanticKernelQueryNotifyProgress;
 #if DEBUG
         _chatInputMessage = Project.DefaultTestChatInput;

@@ -9,7 +9,6 @@ using CodeRag.Shared.Chunking.Markdown;
 using CodeRag.Shared.Interfaces;
 using CodeRag.Shared.EntityFramework;
 using Microsoft.EntityFrameworkCore;
-using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Configuration;
 
 namespace CodeRag.Shared.Ingestion;

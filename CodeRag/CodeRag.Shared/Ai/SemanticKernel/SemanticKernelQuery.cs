@@ -6,7 +6,6 @@ using System.Text.Json;
 using CodeRag.Shared.Ai.SemanticKernel.Plugins;
 using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework;
-using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Interfaces;
 using CodeRag.Shared.Prompting;
 using CodeRag.Shared.VectorStore;
@@ -31,7 +30,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
     }
 
     public async Task<ChatMessageContent?> GetAnswer(
-        AzureOpenAiChatCompletionDeployment chatModel,
+        ProjectAiModel chatModel,
         List<ChatMessageContent> conversation,
         bool useSourceCodeSearch,
         bool useDocumentationSearch,
@@ -91,7 +90,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
         kernel.ImportPluginFromObject(codePlugin, Constants.SourceCodeSearchPluginName);
     }
 
-    private ChatCompletionAgent GetAgentForStructuredOutput<T>(AzureOpenAiChatCompletionDeployment chatModel, string instructions, Kernel kernel)
+    private ChatCompletionAgent GetAgentForStructuredOutput<T>(ProjectAiModel chatModel, string instructions, Kernel kernel)
     {
         AzureOpenAIPromptExecutionSettings executionSettings = new()
         {
@@ -128,7 +127,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
         return agent;
     }
 
-    private ChatCompletionAgent GetAgent(AzureOpenAiChatCompletionDeployment chatModel, Project project, string instructions, Kernel? kernel = null)
+    private ChatCompletionAgent GetAgent(ProjectAiModel chatModel, Project project, string instructions, Kernel? kernel = null)
     {
         kernel ??= GetKernel(chatModel, project);
 
@@ -166,7 +165,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
         return agent;
     }
 
-    private Kernel GetKernel(AzureOpenAiChatCompletionDeployment chatModel, Project project)
+    private Kernel GetKernel(ProjectAiModel chatModel, Project project)
     {
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.AddAzureOpenAIChatCompletion(chatModel.DeploymentName, project.AzureOpenAiEndpoint, project.AzureOpenAiKey, httpClient: new HttpClient
@@ -178,7 +177,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
         return kernel;
     }
 
-    private async Task<T> GetStructuredOutputResponse<T>(Project project, AzureOpenAiChatCompletionDeployment model, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch)
+    private async Task<T> GetStructuredOutputResponse<T>(Project project, ProjectAiModel model, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch)
     {
         Kernel kernel = GetKernel(model, project);
         ITextEmbeddingGenerationService textEmbeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
@@ -216,7 +215,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
             .AddRule("Don't use wording 'with the specified options' and similar. Be short and on point")
             .AddRule("Don't end the sentences with '.'")
             .ToString();
-        AzureOpenAiChatCompletionDeployment model = project.AzureOpenAiChatCompletionDeployments.First();
+        ProjectAiModel model = project.AzureOpenAiModelDeployments.First();
         XmlSummaryGeneration response = await GetStructuredOutputResponse<XmlSummaryGeneration>(
             project: project,
             model: model,
@@ -234,7 +233,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
             .AddRule("Always report back in Markdown")
             .AddRule("Do not mention that the method is asynchronously and that the Cancellation-token can be used")
             .ToString();
-        AzureOpenAiChatCompletionDeployment model = project.AzureOpenAiChatCompletionDeployments.First();
+        ProjectAiModel model = project.AzureOpenAiModelDeployments.First();
         WikiMethodEntry response = await GetStructuredOutputResponse<WikiMethodEntry>(
             project: project,
             model: model,

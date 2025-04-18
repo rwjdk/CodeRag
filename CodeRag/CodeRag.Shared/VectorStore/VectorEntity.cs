@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using CodeRag.Shared.EntityFramework.Entities;
 using Microsoft.Extensions.VectorData;
 
 namespace CodeRag.Shared.VectorStore;
