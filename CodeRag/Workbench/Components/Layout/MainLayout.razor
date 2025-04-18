@@ -20,10 +20,7 @@
             </MudAppBar>
             <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
                 <MudNavLink Icon="@Icons.Material.Filled.Dashboard" Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
-                <MudNavGroup Icon="@Icons.Material.Filled.Dataset" Title="Data Ingestion" Expanded="true">
-                    <MudNavLink Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.DataObject" Href="/CodeIngestion">Code Ingestion</MudNavLink>
-                    <MudNavLink Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.MenuBook" Href="/DocsIngestion">Docs Ingestion</MudNavLink>
-                </MudNavGroup>
+                    <MudNavLink Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Dataset" Href="/SourceIngestion">Source Ingestion</MudNavLink>
                 <MudNavGroup Icon="@Icons.Material.Filled.AutoFixHigh" Title="Generate" Expanded="true">
                     <MudNavLink Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Code" Href="/XmlSummariesGeneration">XML Summaries</MudNavLink>
                     <MudNavLink Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Article" Href="/WikiGeneration">Code Wiki</MudNavLink>

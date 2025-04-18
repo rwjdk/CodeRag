@@ -1,9 +1,8 @@
-﻿@page "/DocsIngestion"
+﻿@page "/SourceIngestion"
 
-<h1>Docs Ingestion</h1>
-
+<h1>Source Ingestion</h1>
 <MudTabs>
-    @foreach (var source in Project.DocumentationSources)
+    @foreach (var source in Project.Sources)
     {
         <MudTabPanel Text="@(source.Name)">
             <RButton Disabled="BlazorUtils.IsWorking" OnClick="() => Ingest(source)">Ingest @source.Name</RButton>
@@ -16,6 +15,7 @@
                 </MudProgressLinear>
             }
             <div>@_lastMessage</div>
+
         </MudTabPanel>
     }
 </MudTabs>

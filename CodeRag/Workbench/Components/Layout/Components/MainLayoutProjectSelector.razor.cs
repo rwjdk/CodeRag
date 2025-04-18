@@ -37,7 +37,6 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
             //.AddRule($"Do not wrap the code from {settings.Name} in sample methods etc. just show the raw calls to the API")
             //.AddRuleThatIfYouDontKnowThenDontAnswer()
             .ToString(),
-        RepoUrl = "https://github.com/rwjdk/TrelloDotNet",
         AzureOpenAiEndpoint = "https://sensum365ai.openai.azure.com/",
         AzureOpenAiKey = configuration["AzureOpenAiKey"]!,
         AzureOpenAiEmbeddingModelDeploymentName = "text-embedding-3-small",
@@ -74,18 +73,18 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
         ],
         SqlServerVectorStoreConnectionString = configuration["SqlServerConnectionString"]!,
         GitHubToken = configuration["GitHubToken"],
-        CodeSources =
+        Sources =
         [
-            new CodeSource
+            new ProjectSource
             {
+                Kind = ProjectSourceKind.CSharpCode,
                 Id = new Guid("330e772c-7a58-4f60-83c9-f8351c322428"),
-                Location = CodeSourceLocation.PublicGitHubRepo,
+                Location = ProjectSourceLocation.GitHub,
                 Name = "TrelloDotNet SourceCode",
-                PublicGitHubSourceOwner = "rwjdk",
-                PublicGitHubSourceRepo = "TrelloDotNet",
-                PublicGitHubSourceRepoPath = "src/TrelloDotNet",
+                GitHubOwner = "rwjdk",
+                GitHubRepo = "TrelloDotNet",
+                Path = "src/TrelloDotNet",
                 RootUrl = "https://github.com/rwjdk/TrelloDotNet/tree/main/src/TrelloDotNet",
-                Type = CodeSourceType.CSharp,
                 FilesToIgnore = ["Program.cs"],
                 FilesWithTheseSuffixesToIgnore = ["Test.cs", "Tests.cs", "AssemblyAttributes.cs", "AssemblyInfo.cs"],
             }
@@ -123,7 +122,6 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
             //.AddRule($"Do not wrap the code from {settings.Name} in sample methods etc. just show the raw calls to the API")
             //.AddRuleThatIfYouDontKnowThenDontAnswer()
             .ToString(),
-        RepoUrl = "https://github.com/rwjdk/TrelloDotNet",
         AzureOpenAiEndpoint = "https://sensum365ai.openai.azure.com/",
         AzureOpenAiKey = configuration["AzureOpenAiKey"]!,
         AzureOpenAiEmbeddingModelDeploymentName = "text-embedding-3-small",
@@ -159,16 +157,16 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
             }
         ],
         SqlServerVectorStoreConnectionString = configuration["SqlServerConnectionString"]!,
-        CodeSources =
+        Sources =
         [
-            new CodeSource
+            new ProjectSource
             {
+                Kind = ProjectSourceKind.CSharpCode,
                 Id = new Guid("230e772c-7a58-4f60-83c9-f8351c322428"),
-                Location = CodeSourceLocation.LocalSourceCode,
+                Location = ProjectSourceLocation.Local,
                 Name = "TrelloDotNet SourceCode",
-                LocalSourceCodePath = @"C:\CodeRag\SampleRepo\src",
+                Path = @"C:\CodeRag\SampleRepo\src",
                 RootUrl = "https://github.com/rwjdk/TrelloDotNet/tree/main/src/TrelloDotNet",
-                Type = CodeSourceType.CSharp,
                 FilesToIgnore = ["Program.cs"],
                 FilesWithTheseSuffixesToIgnore = ["Test.cs", "Tests.cs", "AssemblyAttributes.cs", "AssemblyInfo.cs"],
             }

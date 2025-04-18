@@ -3,7 +3,7 @@ using Microsoft.Extensions.VectorData;
 
 namespace CodeRag.Shared.VectorStore.Documentation;
 
-public class DocumentationVectorEntity : BaseVectorEntity
+public class DocumentationVectorEntity : VectorEntity
 {
     [VectorStoreRecordData(IsFilterable = true)]
     public string? ChunkId { get; init; }

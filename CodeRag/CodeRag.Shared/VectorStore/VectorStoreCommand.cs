@@ -5,7 +5,7 @@ namespace CodeRag.Shared.VectorStore;
 
 public class VectorStoreCommand(ITextEmbeddingGenerationService textEmbeddingGenerationService)
 {
-    public async Task Upsert<T>(Guid projectId, Guid sourceId, IVectorStoreRecordCollection<Guid, T> collection, T entry) where T : BaseVectorEntity
+    public async Task Upsert<T>(Guid projectId, Guid sourceId, IVectorStoreRecordCollection<Guid, T> collection, T entry) where T : VectorEntity
     {
         try
         {

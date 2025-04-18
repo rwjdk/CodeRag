@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CodeRag.Shared.VectorStore.SourceCode;
 
-public class CSharpCodeEntity : BaseVectorEntity
+public class CSharpCodeEntity : VectorEntity
 {
     [VectorStoreRecordData(IsFilterable = true)]
     public required string Kind { get; set; }
@@ -24,18 +24,18 @@ public class CSharpCodeEntity : BaseVectorEntity
 
     public string? GetLocalFilePath(Project project)
     {
-        var source = project.CodeSources.FirstOrDefault(x => x.Id.ToString() == SourceId);
-        if (source == null || string.IsNullOrWhiteSpace(source.LocalSourceCodePath))
+        var source = project.Sources.FirstOrDefault(x => x.Id.ToString() == SourceId);
+        if (source == null || string.IsNullOrWhiteSpace(source.Path))
         {
             return null;
         }
 
-        return source.LocalSourceCodePath + SourcePath;
+        return source.Path + SourcePath;
     }
 
     public string? GetUrl(Project project)
     {
-        var source = project.CodeSources.FirstOrDefault(x => x.Id.ToString() == SourceId);
+        var source = project.Sources.FirstOrDefault(x => x.Id.ToString() == SourceId);
         if (source == null || string.IsNullOrWhiteSpace(source.RootUrl))
         {
             return null;

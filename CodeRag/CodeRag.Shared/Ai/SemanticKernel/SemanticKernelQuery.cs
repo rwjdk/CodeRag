@@ -241,7 +241,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
             project: project,
             model: model,
             instructions: prompt,
-            input: $"Generate XML Summary for this code Method: {code.Name} in {nameof(BaseVectorEntity.SourcePath)} '{code.SourcePath}'",
+            input: $"Generate XML Summary for this code Method: {code.Name} in {nameof(VectorEntity.SourcePath)} '{code.SourcePath}'",
             useSourceCodeSearch: true,
             useDocumentationSearch: true);
         return response.ToMarkdown();

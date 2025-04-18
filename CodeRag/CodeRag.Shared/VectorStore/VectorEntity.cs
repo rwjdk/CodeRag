@@ -4,7 +4,7 @@ using Microsoft.Extensions.VectorData;
 
 namespace CodeRag.Shared.VectorStore;
 
-public abstract class BaseVectorEntity
+public abstract class VectorEntity
 {
     [VectorStoreRecordKey] public Guid Id { get; set; }
 

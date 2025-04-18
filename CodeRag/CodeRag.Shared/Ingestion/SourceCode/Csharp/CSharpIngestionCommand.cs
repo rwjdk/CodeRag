@@ -2,6 +2,7 @@
 using Azure;
 using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.Chunking.CSharp;
+using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Interfaces;
@@ -17,17 +18,17 @@ using Project = CodeRag.Shared.Configuration.Project;
 namespace CodeRag.Shared.Ingestion.SourceCode.Csharp;
 
 [UsedImplicitly]
-public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery semanticKernelQuery, IDbContextFactory<SqlDbContext> dbContextFactory) : ProgressNotificationBase, IScopedService
+public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery semanticKernelQuery, IDbContextFactory<SqlDbContext> dbContextFactory) : IngestionCommand, IScopedService
 {
-    public async Task Ingest(Project project, CodeSource source)
+    public override async Task Ingest(Project project, ProjectSource source)
     {
         List<CSharpChunk> codeEntities;
         switch (source.Location)
         {
-            case CodeSourceLocation.PublicGitHubRepo:
+            case ProjectSourceLocation.GitHub:
                 codeEntities = await GetCodeEntitiesFromPublicGithubRepo(project, source);
                 break;
-            case CodeSourceLocation.LocalSourceCode:
+            case ProjectSourceLocation.Local:
                 codeEntities = await GetCodeEntitiesFromLocalSourceCode(source);
                 break;
             default:
@@ -123,25 +124,27 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
         OnNotifyProgress("Done");
     }
 
-    private async Task<List<CSharpChunk>> GetCodeEntitiesFromLocalSourceCode(CodeSource source)
+    private async Task<List<CSharpChunk>> GetCodeEntitiesFromLocalSourceCode(ProjectSource source)
     {
         List<CSharpChunk> codeEntities = [];
-        string[] sourceCodeFiles = Directory.GetFiles(source.LocalSourceCodePath, "*.cs", SearchOption.AllDirectories);
+        if (string.IsNullOrWhiteSpace(source.Path))
+        {
+            OnNotifyProgress($"Source Path is empty so no files retrieved");
+            return codeEntities;
+        }
+
+        string[] sourceCodeFiles = Directory.GetFiles(source.Path, "*.cs", SearchOption.AllDirectories);
         OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
         List<string> ignoredFiles = [];
         foreach (string sourceCodeFilePath in sourceCodeFiles)
         {
-            string fileName = Path.GetFileName(sourceCodeFilePath);
-
-            if (source.FilesToIgnore.Contains(fileName, StringComparer.InvariantCultureIgnoreCase) ||
-                source.FilesWithTheseSuffixesToIgnore.Any(x => x.EndsWith(fileName, StringComparison.CurrentCultureIgnoreCase)) ||
-                source.FilesWithThesePrefixesToIgnore.Any(x => x.StartsWith(fileName, StringComparison.CurrentCultureIgnoreCase)))
+            if (IgnoreFile(source, sourceCodeFilePath))
             {
-                ignoredFiles.Add(fileName);
+                ignoredFiles.Add(sourceCodeFilePath);
                 continue;
             }
 
-            var sourcePath = sourceCodeFilePath.Replace(source.LocalSourceCodePath, string.Empty);
+            var sourcePath = sourceCodeFilePath.Replace(source.Path, string.Empty);
             string code = await File.ReadAllTextAsync(sourceCodeFilePath);
             List<CSharpChunk> entitiesForFile = chunker.GetCodeEntities(code);
             foreach (CSharpChunk codeEntity in entitiesForFile)
@@ -161,7 +164,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
         return codeEntities;
     }
 
-    private async Task<List<CSharpChunk>> GetCodeEntitiesFromPublicGithubRepo(Project project, CodeSource source)
+    private async Task<List<CSharpChunk>> GetCodeEntitiesFromPublicGithubRepo(Project project, ProjectSource source)
     {
         List<CSharpChunk> codeEntities = [];
         GitHubClient client = new GitHubClient(new ProductHeaderValue("CodeRag"))
@@ -169,13 +172,13 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
             Credentials = new Credentials(project.GitHubToken)
         };
 
-        var repo = await client.Repository.Get(source.PublicGitHubSourceOwner, source.PublicGitHubSourceRepo);
+        var repo = await client.Repository.Get(source.GitHubOwner, source.GitHubRepo);
         var defaultBranch = repo.DefaultBranch; //todo - support other branches
 
-        var reference = await client.Git.Reference.Get(source.PublicGitHubSourceOwner, source.PublicGitHubSourceRepo, $"heads/{defaultBranch}");
-        var commit = await client.Git.Commit.Get(source.PublicGitHubSourceOwner, source.PublicGitHubSourceRepo, reference.Object.Sha);
-        var tree = await client.Git.Tree.GetRecursive(source.PublicGitHubSourceOwner, source.PublicGitHubSourceRepo, commit.Tree.Sha);
-        string prefix = source.PublicGitHubSourceRepoPath;
+        var reference = await client.Git.Reference.Get(source.GitHubOwner, source.GitHubRepo, $"heads/{defaultBranch}");
+        var commit = await client.Git.Commit.Get(source.GitHubOwner, source.GitHubRepo, reference.Object.Sha);
+        var tree = await client.Git.Tree.GetRecursive(source.GitHubOwner, source.GitHubRepo, commit.Tree.Sha);
+        string prefix = source.Path;
         if (!prefix.EndsWith("/"))
         {
             prefix += "/";
@@ -185,22 +188,18 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
         OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
         List<string> ignoredFiles = [];
         int downloadCounter = 0;
-        foreach (string sourceCodeFilePath in sourceCodeFiles.Select(x => x.Path))
+        foreach (string sourceCodeFilePath in sourceCodeFiles.Select(x => x.Path)) //todo - should download of all files not happen upfront, but on the fly to reduce rate limiting and allow partial imports
         {
             downloadCounter++;
-            string fileName = Path.GetFileName(sourceCodeFilePath);
-
-            if (source.FilesToIgnore.Contains(fileName, StringComparer.InvariantCultureIgnoreCase) ||
-                source.FilesWithTheseSuffixesToIgnore.Any(x => x.EndsWith(fileName, StringComparison.CurrentCultureIgnoreCase)) ||
-                source.FilesWithThesePrefixesToIgnore.Any(x => x.StartsWith(fileName, StringComparison.CurrentCultureIgnoreCase)))
+            if (IgnoreFile(source, sourceCodeFilePath))
             {
-                ignoredFiles.Add(fileName);
+                ignoredFiles.Add(sourceCodeFilePath);
                 continue;
             }
 
             OnNotifyProgress($"{downloadCounter}/{sourceCodeFiles.Length} - Downloading '{sourceCodeFilePath}' from GitHub");
-            var sourcePath = sourceCodeFilePath.Replace(source.PublicGitHubSourceRepoPath, string.Empty);
-            byte[]? fileContent = await client.Repository.Content.GetRawContent(source.PublicGitHubSourceOwner, source.PublicGitHubSourceRepo, sourceCodeFilePath);
+            var sourcePath = sourceCodeFilePath.Replace(source.Path, string.Empty);
+            byte[]? fileContent = await client.Repository.Content.GetRawContent(source.GitHubOwner, source.GitHubRepo, sourceCodeFilePath);
             if (fileContent == null)
             {
                 continue;
@@ -223,5 +222,27 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
 
         OnNotifyProgress($"{sourceCodeFiles.Length - ignoredFiles.Count} Files was transformed into {codeEntities.Count} Code Entities for Vector Import");
         return codeEntities;
+    }
+
+    private bool IgnoreFile(ProjectSource source, string path)
+    {
+        //todo - replace with a general ignore pattern system
+        string fileName = Path.GetFileName(path);
+        if (source.FilesToIgnore != null && source.FilesToIgnore.Contains(fileName, StringComparer.InvariantCultureIgnoreCase))
+        {
+            return true;
+        }
+
+        if (source.FilesWithTheseSuffixesToIgnore != null && source.FilesWithTheseSuffixesToIgnore.Any(x => x.EndsWith(fileName, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            return true;
+        }
+
+        if (source.FilesWithThesePrefixesToIgnore != null && source.FilesWithThesePrefixesToIgnore.Any(x => x.StartsWith(fileName, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

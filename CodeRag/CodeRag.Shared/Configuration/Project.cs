@@ -12,7 +12,9 @@ public class Project
 
     public string? Description { get; set; }
 
-    public string? RepoUrl { get; set; }
+    public required List<ProjectSource> Sources { get; set; }
+
+    #region Azure OpenAi
 
     public string? AzureOpenAiEndpoint { get; set; }
 
@@ -20,31 +22,44 @@ public class Project
 
     public string? AzureOpenAiEmbeddingModelDeploymentName { get; set; }
 
+    public required List<AzureOpenAiChatCompletionDeployment> AzureOpenAiChatCompletionDeployments { get; set; }
+
+    #endregion
+
+    #region SQL server
+
     public string? SqlServerVectorStoreConnectionString { get; set; } //todo - should not store in clear text in DB, but doing it for now
+
+    #endregion
+
+    #region GitHub
+
+    public string? GitHubToken { get; set; }
+
+    #endregion
+
+    #region Test Chat
 
     public required string TestChatDeveloperInstructions { get; set; }
 
     public string? DefaultTestChatInput { get; set; }
 
-    public string? GitHubToken { get; set; }
-
-    public required List<CodeSource> CodeSources { get; set; }
+    #endregion
 
     public required List<DocumentationSource> DocumentationSources { get; set; }
 
-    public required List<AzureOpenAiChatCompletionDeployment> AzureOpenAiChatCompletionDeployments { get; set; }
 
     public static Project Empty()
     {
         return new Project
         {
             Id = Guid.NewGuid(),
-            Name = "",
-            CodeSources = [],
+            Name = string.Empty,
+            Sources = [],
             DocumentationSources = [],
             AzureOpenAiChatCompletionDeployments = [],
             TestChatDeveloperInstructions = Prompt
-                .Create("You are an C# expert in {{NAME}} ({{DESCRIPTION}} on [GitHub]({{REPO_URL}}]. Assume all questions are about {{NAME}} unless specified otherwise")
+                .Create("You are an C# expert in {{NAME}} ({{DESCRIPTION}}. Assume all questions are about {{NAME}} unless specified otherwise")
                 .AddStep("Use tool '{{DOC_SEARCH_TOOL}}' to get an overview (break question down to keywords for the tool-usage but do NOT include words '{{NAME}}' in the tool request)")
                 .AddStep("Next prepare your answer with current knowledge")
                 .AddStep("If your answer include code-samples then use tool '{{CODE_SEARCH_TOOL}}' to check that you called methods correctly and classes and properties exist")
@@ -60,7 +75,6 @@ public class Project
         return TestChatDeveloperInstructions
             .Replace("{{NAME}}", Name, true, CultureInfo.InvariantCulture)
             .Replace("{{DESCRIPTION}}", Description, true, CultureInfo.InvariantCulture)
-            .Replace("{{REPO_URL}}", RepoUrl, true, CultureInfo.InvariantCulture)
             .Replace("{{DOC_SEARCH_TOOL}}", Constants.DocumentationSearchPluginName, true, CultureInfo.InvariantCulture)
             .Replace("{{CODE_SEARCH_TOOL}}", Constants.SourceCodeSearchPluginName, true, CultureInfo.InvariantCulture);
     }

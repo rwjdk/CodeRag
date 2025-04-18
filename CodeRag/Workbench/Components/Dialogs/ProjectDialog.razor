@@ -2,7 +2,6 @@
     <DialogContent>
         <RTextField Label="Name" @bind-Value="@Project.Name"/>
         <RTextField Label="Description" @bind-Value="@Project.Description" Lines="3"/>
-        <RTextField Label="Repo URL" @bind-Value="@Project.RepoUrl"/>
         <MudTabs>
             <MudTabPanel Text="Large Language Model">
                 <RTextField Label="Azure Open AI Endpoint" @bind-Value="@Project.AzureOpenAiEndpoint" InputType="InputType.Url" />

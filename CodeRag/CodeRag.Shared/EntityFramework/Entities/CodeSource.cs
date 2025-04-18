@@ -20,7 +20,9 @@ public class CodeSource
 
     public string? RootUrl { get; set; }
 
-    public string PublicGitHubSourceOwner { get; set; }
-    public string PublicGitHubSourceRepo { get; set; }
     public string PublicGitHubSourceRepoPath { get; set; }
+
+    public string? PublicGitHubSourceOwner { get; set; }
+
+    public string? PublicGitHubSourceRepo { get; set; }
 }
