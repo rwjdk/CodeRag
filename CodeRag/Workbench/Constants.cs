@@ -5,6 +5,8 @@ internal static class Constants
     internal static class LocalStorageKeys
     {
         internal const string Project = "Project";
+        internal const string DrawerOpen = "DrawerOpen";
+        internal const string DarkMode = "DarkMode";
     }
 
     internal static class ConfigurationVariables

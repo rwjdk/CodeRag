@@ -175,7 +175,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
             return codeEntities; //todo - exception instead?
         }
 
-        GitHubClient client = new GitHubClient(new ProductHeaderValue("CodeRag"))
+        GitHubClient client = new GitHubClient(new ProductHeaderValue(Constants.AppName))
         {
             Credentials = new Credentials(project.GitHubToken)
         };

@@ -2,6 +2,9 @@
 
 public static class Constants
 {
+    public const string CompanyName = "Sensum365";
+    public const string AppName = "CodeRag";
+
     public static class Tools
     {
         public const string Markdown = "search_markdown";
