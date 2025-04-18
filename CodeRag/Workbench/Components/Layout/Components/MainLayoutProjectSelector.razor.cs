@@ -1,5 +1,6 @@
 ﻿using Blazor.Shared;
 using Blazored.LocalStorage;
+using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Prompting;
 using Microsoft.AspNetCore.Components;

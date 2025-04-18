@@ -1,5 +1,6 @@
 ﻿using Blazor.Shared;
 using CodeRag.Shared.Ai.SemanticKernel;
+using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.VectorStore;

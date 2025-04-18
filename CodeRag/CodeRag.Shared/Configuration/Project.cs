@@ -1,7 +1,8 @@
 ﻿using System.Globalization;
+using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Prompting;
 
-namespace CodeRag.Shared.EntityFramework.Entities;
+namespace CodeRag.Shared.Configuration;
 
 public class Project
 {

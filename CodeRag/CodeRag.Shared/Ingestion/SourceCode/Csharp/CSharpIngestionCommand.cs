@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Embeddings;
 using Octokit;
-using Project = CodeRag.Shared.EntityFramework.Entities.Project;
+using Project = CodeRag.Shared.Configuration.Project;
 
 namespace CodeRag.Shared.Ingestion.SourceCode.Csharp;
 

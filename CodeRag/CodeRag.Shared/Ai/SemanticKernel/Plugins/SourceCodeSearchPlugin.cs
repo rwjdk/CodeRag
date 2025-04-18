@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using CodeRag.Shared.EntityFramework.Entities;
+using CodeRag.Shared.Configuration;
 using CodeRag.Shared.VectorStore.SourceCode;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;

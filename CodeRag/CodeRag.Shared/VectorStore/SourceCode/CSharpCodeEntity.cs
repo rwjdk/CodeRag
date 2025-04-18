@@ -1,4 +1,5 @@
 ﻿using CodeRag.Shared.Chunking.CSharp;
+using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework.Entities;
 using Microsoft.Extensions.VectorData;
 using System.ComponentModel.DataAnnotations.Schema;

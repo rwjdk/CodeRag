@@ -10,6 +10,7 @@ using Workbench.Components.Dialogs;
 using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.VectorStore.SourceCode;
+using CodeRag.Shared.Configuration;
 
 namespace Workbench.Components.Pages.Test;
 

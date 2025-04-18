@@ -4,6 +4,7 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 using CodeRag.Shared.Ai.SemanticKernel.Plugins;
+using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.EntityFramework.Entities;
 using CodeRag.Shared.Interfaces;

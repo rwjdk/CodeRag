@@ -1,6 +1,6 @@
 using Blazor.Shared.Extensions;
 using Blazored.LocalStorage;
-using CodeRag.Shared.EntityFramework.Entities;
+using CodeRag.Shared.Configuration;
 using MudBlazor.Services;
 using Workbench.Components;
 using Workbench.Extensions;

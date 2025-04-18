@@ -20,13 +20,12 @@
 		<PackageReference Include="Microsoft.SemanticKernel" Version="1.45.0" />
 		<PackageReference Include="Microsoft.SemanticKernel.Connectors.SqlServer" Version="1.45.0-preview" />
 		<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.45.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.3" />
-		<PackageReference Include="Octokit" Version="14.0.0" />
+
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.3" />		<PackageReference Include="Octokit" Version="14.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Folder Include="Interfaces\" />
-	  <Folder Include="Models\" />
 	</ItemGroup>
 
 </Project>
