@@ -16,7 +16,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
 
     protected override async Task OnInitializedAsync()
     {
-        VectorEntity[] sourceCode = await vectorStoreQuery.GetExisting(Project.Id);
+        VectorEntity[] sourceCode = await vectorStoreQuery.GetExisting(Project.Id); //todo - on get code
 
         string[] kinds = sourceCode.Where(x => !string.IsNullOrWhiteSpace(x.Kind)).Select(x => x.Kind!).Distinct().ToArray();
 

@@ -24,7 +24,7 @@ public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQue
         if (_source != null)
         {
             var mdFilenames = Directory.GetFiles(_source.Path).Select(Path.GetFileNameWithoutExtension);
-            VectorEntity[] existing = await vectorStoreQuery.GetExisting(Project.Id);
+            VectorEntity[] existing = await vectorStoreQuery.GetExisting(Project.Id); //todo - only get Code Entries. not the docs
 
             string[] kinds = existing.Where(x => !string.IsNullOrWhiteSpace(x.Kind)).Select(x => x.Kind!).Distinct().ToArray();
 
