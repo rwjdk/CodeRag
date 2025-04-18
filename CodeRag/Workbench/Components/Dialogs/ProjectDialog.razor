@@ -3,18 +3,10 @@
         <RTextField Label="Name" @bind-Value="@Project.Name"/>
         <RTextField Label="Description" @bind-Value="@Project.Description" Lines="3"/>
         <MudTabs>
-            <MudTabPanel Text="Large Language Model">
-                <RTextField Label="Azure Open AI Endpoint" @bind-Value="@Project.AzureOpenAiEndpoint" InputType="InputType.Url" />
-                <RTextField Label="Azure Open AI Key" @bind-Value="@Project.AzureOpenAiKey" InputType="InputType.Password"/> @* todo: Allow adornment click to reveal *@
-                <RTextField Label="Azure Open AI Embedding Model DeploymentName" @bind-Value="@Project.AzureOpenAiEmbeddingModelDeploymentName"/>
-            </MudTabPanel>
             <MudTabPanel Text="GitHub">
                 <RTextField Label="GitHub Owner" @bind-Value="@Project.GitHubOwner" />
                 <RTextField Label="GitHub Repo" @bind-Value="@Project.GitHubRepo" />
                 <RTextField Label="GitHub Token" @bind-Value="@Project.GitHubToken" InputType="InputType.Password" /> @* todo: Allow adornment click to reveal *@
-            </MudTabPanel>
-            <MudTabPanel Text="Vector Store">
-                <RTextField Label="SQL Server ConnectionString" @bind-Value="@Project.SqlServerVectorStoreConnectionString" InputType="InputType.Password" /> @* todo: Allow adornment click to reveal *@
             </MudTabPanel>
             <MudTabPanel Text="Sources">
                 TODO

@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using CodeRag.Shared.Interfaces;
 using JetBrains.Annotations;
 
 namespace CodeRag.Shared.Chunking.Markdown
@@ -7,10 +6,10 @@ namespace CodeRag.Shared.Chunking.Markdown
     [UsedImplicitly]
     public class MarkdownChunker : IScopedService
     {
-        public MarkdownChunk[] GetChunks(string content, string lineSplitter = "\n", int level = 3, IEnumerable<string>? lineContainsToIgnore = null, IEnumerable<string>? linePrefixesToIgnore = null, IEnumerable<string>? lineRegExPatternsToIgnore = null, bool ignoreCommentedOutContent = true, bool ignoreImages = true, int? ignoreIfLessThanThisAmountOfChars = null)
+        public MarkdownChunk[] GetChunks(string content, string? lineSplitter, int level = 3, IEnumerable<string>? lineContainsToIgnore = null, IEnumerable<string>? linePrefixesToIgnore = null, IEnumerable<string>? lineRegExPatternsToIgnore = null, bool ignoreCommentedOutContent = true, bool ignoreImages = true, int? ignoreIfLessThanThisAmountOfChars = null)
         {
             List<MarkdownChunk> chunks = [];
-            var mdContentLine = content.Split([lineSplitter], StringSplitOptions.RemoveEmptyEntries);
+            var mdContentLine = content.Split([lineSplitter ?? "\n"], StringSplitOptions.RemoveEmptyEntries);
 
             string sectionId = string.Empty;
             string sectionTitle = string.Empty;

@@ -1,13 +1,11 @@
-﻿using CodeRag.Shared.Ai.SemanticKernel;
+﻿using CodeRag.Shared.Ai;
 using CodeRag.Shared.Configuration;
-using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.VectorStore;
 using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
 
 namespace Workbench.Components.Pages.XmlSummariesGeneration;
 
-public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> dbContextFactory, SemanticKernelQuery semanticKernelQuery)
+public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuery, AiQuery aiQuery)
 {
     private List<Data>? _data;
     private Dictionary<string, bool>? _onlyUndocumentedCheckStates;
@@ -18,13 +16,12 @@ public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> 
 
     protected override async Task OnInitializedAsync()
     {
-        SqlServerVectorStoreQuery vectorStoreQuery = new(Project.SqlServerVectorStoreConnectionString, dbContextFactory);
         CSharpCodeEntity[] sourceCode = await vectorStoreQuery.GetCSharpCode(Project.Id);
 
         string[] kinds = sourceCode.Select(x => x.Kind).Distinct().ToArray();
 
         List<Data> data = [];
-        Dictionary<string, bool>? onlyUndocumentedCheckStates = [];
+        Dictionary<string, bool> onlyUndocumentedCheckStates = [];
         foreach (string kind in kinds)
         {
             CSharpCodeEntity[] allOfKind = sourceCode.Where(x => x.Kind == kind).OrderBy(x => x.Name).ToArray();
@@ -54,16 +51,16 @@ public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> 
         }
     }
 
-    private void SwitchSelectedItem(CSharpCodeEntity? CSharpCodeEntity)
+    private void SwitchSelectedItem(CSharpCodeEntity? entity)
     {
-        if (CSharpCodeEntity == null)
+        if (entity == null)
         {
             return;
         }
 
-        if (_selectEntry?.Id != CSharpCodeEntity.Id)
+        if (_selectEntry?.Id != entity.Id)
         {
-            _selectEntry = CSharpCodeEntity;
+            _selectEntry = entity;
             _xmlSummary = null;
         }
     }
@@ -71,6 +68,6 @@ public partial class XmlSummariesGenerationPage(IDbContextFactory<SqlDbContext> 
 
     private async Task GenerateXmlSummary()
     {
-        _xmlSummary = await semanticKernelQuery.GenerateCSharpXmlSummary(Project, _selectEntry);
+        _xmlSummary = await aiQuery.GenerateCSharpXmlSummary(Project, _selectEntry);
     }
 }

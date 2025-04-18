@@ -1,51 +1,21 @@
 ﻿using CodeRag.Shared.EntityFramework;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.VectorData;
 using System.Runtime.CompilerServices;
 using System.Text;
+using JetBrains.Annotations;
+using Microsoft.Extensions.VectorData;
 
 namespace CodeRag.Shared.VectorStore;
 
-public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactory<SqlDbContext> dbContextFactory)
+[UsedImplicitly]
+public class VectorStoreQuery(IVectorStore vectorStore, IDbContextFactory<SqlDbContext> dbContextFactory) : IScopedService
 {
     public IVectorStoreRecordCollection<Guid, T> GetCollection<T>(string collectionName)
     {
-        IVectorStore vectorStore = new Microsoft.SemanticKernel.Connectors.SqlServer.SqlServerVectorStore(connectionString);
-
         return vectorStore.GetCollection<Guid, T>(collectionName);
     }
 
-    public async Task<string[]> GetDocumentationIds(Guid projectId, Guid sourceId)
-    {
-        SqlDbContext context = await dbContextFactory.CreateDbContextAsync();
-        StringBuilder sql = new();
-        sql.AppendLine("SELECT ");
-        sql.AppendLine($"[{nameof(MarkdownVectorEntity.Id)}] ");
-        sql.AppendLine($"FROM [{Constants.VectorCollections.MarkdownVectorCollection}]");
-        sql.AppendLine($"WHERE [{nameof(MarkdownVectorEntity.ProjectId)}] = {{0}}");
-        sql.AppendLine($"AND [{nameof(MarkdownVectorEntity.SourceId)}] = {{1}}");
-
-        List<string> result = context.Database.SqlQuery<string>(FormattableStringFactory.Create(sql.ToString(), projectId, sourceId)).ToList();
-
-        return result.ToArray();
-    }
-
-    public async Task<string[]> GetCSharpCodeIds(Guid projectId, Guid sourceId)
-    {
-        SqlDbContext context = await dbContextFactory.CreateDbContextAsync();
-        StringBuilder sql = new();
-        sql.AppendLine("SELECT ");
-        sql.AppendLine($"[{nameof(CSharpCodeEntity.Id)}] ");
-        sql.AppendLine($"FROM [{Constants.VectorCollections.CSharpCodeVectorCollection}]");
-        sql.AppendLine($"WHERE [{nameof(CSharpCodeEntity.ProjectId)}] = {{0}}");
-        sql.AppendLine($"AND [{nameof(CSharpCodeEntity.SourceId)}] = {{1}}");
-
-        List<string> result = context.Database.SqlQuery<string>(FormattableStringFactory.Create(sql.ToString(), projectId, sourceId)).ToList();
-
-        return result.ToArray();
-    }
-
-    public async Task<MarkdownVectorEntity[]> GetDocumentation(Guid projectId, Guid? sourceId = null)
+    public async Task<MarkdownVectorEntity[]> GetMarkdown(Guid projectId, Guid? sourceId = null)
     {
         SqlDbContext context = await dbContextFactory.CreateDbContextAsync();
 
@@ -59,7 +29,7 @@ public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactor
         sql.AppendLine($"[{nameof(MarkdownVectorEntity.Name)}], ");
         sql.AppendLine($"[{nameof(MarkdownVectorEntity.Content)}], ");
         sql.AppendLine($"[{nameof(MarkdownVectorEntity.SourcePath)}] ");
-        sql.AppendLine($"FROM [{Constants.VectorCollections.MarkdownVectorCollection}]");
+        sql.AppendLine($"FROM [{Constants.VectorCollections.Markdown}]");
         sql.AppendLine($"WHERE [{nameof(MarkdownVectorEntity.ProjectId)}] = {{0}}");
         if (sourceId.HasValue)
         {
@@ -99,7 +69,7 @@ public class SqlServerVectorStoreQuery(string connectionString, IDbContextFactor
         sql.AppendLine($"[{nameof(CSharpCodeEntity.Kind)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.Content)}], ");
         sql.AppendLine($"[{nameof(CSharpCodeEntity.SourcePath)}] ");
-        sql.AppendLine($"FROM [{Constants.VectorCollections.CSharpCodeVectorCollection}]");
+        sql.AppendLine($"FROM [{Constants.VectorCollections.CSharp}]");
         sql.AppendLine($"WHERE [{nameof(CSharpCodeEntity.ProjectId)}] = {{0}}");
         if (sourceId.HasValue)
         {

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using CodeRag.Shared.Configuration;
 using Microsoft.Extensions.VectorData;
 
 namespace CodeRag.Shared.VectorStore;
@@ -29,4 +30,7 @@ public abstract class VectorEntity
     public ReadOnlyMemory<float>? Vector { get; set; }
 
     public abstract string GetContentCompareKey();
+
+    public abstract string? GetUrl(Project project);
+    public abstract string? GetLocalFilePath(Project project);
 }

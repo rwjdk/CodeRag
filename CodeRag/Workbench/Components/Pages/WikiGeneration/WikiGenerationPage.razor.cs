@@ -1,14 +1,12 @@
 ﻿using Blazor.Shared;
-using CodeRag.Shared.Ai.SemanticKernel;
+using CodeRag.Shared.Ai;
 using CodeRag.Shared.Configuration;
-using CodeRag.Shared.EntityFramework;
 using CodeRag.Shared.VectorStore;
 using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
 
 namespace Workbench.Components.Pages.WikiGeneration;
 
-public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContextFactory, SemanticKernelQuery semanticKernelQuery)
+public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQuery aiQuery)
 {
     [CascadingParameter] public required BlazorUtils BlazorUtils { get; set; }
 
@@ -25,7 +23,6 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
         _source = Project.Sources.FirstOrDefault(x => x.Kind == ProjectSourceKind.Markdown); //todo - rewrite this to allow multiple sources
         if (_source != null)
         {
-            SqlServerVectorStoreQuery vectorStoreQuery = new(Project.SqlServerVectorStoreConnectionString, dbContextFactory);
             var mdFilenames = Directory.GetFiles(_source.Path).Select(Path.GetFileNameWithoutExtension);
             CSharpCodeEntity[] sourceCode = await vectorStoreQuery.GetCSharpCode(Project.Id);
 
@@ -74,7 +71,7 @@ public partial class WikiGenerationPage(IDbContextFactory<SqlDbContext> dbContex
 
     private async Task GenerateCodeWiki()
     {
-        _markdown = await semanticKernelQuery.GenerateCodeWikiEntryForMethod(Project, _selectEntry);
+        _markdown = await aiQuery.GenerateCodeWikiEntryForMethod(Project, _selectEntry);
     }
 
     private async Task AcceptMarkdown()

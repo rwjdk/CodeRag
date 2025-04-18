@@ -7,13 +7,13 @@ using MudBlazor;
 using CodeRag.Shared;
 using Microsoft.SemanticKernel;
 using Workbench.Components.Dialogs;
-using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.Configuration;
 using CodeRag.Shared.VectorStore;
+using CodeRag.Shared.Ai;
 
 namespace Workbench.Components.Pages.Test;
 
-public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogService dialogService) : IDisposable
+public partial class TestPage(AiQuery aiQuery, IDialogService dialogService) : IDisposable
 {
     [CascadingParameter] public required BlazorUtils BlazorUtils { get; set; }
 
@@ -45,7 +45,7 @@ public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogSe
     protected override void OnInitialized()
     {
         _chatModel = Project.AzureOpenAiModelDeployments.FirstOrDefault();
-        semanticKernelQuery.NotifyProgress += SemanticKernelQueryNotifyProgress;
+        aiQuery.NotifyProgress += SemanticKernelQueryNotifyProgress;
 #if DEBUG
         _chatInputMessage = Project.DefaultTestChatInput;
 #endif
@@ -75,7 +75,7 @@ public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogSe
                 _conversation.Add(input);
                 await _chatInput.Clear();
 
-                ChatMessageContent? output = await semanticKernelQuery.GetAnswer(
+                ChatMessageContent? output = await aiQuery.GetAnswer(
                     _chatModel,
                     _conversation,
                     _useSourceCodeSearch,
@@ -109,7 +109,7 @@ public partial class TestPage(SemanticKernelQuery semanticKernelQuery, IDialogSe
 
     public void Dispose()
     {
-        semanticKernelQuery.NotifyProgress -= SemanticKernelQueryNotifyProgress;
+        aiQuery.NotifyProgress -= SemanticKernelQueryNotifyProgress;
     }
 
     private async Task ShowSourceCodeVectorEntry(CSharpCodeEntity entity)

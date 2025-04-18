@@ -1,9 +1,8 @@
 ﻿using System.Text;
-using CodeRag.Shared.Ai.SemanticKernel;
+using CodeRag.Shared.Ai;
 using CodeRag.Shared.Chunking.CSharp;
 using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework;
-using CodeRag.Shared.Interfaces;
 using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -15,26 +14,20 @@ using Project = CodeRag.Shared.Configuration.Project;
 namespace CodeRag.Shared.Ingestion;
 
 [UsedImplicitly]
-public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery semanticKernelQuery, IDbContextFactory<SqlDbContext> dbContextFactory) : IngestionCommand, IScopedService
+public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand vectorStoreCommand, VectorStoreQuery vectorStoreQuery) : IngestionCommand(vectorStoreCommand), IScopedService
 {
     public override async Task Ingest(Project project, ProjectSource source)
     {
         if (source.Kind != ProjectSourceKind.CSharpCode)
         {
-            throw new ArgumentException($"Invalid Kind. Expected '{nameof(ProjectSourceKind.CSharpCode)}' but received {source.Kind}", nameof(source.Kind));
+            throw new IngestionException($"Invalid Kind. Expected '{nameof(ProjectSourceKind.CSharpCode)}' but received {source.Kind}");
         }
 
         List<CSharpChunk> codeEntities;
-        if (string.IsNullOrWhiteSpace(project.SqlServerVectorStoreConnectionString))
-        {
-            OnNotifyProgress("Vector Store ConnectionString is not defined"); //todo - should this be an exception instead?
-            return;
-        }
 
         if (string.IsNullOrWhiteSpace(source.Path))
         {
-            OnNotifyProgress("Source Path is not defined"); //todo - should this be an exception instead?
-            return;
+            throw new IngestionException("Source Path is not defined");
         }
 
         switch (source.Location)
@@ -46,13 +39,10 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
                 codeEntities = await GetCodeEntitiesFromLocalSourceCode(source);
                 break;
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(source.Location));
         }
 
-        ITextEmbeddingGenerationService embeddingGenerationService = semanticKernelQuery.GetTextEmbeddingGenerationService(project);
-        VectorStoreCommand vectorStoreCommand = new(embeddingGenerationService);
-        SqlServerVectorStoreQuery vectorStoreQuery = new(project.SqlServerVectorStoreConnectionString, dbContextFactory);
-        IVectorStoreRecordCollection<Guid, CSharpCodeEntity> collection = vectorStoreQuery.GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharpCodeVectorCollection);
+        IVectorStoreRecordCollection<Guid, CSharpCodeEntity> collection = vectorStoreQuery.GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharp);
 
         //Creating References
         foreach (CSharpChunk codeEntity in codeEntities)
@@ -119,7 +109,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, SemanticKernelQuery s
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
             if (existing == null)
             {
-                await vectorStoreCommand.Upsert(project.Id, source.Id, collection, entry);
+                await VectorStoreCommand.Upsert(project.Id, source.Id, collection, entry);
             }
             else
             {

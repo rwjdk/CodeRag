@@ -1,50 +1,34 @@
 ﻿using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Embeddings;
 using System.Text.RegularExpressions;
 using System.Text;
 using CodeRag.Shared.VectorStore;
-using CodeRag.Shared.Ai.SemanticKernel;
 using CodeRag.Shared.Chunking.Markdown;
-using CodeRag.Shared.Interfaces;
-using CodeRag.Shared.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 using CodeRag.Shared.Configuration;
 
 namespace CodeRag.Shared.Ingestion;
 
 [UsedImplicitly]
-public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQuery semanticKernelQuery, IDbContextFactory<SqlDbContext> dbContextFactory) : IngestionCommand, IScopedService
+public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery vectorStoreQuery, VectorStoreCommand vectorStoreCommand) : IngestionCommand(vectorStoreCommand), IScopedService
 {
     public override async Task Ingest(Project project, ProjectSource source)
     {
         if (source.Kind != ProjectSourceKind.Markdown)
         {
-            throw new ArgumentException($"Invalid Kind. Expected '{nameof(ProjectSourceKind.Markdown)}' but received {source.Kind}", nameof(source.Kind));
-        }
-
-        if (string.IsNullOrWhiteSpace(project.SqlServerVectorStoreConnectionString))
-        {
-            OnNotifyProgress("Vector Store ConnectionString is not defined"); //todo - should this be an exception instead?
-            return;
+            throw new IngestionException($"Invalid Kind. Expected '{nameof(ProjectSourceKind.Markdown)}' but received {source.Kind}");
         }
 
         if (string.IsNullOrWhiteSpace(source.Path))
         {
-            OnNotifyProgress("Source Path is not defined"); //todo - should this be an exception instead?
-            return;
+            throw new IngestionException("Source Path is not defined");
         }
 
         if (source.Location == ProjectSourceLocation.GitHub)
         {
-            OnNotifyProgress("Location not supported"); //todo - should this be an exception instead?
-            return;
+            throw new NotSupportedException("Location 'GitHub' not yet supported for Markdown Ingestion");
         }
 
-        ITextEmbeddingGenerationService embeddingGenerationService = semanticKernelQuery.GetTextEmbeddingGenerationService(project);
-        VectorStoreCommand vectorStoreCommand = new(embeddingGenerationService);
-        SqlServerVectorStoreQuery vectorStoreQuery = new(project.SqlServerVectorStoreConnectionString, dbContextFactory);
-        IVectorStoreRecordCollection<Guid, MarkdownVectorEntity> collection = vectorStoreQuery.GetCollection<MarkdownVectorEntity>(Constants.VectorCollections.MarkdownVectorCollection);
+        IVectorStoreRecordCollection<Guid, MarkdownVectorEntity> collection = vectorStoreQuery.GetCollection<MarkdownVectorEntity>(Constants.VectorCollections.Markdown);
 
         await collection.CreateCollectionIfNotExistsAsync();
 
@@ -86,7 +70,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
             content = Regex.Replace(content, @"\r\n[\r\n]+|\r[\r]+|\n[\n]+", Environment.NewLine + Environment.NewLine);
             content = content.Trim();
 
-            var numberOfLine = content.Split([source.MarkdownLineSplitter], StringSplitOptions.RemoveEmptyEntries).Length;
+            var numberOfLine = content.Split([source.MarkdownLineSplitter ?? "\n"], StringSplitOptions.RemoveEmptyEntries).Length;
 
             if (numberOfLine > source.MarkdownOnlyChunkIfMoreThanThisNumberOfLines)
             {
@@ -120,7 +104,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
             }
         }
 
-        var existingData = await vectorStoreQuery.GetDocumentation(project.Id, source.Id);
+        var existingData = await vectorStoreQuery.GetMarkdown(project.Id, source.Id);
 
         int counter = 0;
         List<Guid> idsToKeep = [];
@@ -131,7 +115,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, SemanticKernelQue
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
             if (existing == null)
             {
-                await vectorStoreCommand.Upsert(project.Id, source.Id, collection, entry);
+                await VectorStoreCommand.Upsert(project.Id, source.Id, collection, entry);
             }
             else
             {

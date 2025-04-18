@@ -1,16 +1,12 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
-using CodeRag.Shared.Ai.SemanticKernel.Plugins;
+using CodeRag.Shared.Ai.Tools;
 using CodeRag.Shared.Configuration;
-using CodeRag.Shared.EntityFramework;
-using CodeRag.Shared.Interfaces;
 using CodeRag.Shared.Prompting;
 using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -19,16 +15,11 @@ using Microsoft.SemanticKernel.Embeddings;
 using OpenAI.Chat;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
-namespace CodeRag.Shared.Ai.SemanticKernel;
+namespace CodeRag.Shared.Ai;
 
 [UsedImplicitly]
-public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactory) : ProgressNotificationBase, IScopedService
+public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService
 {
-    public ITextEmbeddingGenerationService GetTextEmbeddingGenerationService(Project project)
-    {
-        return new AzureOpenAITextEmbeddingGenerationService(project.AzureOpenAiEmbeddingModelDeploymentName, project.AzureOpenAiEndpoint, project.AzureOpenAiKey);
-    }
-
     public async Task<ChatMessageContent?> GetAnswer(
         ProjectAiModel chatModel,
         List<ChatMessageContent> conversation,
@@ -41,7 +32,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
         Project project) //todo - support get a streaming answer
     {
         long timestamp = Stopwatch.GetTimestamp();
-        Kernel kernel = GetKernel(chatModel, project);
+        Kernel kernel = GetKernel(chatModel);
 
         ITextEmbeddingGenerationService embeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
 
@@ -55,7 +46,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
             AddDocumentationSearchPluginToKernel(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
         }
 
-        ChatCompletionAgent answerAgent = GetAgent(chatModel, project, project.GetFormattedTestChatInstructions(), kernel);
+        ChatCompletionAgent answerAgent = GetAgent(chatModel, project.GetFormattedTestChatInstructions(), kernel);
 
         ChatMessageContent chatMessageContent = null!;
 
@@ -72,22 +63,21 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
 
     private ITextEmbeddingGenerationService GetTextEmbeddingGenerationService(Kernel kernel)
     {
-        ITextEmbeddingGenerationService embeddingGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
-        return embeddingGenerationService;
+        return kernel.GetRequiredService<ITextEmbeddingGenerationService>();
     }
 
     private void AddDocumentationSearchPluginToKernel(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
-        var documentationCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<MarkdownVectorEntity>(Constants.VectorCollections.MarkdownVectorCollection);
-        var docsPlugin = new DocumentationSearchPlugin(project, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
-        kernel.ImportPluginFromObject(docsPlugin, Constants.DocumentationSearchPluginName);
+        var documentationCollection = vectorStoreQuery.GetCollection<MarkdownVectorEntity>(Constants.VectorCollections.Markdown);
+        var docsTool = new MarkdownSearchTool(project, embeddingGenerationService, documentationCollection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
+        kernel.ImportPluginFromObject(docsTool, Constants.Tools.Markdown);
     }
 
     private void AddCodeSearchPluginToKernel(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
-        var cSharpCollection = new SqlServerVectorStoreQuery(project.SqlServerVectorStoreConnectionString, dbContextFactory).GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharpCodeVectorCollection);
-        var codePlugin = new SourceCodeSearchPlugin(project, embeddingGenerationService, cSharpCollection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
-        kernel.ImportPluginFromObject(codePlugin, Constants.SourceCodeSearchPluginName);
+        var cSharpCollection = vectorStoreQuery.GetCollection<CSharpCodeEntity>(Constants.VectorCollections.CSharp);
+        var codePlugin = new CSharpSearchTool(project, embeddingGenerationService, cSharpCollection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
+        kernel.ImportPluginFromObject(codePlugin, Constants.Tools.CSharp);
     }
 
     private ChatCompletionAgent GetAgentForStructuredOutput<T>(ProjectAiModel chatModel, string instructions, Kernel kernel)
@@ -127,9 +117,9 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
         return agent;
     }
 
-    private ChatCompletionAgent GetAgent(ProjectAiModel chatModel, Project project, string instructions, Kernel? kernel = null)
+    private ChatCompletionAgent GetAgent(ProjectAiModel chatModel, string instructions, Kernel? kernel = null)
     {
-        kernel ??= GetKernel(chatModel, project);
+        kernel ??= GetKernel(chatModel);
 
         AzureOpenAIPromptExecutionSettings executionSettings = new()
         {
@@ -165,21 +155,21 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
         return agent;
     }
 
-    private Kernel GetKernel(ProjectAiModel chatModel, Project project)
+    private Kernel GetKernel(ProjectAiModel chatModel)
     {
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddAzureOpenAIChatCompletion(chatModel.DeploymentName, project.AzureOpenAiEndpoint, project.AzureOpenAiKey, httpClient: new HttpClient
+        kernelBuilder.AddAzureOpenAIChatCompletion(chatModel.DeploymentName, aiConfiguration.Endpoint, aiConfiguration.Key, httpClient: new HttpClient
         {
             Timeout = TimeSpan.FromMinutes(chatModel.TimeoutInSeconds)
         });
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(project.AzureOpenAiEmbeddingModelDeploymentName, project.AzureOpenAiEndpoint, project.AzureOpenAiKey);
+        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(aiConfiguration.EmbeddingModelDeploymentName, aiConfiguration.Endpoint, aiConfiguration.Key);
         Kernel kernel = kernelBuilder.Build();
         return kernel;
     }
 
     private async Task<T> GetStructuredOutputResponse<T>(Project project, ProjectAiModel model, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch)
     {
-        Kernel kernel = GetKernel(model, project);
+        Kernel kernel = GetKernel(model);
         ITextEmbeddingGenerationService textEmbeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
 
         if (useSourceCodeSearch)
@@ -205,8 +195,8 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
 
     public async Task<string?> GenerateCSharpXmlSummary(Project project, CSharpCodeEntity code)
     {
-        string prompt = Prompting.Prompt.Create("You are an C# Expert that can generate XML Summaries.")
-            .AddRule($"Always use all tools available ('{Constants.SourceCodeSearchPluginName}' and '{Constants.DocumentationSearchPluginName}') before you provide your answer")
+        string prompt = Prompt.Create("You are an C# Expert that can generate XML Summaries.")
+            .AddRule($"Always use all tools available ('{Constants.Tools.CSharp}' and '{Constants.Tools.Markdown}') before you provide your answer")
             .AddRule("Always report back in C# XML Summary Format")
             .AddRule("Do not mention that the method is asynchronously and that the Cancellation-token can be used")
             .AddRule("The description should be short and focus on what the C# entity do")
@@ -229,7 +219,7 @@ public class SemanticKernelQuery(IDbContextFactory<SqlDbContext> dbContextFactor
     public async Task<string?> GenerateCodeWikiEntryForMethod(Project project, CSharpCodeEntity code)
     {
         string prompt = Prompt.Create("You are an C# Expert that can given Code and existing wiki content generates Markdown that documents the Code")
-            .AddRule($"Always use all tools available ('{Constants.SourceCodeSearchPluginName}' and '{Constants.DocumentationSearchPluginName}') before you provide your answer")
+            .AddRule($"Always use all tools available ('{Constants.Tools.CSharp}' and '{Constants.Tools.Markdown}') before you provide your answer")
             .AddRule("Always report back in Markdown")
             .AddRule("Do not mention that the method is asynchronously and that the Cancellation-token can be used")
             .ToString();

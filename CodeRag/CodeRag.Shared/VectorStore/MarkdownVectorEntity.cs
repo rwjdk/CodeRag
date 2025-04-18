@@ -13,7 +13,7 @@ public class MarkdownVectorEntity : VectorEntity
         return ChunkId + Content + Name + SourcePath;
     }
 
-    public string? GetLocalFilePath(Project project)
+    public override string? GetLocalFilePath(Project project)
     {
         var source = project.Sources.FirstOrDefault(x => x.Id.ToString() == SourceId);
         if (source == null || string.IsNullOrWhiteSpace(source.Path))
@@ -24,7 +24,7 @@ public class MarkdownVectorEntity : VectorEntity
         return source.Path + SourcePath;
     }
 
-    public string? GetUrl(Project project)
+    public override string? GetUrl(Project project)
     {
         var source = project.Sources.FirstOrDefault(x => x.Id.ToString() == SourceId);
         if (source == null || string.IsNullOrWhiteSpace(source.RootUrl))

@@ -24,9 +24,9 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
         Description = "An API for the Trello Rest API in C#",
         TestChatDeveloperInstructions = Prompt
             .Create("You are an C# expert in TrelloDotNet (An API for the Trello Rest API in C#) on GitHub [https://github.com/rwjdk/TrelloDotNet]. Assume all questions are about TrelloDotNet unless specified otherwise")
-            .AddStep($"Use tool '{CodeRag.Shared.Constants.DocumentationSearchPluginName}' to get an overview (break question down to keywords for the tool-usage but do NOT include words 'TrelloDotNet' or 'question' in the tool request)")
+            .AddStep($"Use tool '{CodeRag.Shared.Constants.Tools.Markdown}' to get an overview (break question down to keywords for the tool-usage but do NOT include words 'TrelloDotNet' or 'question' in the tool request)")
             .AddStep("Next prepare your answer with current knowledge")
-            .AddStep($"If your answer include code-samples then use tool '{CodeRag.Shared.Constants.SourceCodeSearchPluginName}' to check that you called methods correctly and classes and properties exist")
+            .AddStep($"If your answer include code-samples then use tool '{CodeRag.Shared.Constants.Tools.CSharp}' to check that you called methods correctly and classes and properties exist")
             .AddStep("Add citations from the relevant sources")
             .AddStep("Based on previous step prepare your final answer")
             .AddStep("The answer and code-examples should ALWAYS be Markdown format!")
@@ -35,9 +35,6 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
             //.AddRule($"Do not wrap the code from {settings.Name} in sample methods etc. just show the raw calls to the API")
             //.AddRuleThatIfYouDontKnowThenDontAnswer()
             .ToString(),
-        AzureOpenAiEndpoint = "https://sensum365ai.openai.azure.com/",
-        AzureOpenAiKey = configuration["AzureOpenAiKey"]!,
-        AzureOpenAiEmbeddingModelDeploymentName = "text-embedding-3-small",
         AzureOpenAiModelDeployments =
         [
             new ProjectAiModel
@@ -65,7 +62,6 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                 TimeoutInSeconds = 60 * 5
             }
         ],
-        SqlServerVectorStoreConnectionString = configuration["SqlServerConnectionString"]!,
         GitHubOwner = "rwjdk",
         GitHubRepo = "TrelloDotNet",
         GitHubToken = configuration["GitHubToken"],
@@ -106,9 +102,9 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
         Description = "An API for the Trello Rest API in C#",
         TestChatDeveloperInstructions = Prompt
             .Create("You are an C# expert in TrelloDotNet (An API for the Trello Rest API in C#) on GitHub [https://github.com/rwjdk/TrelloDotNet]. Assume all questions are about TrelloDotNet unless specified otherwise")
-            .AddStep($"Use tool '{CodeRag.Shared.Constants.DocumentationSearchPluginName}' to get an overview (break question down to keywords for the tool-usage but do NOT include words 'TrelloDotNet' or 'question' in the tool request)")
+            .AddStep($"Use tool '{CodeRag.Shared.Constants.Tools.Markdown}' to get an overview (break question down to keywords for the tool-usage but do NOT include words 'TrelloDotNet' or 'question' in the tool request)")
             .AddStep("Next prepare your answer with current knowledge")
-            .AddStep($"If your answer include code-samples then use tool '{CodeRag.Shared.Constants.SourceCodeSearchPluginName}' to check that you called methods correctly and classes and properties exist")
+            .AddStep($"If your answer include code-samples then use tool '{CodeRag.Shared.Constants.Tools.CSharp}' to check that you called methods correctly and classes and properties exist")
             .AddStep("Add citations from the relevant sources")
             .AddStep("Based on previous step prepare your final answer")
             .AddStep("The answer and code-examples should ALWAYS be Markdown format!")
@@ -117,9 +113,6 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
             //.AddRule($"Do not wrap the code from {settings.Name} in sample methods etc. just show the raw calls to the API")
             //.AddRuleThatIfYouDontKnowThenDontAnswer()
             .ToString(),
-        AzureOpenAiEndpoint = "https://sensum365ai.openai.azure.com/",
-        AzureOpenAiKey = configuration["AzureOpenAiKey"]!,
-        AzureOpenAiEmbeddingModelDeploymentName = "text-embedding-3-small",
         AzureOpenAiModelDeployments =
         [
             new ProjectAiModel
@@ -147,7 +140,6 @@ public partial class MainLayoutProjectSelector(ILocalStorageService localStorage
                 TimeoutInSeconds = 60 * 5
             }
         ],
-        SqlServerVectorStoreConnectionString = configuration["SqlServerConnectionString"]!,
         Sources =
         [
             new ProjectSource

@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using CodeRag.Shared.Interfaces;
 using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

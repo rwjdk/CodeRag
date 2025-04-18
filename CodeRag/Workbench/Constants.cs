@@ -7,8 +7,11 @@ internal static class Constants
         internal const string Project = "Project";
     }
 
-    internal static class Secrets
+    internal static class ConfigurationVariables
     {
         internal const string SqlServerConnectionString = "SqlServerConnectionString";
+        internal const string AiEndpoint = "AiEndpoint";
+        internal const string AiKey = "AiKey";
+        internal const string AiEmbeddingDeploymentName = "AiEmbeddingDeploymentName";
     }
 }

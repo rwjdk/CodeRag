@@ -14,7 +14,8 @@ builder.Services.AddBlazorShared();
 builder.Services.AddBlazoredLocalStorage();
 builder.AutoRegisterServicesViaReflection(typeof(Program));
 builder.AutoRegisterServicesViaReflection(typeof(Project));
-builder.AddSqlServer();
+builder.AddAi();
+builder.AddVectorStore();
 
 var app = builder.Build();
 
@@ -34,5 +35,4 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-//app.MigrateDatabase(); //todo
 app.Run();

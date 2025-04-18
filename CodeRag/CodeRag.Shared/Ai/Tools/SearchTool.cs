@@ -6,9 +6,9 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 
-namespace CodeRag.Shared.Ai.SemanticKernel.Plugins;
+namespace CodeRag.Shared.Ai.Tools;
 
-public class DocumentationSearchPlugin(Project project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, MarkdownVectorEntity> collection, int numberofResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
+public class SearchTool<T>(Project project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, T> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent) where T : VectorEntity
 {
     [UsedImplicitly]
     [KernelFunction]
@@ -17,15 +17,15 @@ public class DocumentationSearchPlugin(Project project, ITextEmbeddingGeneration
         string projectToSearch = project.Id.ToString();
         List<string> searchResults = [];
         ReadOnlyMemory<float> searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchQuery);
-        VectorSearchResults<MarkdownVectorEntity> searchResult = await collection.VectorizedSearchAsync(searchVector, new VectorSearchOptions<MarkdownVectorEntity>
+        VectorSearchResults<T> searchResult = await collection.VectorizedSearchAsync(searchVector, new VectorSearchOptions<T>
         {
-            Top = numberofResultsBack,
+            Top = numberOfResultsBack,
             Filter = entity => entity.ProjectId == projectToSearch,
             IncludeVectors = false
         });
 
-        List<VectorSearchResult<MarkdownVectorEntity>> results = [];
-        await foreach (VectorSearchResult<MarkdownVectorEntity> record in searchResult.Results.Where(x => x.Score < scoreShouldBeBelowThis))
+        List<VectorSearchResult<T>>? results = [];
+        await foreach (VectorSearchResult<T> record in searchResult.Results.Where(x => x.Score < scoreShouldBeBelowThis))
         {
             results.Add(record);
             StringBuilder sb = new();
@@ -35,9 +35,9 @@ public class DocumentationSearchPlugin(Project project, ITextEmbeddingGeneration
             searchResults.Add(sb.ToString());
         }
 
-        ProgressNotification notification = new(DateTimeOffset.UtcNow, $"Documentation Search Called ({results.Count} Results)")
+        ProgressNotification notification = new(DateTimeOffset.UtcNow, $"{typeof(T).Name} Search Called ({results.Count} Results)")
         {
-            DocumentSearchResults = results
+            //todo - return results somehow
         };
         parent.OnNotifyProgress(notification);
         return searchResults.ToArray();
