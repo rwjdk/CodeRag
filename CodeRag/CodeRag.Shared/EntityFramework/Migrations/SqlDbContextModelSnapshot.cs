@@ -165,9 +165,6 @@ namespace CodeRag.Shared.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name2")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Namespace")
                         .HasColumnType("nvarchar(max)");
 
