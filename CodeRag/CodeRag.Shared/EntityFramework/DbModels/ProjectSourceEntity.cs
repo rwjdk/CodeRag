@@ -16,7 +16,7 @@ public class ProjectSourceEntity
 
     [MaxLength(1000)] public string? Path { get; set; }
 
-    public required bool PathSearchRecursive { get; set; }
+    public bool PathSearchRecursive { get; set; }
 
     [MaxLength(1000)] public string? RootUrl { get; set; }
 

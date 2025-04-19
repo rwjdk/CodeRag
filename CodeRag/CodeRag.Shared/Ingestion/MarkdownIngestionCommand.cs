@@ -78,7 +78,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
                 //Chunk larger files
                 MarkdownChunk[] chunks = chunker.GetChunks(content,
                     source.MarkdownLevelsToChunk,
-                    source.MarkdownChunkLineIgnorePatterns.Select(x => x.Pattern).ToList(),
+                    (source.MarkdownChunkLineIgnorePatterns ?? []).Select(x => x.Pattern).ToList(),
                     source.MarkdownIgnoreCommentedOutContent,
                     source.MarkdownIgnoreImages,
                     source.MarkdownChunkIgnoreIfLessThanThisAmountOfChars);
@@ -138,6 +138,6 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
     private bool IgnoreFile(ProjectSourceEntity source, string path)
     {
         //todo - this have not tested: Should be done so a bunch
-        return (source.FileIgnorePatterns ?? []).All(regExPattern => !Regex.IsMatch(path, regExPattern.Pattern, RegexOptions.IgnoreCase));
+        return (source.FileIgnorePatterns ?? []).Any(x => !string.IsNullOrWhiteSpace(x.Pattern) && Regex.IsMatch(path, x.Pattern, RegexOptions.IgnoreCase));
     }
 }

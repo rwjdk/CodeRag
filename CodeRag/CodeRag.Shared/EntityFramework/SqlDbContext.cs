@@ -1,4 +1,5 @@
 ﻿using CodeRag.Shared.EntityFramework.DbModels;
+using CodeRag.Shared.VectorStore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -14,5 +15,13 @@ public class SqlDbContext(DbContextOptions<SqlDbContext> options) : DbContext(op
 #endif
     }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<VectorEntity>()
+            .Property<float[]>("Vector")
+            .HasColumnType("vector(1536)");
+    }
+
+    public DbSet<VectorEntity> Vectors => Set<VectorEntity>();
     public DbSet<ProjectEntity> Projects => Set<ProjectEntity>();
 }

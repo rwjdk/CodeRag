@@ -34,7 +34,7 @@ public class VectorStoreCommand(Ai.Ai ai) : IScopedService
             }
 
             ReadOnlyMemory<float> vector = await _embeddingGenerationService.GenerateEmbeddingAsync(entry.Content);
-            entry.Vector = vector.ToArray();
+            entry.VectorValue = vector.ToArray();
             entry.TimeOfIngestion = DateTime.UtcNow;
             await collection.UpsertAsync(entry);
         }
@@ -43,7 +43,7 @@ public class VectorStoreCommand(Ai.Ai ai) : IScopedService
             Console.WriteLine($"Rate Limited. Sleeping 10 sec ({e.Message})");
             await Task.Delay(10000); //todo - Do this with Polly
             ReadOnlyMemory<float> vector = await _embeddingGenerationService.GenerateEmbeddingAsync(entry.Content);
-            entry.Vector = vector;
+            entry.VectorValue = vector;
             await collection.UpsertAsync(entry);
         }
     }

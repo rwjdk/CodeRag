@@ -1,14 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using CodeRag.Shared.Chunking.CSharp;
 using CodeRag.Shared.EntityFramework.DbModels;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Agents;
 
 namespace CodeRag.Shared.VectorStore;
 
+[Table(Constants.VectorCollections.VectorSources)]
 public class VectorEntity
 {
-    [VectorStoreRecordKey] public Guid VectorId { get; set; }
+    [Key] [VectorStoreRecordKey] public Guid VectorId { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
     public string? Id { get; init; }
@@ -46,9 +47,9 @@ public class VectorEntity
     [VectorStoreRecordData(IsFilterable = true)]
     public Guid SourceId { get; set; }
 
-    [VectorStoreRecordVector(Dimensions: 1536, DistanceFunction.CosineDistance, IndexKind.Flat)]
+    [VectorStoreRecordVector(Dimensions: 1536, DistanceFunction.CosineDistance, IndexKind.Flat, StoragePropertyName = "Vector")]
     [NotMapped]
-    public ReadOnlyMemory<float>? Vector { get; set; }
+    public ReadOnlyMemory<float>? VectorValue { get; set; }
 
     public string GetContentCompareKey()
     {

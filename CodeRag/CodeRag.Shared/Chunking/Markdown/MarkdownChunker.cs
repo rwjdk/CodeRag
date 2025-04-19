@@ -21,7 +21,7 @@ namespace CodeRag.Shared.Chunking.Markdown
                     continue;
                 }
 
-                if ((linesToIgnorePatterns ?? []).Any(regExPattern => Regex.IsMatch(line, regExPattern, RegexOptions.IgnoreCase)))
+                if ((linesToIgnorePatterns ?? []).Any(x => !string.IsNullOrWhiteSpace(x) && Regex.IsMatch(line, x, RegexOptions.IgnoreCase)))
                 {
                     //todo - this have not bee tested in a great deal
                     continue;

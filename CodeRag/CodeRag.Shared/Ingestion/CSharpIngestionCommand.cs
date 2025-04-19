@@ -242,6 +242,6 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
     private bool IgnoreFile(ProjectSourceEntity source, string path)
     {
         //todo - this have not tested: Should be done so a bunch
-        return (source.FileIgnorePatterns ?? []).All(regExPattern => !Regex.IsMatch(path, regExPattern.Pattern, RegexOptions.IgnoreCase));
+        return (source.FileIgnorePatterns ?? []).Any(x => !string.IsNullOrWhiteSpace(x.Pattern) && Regex.IsMatch(path, x.Pattern, RegexOptions.IgnoreCase));
     }
 }

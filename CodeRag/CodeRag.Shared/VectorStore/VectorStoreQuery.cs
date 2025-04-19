@@ -19,6 +19,8 @@ public class VectorStoreQuery(IVectorStore vectorStore, IDbContextFactory<SqlDbC
     {
         SqlDbContext context = await dbContextFactory.CreateDbContextAsync();
 
+        var vectorEntities = await context.Vectors.ToListAsync();
+
         StringBuilder sql = new();
         sql.AppendLine("SELECT ");
         sql.AppendLine($"[{nameof(VectorEntity.VectorId)}], ");
