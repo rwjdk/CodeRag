@@ -15,5 +15,6 @@ internal static class Constants
         internal const string AiEndpoint = "AiEndpoint";
         internal const string AiKey = "AiKey";
         internal const string AiEmbeddingDeploymentName = "AiEmbeddingDeploymentName";
+        internal const string AiModelDeployments = "AiModelDeployments";
     }
 }

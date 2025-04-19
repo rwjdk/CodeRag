@@ -25,7 +25,7 @@ public partial class TestPage(AiQuery aiQuery, IDialogService dialogService) : I
     private bool _shouldRender = true;
 
     private readonly List<ChatMessageContent> _conversation = new List<ChatMessageContent>();
-    private ProjectAiModel? _chatModel;
+    private AiChatModel? _chatModel;
     private bool _useSourceCodeSearch = true;
     private bool _useDocumentationSearch = true;
     private int _maxNumberOfAnswersBackFromSourceCodeSearch = 50;
@@ -44,7 +44,7 @@ public partial class TestPage(AiQuery aiQuery, IDialogService dialogService) : I
 
     protected override void OnInitialized()
     {
-        _chatModel = Project.AzureOpenAiModelDeployments.FirstOrDefault();
+        _chatModel = aiQuery.GetChatModels().FirstOrDefault();
         aiQuery.NotifyProgress += SemanticKernelQueryNotifyProgress;
 #if DEBUG
         _chatInputMessage = Project.DefaultTestChatInput;

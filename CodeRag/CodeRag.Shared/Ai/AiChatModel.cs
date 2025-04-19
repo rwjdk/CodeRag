@@ -1,6 +1,6 @@
-﻿namespace CodeRag.Shared.Configuration;
+﻿namespace CodeRag.Shared.Ai;
 
-public class ProjectAiModel
+public class AiChatModel
 {
     public required string DeploymentName { get; init; }
 
@@ -8,5 +8,5 @@ public class ProjectAiModel
 
     public string? ReasoningEffortLevel { get; init; }
 
-    public required int TimeoutInSeconds { get; init; }
+    public int TimeoutInSeconds { get; init; } = 100;
 }

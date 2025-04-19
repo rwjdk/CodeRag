@@ -18,10 +18,10 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 namespace CodeRag.Shared.Ai;
 
 [UsedImplicitly]
-public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService
+public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService
 {
     public async Task<ChatMessageContent?> GetAnswer(
-        ProjectAiModel chatModel,
+        AiChatModel chatModel,
         List<ChatMessageContent> conversation,
         bool useSourceCodeSearch,
         bool useDocumentationSearch,
@@ -80,7 +80,7 @@ public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorSto
         kernel.ImportPluginFromObject(codePlugin, Constants.Tools.CSharp);
     }
 
-    private ChatCompletionAgent GetAgentForStructuredOutput<T>(ProjectAiModel chatModel, string instructions, Kernel kernel)
+    private ChatCompletionAgent GetAgentForStructuredOutput<T>(AiChatModel chatModel, string instructions, Kernel kernel)
     {
         AzureOpenAIPromptExecutionSettings executionSettings = new()
         {
@@ -117,7 +117,7 @@ public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorSto
         return agent;
     }
 
-    private ChatCompletionAgent GetAgent(ProjectAiModel chatModel, string instructions, Kernel? kernel = null)
+    private ChatCompletionAgent GetAgent(AiChatModel chatModel, string instructions, Kernel? kernel = null)
     {
         kernel ??= GetKernel(chatModel);
 
@@ -155,21 +155,21 @@ public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorSto
         return agent;
     }
 
-    private Kernel GetKernel(ProjectAiModel chatModel)
+    private Kernel GetKernel(AiChatModel chatModel)
     {
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddAzureOpenAIChatCompletion(chatModel.DeploymentName, aiConfiguration.Endpoint, aiConfiguration.Key, httpClient: new HttpClient
+        kernelBuilder.AddAzureOpenAIChatCompletion(chatModel.DeploymentName, ai.Endpoint, ai.Key, httpClient: new HttpClient
         {
             Timeout = TimeSpan.FromMinutes(chatModel.TimeoutInSeconds)
         });
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(aiConfiguration.EmbeddingModelDeploymentName, aiConfiguration.Endpoint, aiConfiguration.Key);
+        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(ai.EmbeddingModelDeploymentName, ai.Endpoint, ai.Key);
         Kernel kernel = kernelBuilder.Build();
         return kernel;
     }
 
-    private async Task<T> GetStructuredOutputResponse<T>(Project project, ProjectAiModel model, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch)
+    private async Task<T> GetStructuredOutputResponse<T>(Project project, AiChatModel chatModel, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch)
     {
-        Kernel kernel = GetKernel(model);
+        Kernel kernel = GetKernel(chatModel);
         ITextEmbeddingGenerationService textEmbeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
 
         if (useSourceCodeSearch)
@@ -182,7 +182,7 @@ public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorSto
             AddDocumentationSearchPluginToKernel(25, 0.5, project, textEmbeddingGenerationService, kernel);
         }
 
-        ChatCompletionAgent agent = GetAgentForStructuredOutput<T>(model, instructions, kernel);
+        ChatCompletionAgent agent = GetAgentForStructuredOutput<T>(chatModel, instructions, kernel);
 
         string json = string.Empty;
         await foreach (AgentResponseItem<ChatMessageContent> item in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input)))
@@ -205,10 +205,10 @@ public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorSto
             .AddRule("Don't use wording 'with the specified options' and similar. Be short and on point")
             .AddRule("Don't end the sentences with '.'")
             .ToString();
-        ProjectAiModel model = project.AzureOpenAiModelDeployments.First();
+        AiChatModel chatModel = ai.Models.First();
         XmlSummaryGeneration response = await GetStructuredOutputResponse<XmlSummaryGeneration>(
             project: project,
-            model: model,
+            chatModel: chatModel,
             instructions: prompt,
             input: "Generate XML Summary for this code Entity: " + entity.Content,
             useSourceCodeSearch: true,
@@ -223,15 +223,20 @@ public class AiQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorSto
             .AddRule("Always report back in Markdown")
             .AddRule("Do not mention that the method is asynchronously and that the Cancellation-token can be used")
             .ToString();
-        ProjectAiModel model = project.AzureOpenAiModelDeployments.First();
+        AiChatModel chatModel = ai.Models.First();
         WikiMethodEntry response = await GetStructuredOutputResponse<WikiMethodEntry>(
             project: project,
-            model: model,
+            chatModel: chatModel,
             instructions: prompt,
             input: $"Generate XML Summary for this code Method: {entity.Name} in {nameof(VectorEntity.SourcePath)} '{entity.SourcePath}'",
             useSourceCodeSearch: true,
             useDocumentationSearch: true);
         return response.ToMarkdown();
+    }
+
+    public List<AiChatModel> GetChatModels()
+    {
+        return ai.Models;
     }
 }
 

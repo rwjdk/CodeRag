@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using CodeRag.Shared.Ai;
 using CodeRag.Shared.Prompting;
 
 namespace CodeRag.Shared.Configuration;
@@ -12,8 +13,6 @@ public class Project
     public string? Description { get; set; }
 
     public required List<ProjectSource> Sources { get; set; }
-
-    public required List<ProjectAiModel> AzureOpenAiModelDeployments { get; set; }
 
     #region GitHub //todo - Support override of these on source level
 
@@ -40,7 +39,6 @@ public class Project
             Id = Guid.NewGuid(),
             Name = string.Empty,
             Sources = [],
-            AzureOpenAiModelDeployments = [],
             TestChatDeveloperInstructions = Prompt
                 .Create($"You are an C# expert in {Constants.Keywords.Name} ({Constants.Keywords.Description}. Assume all questions are about {Constants.Keywords.Name} unless specified otherwise")
                 .AddStep($"Use tool '{Constants.Keywords.MarkdownSearchTool}' to get an overview (break question down to keywords for the tool-usage but do NOT include words '{Constants.Keywords.Name}' in the tool request)")

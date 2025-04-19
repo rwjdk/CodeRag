@@ -2,6 +2,7 @@
 using CodeRag.Shared.Ai;
 using CodeRag.Shared.EntityFramework;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
@@ -53,6 +54,7 @@ public static class ServiceRegistrations
         const string endpointVariable = Constants.ConfigurationVariables.AiEndpoint;
         const string keyVariable = Constants.ConfigurationVariables.AiKey;
         const string embeddingDeploymentNameVariable = Constants.ConfigurationVariables.AiEmbeddingDeploymentName;
+        const string modelDeploymentsVariable = Constants.ConfigurationVariables.AiModelDeployments;
 
         var endpoint = builder.Configuration[endpointVariable];
         if (string.IsNullOrWhiteSpace(endpoint))
@@ -72,6 +74,12 @@ public static class ServiceRegistrations
             throw new MissingConfigurationVariableException(embeddingDeploymentNameVariable);
         }
 
-        builder.Services.AddSingleton(new AiConfiguration(endpoint, key, embeddingDeploymentName));
+        var models = builder.Configuration.GetSection(modelDeploymentsVariable).Get<List<AiChatModel>>();
+        if (models == null)
+        {
+            throw new MissingConfigurationVariableException(modelDeploymentsVariable);
+        }
+
+        builder.Services.AddSingleton(new Ai(endpoint, key, embeddingDeploymentName, models));
     }
 }

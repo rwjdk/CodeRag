@@ -8,9 +8,9 @@ using Microsoft.SemanticKernel.Embeddings;
 namespace CodeRag.Shared.VectorStore;
 
 [UsedImplicitly]
-public class VectorStoreCommand(AiConfiguration aiConfiguration) : IScopedService
+public class VectorStoreCommand(Ai.Ai ai) : IScopedService
 {
-    private readonly AzureOpenAITextEmbeddingGenerationService _embeddingGenerationService = new(aiConfiguration.EmbeddingModelDeploymentName, aiConfiguration.Endpoint, aiConfiguration.Key);
+    private readonly AzureOpenAITextEmbeddingGenerationService _embeddingGenerationService = new(ai.EmbeddingModelDeploymentName, ai.Endpoint, ai.Key);
 
     public async Task Upsert<T>(Guid projectId, ProjectSource source, IVectorStoreRecordCollection<Guid, T> collection, T entry) where T : VectorEntity
     {
