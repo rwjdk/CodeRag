@@ -6,10 +6,10 @@ namespace CodeRag.Shared.Chunking.Markdown
     [UsedImplicitly]
     public class MarkdownChunker : IScopedService
     {
-        public MarkdownChunk[] GetChunks(string content, string? lineSplitter, int level = 3, IEnumerable<string>? lineContainsToIgnore = null, IEnumerable<string>? linePrefixesToIgnore = null, IEnumerable<string>? lineRegExPatternsToIgnore = null, bool ignoreCommentedOutContent = true, bool ignoreImages = true, int? ignoreIfLessThanThisAmountOfChars = null)
+        public MarkdownChunk[] GetChunks(string content, int level = 3, IEnumerable<string>? linesToIgnorePatterns = null, bool ignoreCommentedOutContent = true, bool ignoreImages = true, int? ignoreIfLessThanThisAmountOfChars = null)
         {
             List<MarkdownChunk> chunks = [];
-            var mdContentLine = content.Split([lineSplitter ?? "\n"], StringSplitOptions.RemoveEmptyEntries);
+            var mdContentLine = content.Split(["\n"], StringSplitOptions.RemoveEmptyEntries);
 
             string sectionId = string.Empty;
             string sectionTitle = string.Empty;
@@ -21,40 +21,10 @@ namespace CodeRag.Shared.Chunking.Markdown
                     continue;
                 }
 
-                if (lineContainsToIgnore != null)
+                if ((linesToIgnorePatterns ?? []).Any(regExPattern => Regex.IsMatch(line, regExPattern, RegexOptions.IgnoreCase)))
                 {
-                    // ReSharper disable once PossibleMultipleEnumeration
-                    if (lineContainsToIgnore.Any(x => line.Contains(x, StringComparison.CurrentCultureIgnoreCase)))
-                    {
-                        continue;
-                    }
-                }
-
-                if (linePrefixesToIgnore != null)
-                {
-                    // ReSharper disable once PossibleMultipleEnumeration
-                    if (linePrefixesToIgnore.Any(x => line.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)))
-                    {
-                        continue;
-                    }
-                }
-
-                if (lineRegExPatternsToIgnore != null)
-                {
-                    bool include = true;
-                    foreach (var regExPattern in lineRegExPatternsToIgnore ?? [])
-                    {
-                        if (Regex.IsMatch(line, regExPattern))
-                        {
-                            include = false;
-                            break;
-                        }
-                    }
-
-                    if (!include)
-                    {
-                        continue;
-                    }
+                    //todo - this have not bee tested in a great deal
+                    continue;
                 }
 
                 if (level >= 1 && line.StartsWith("# ")) //H1

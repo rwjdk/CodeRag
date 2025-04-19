@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CodeRag.Shared.EntityFramework.DbModels;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CodeRag.Shared.EntityFramework;
@@ -12,4 +13,6 @@ public class SqlDbContext(DbContextOptions<SqlDbContext> options) : DbContext(op
         optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
 #endif
     }
+
+    public DbSet<ProjectEntity> Projects => Set<ProjectEntity>();
 }

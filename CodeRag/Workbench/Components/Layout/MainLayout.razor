@@ -1,4 +1,5 @@
 ﻿@using CodeRag.Shared.Configuration
+@using CodeRag.Shared.EntityFramework.DbModels
 @inherits LayoutComponentBase
 <CascadingValue Value="BlazorUtils">
     <CascadingValue Value="Project">
@@ -31,7 +32,7 @@
                                                 <div style="margin-right: 20px">@Project.Name</div>
                                             </ActivatorContent>
                                             <ChildContent>
-                                                @foreach (Project project in _projects)
+                                                @foreach (ProjectEntity project in _projects)
                                                 {
                                                     <MudMenuItem Style="text-align: end" OnClick="() => SelectProject(project)">@project.Name</MudMenuItem>
                                                 }

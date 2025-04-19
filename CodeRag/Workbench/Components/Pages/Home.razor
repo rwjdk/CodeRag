@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using CodeRag.Shared.Configuration
+@using CodeRag.Shared.EntityFramework.DbModels
 
 <PageTitle>@Project.Name</PageTitle>
 
@@ -8,5 +9,5 @@ Todo: Dashboard for @Project.Name
 @code
 {
     [CascadingParameter]
-    public required Project Project { get; set; }
+    public required ProjectEntity Project { get; set; }
 }

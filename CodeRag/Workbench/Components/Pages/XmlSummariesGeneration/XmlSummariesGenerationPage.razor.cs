@@ -1,5 +1,5 @@
 ﻿using CodeRag.Shared.Ai;
-using CodeRag.Shared.Configuration;
+using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.VectorStore;
 using Microsoft.AspNetCore.Components;
 
@@ -12,7 +12,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     private VectorEntity? _selectEntry;
     private string? _xmlSummary;
 
-    [CascadingParameter] public required Project Project { get; set; }
+    [CascadingParameter] public required ProjectEntity Project { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

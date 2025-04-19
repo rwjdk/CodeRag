@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using CodeRag.Shared.Chunking.CSharp;
-using CodeRag.Shared.Configuration;
+using CodeRag.Shared.EntityFramework.DbModels;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Agents;
 
@@ -56,7 +56,7 @@ public class VectorEntity
         return contentCompareKey;
     }
 
-    public string? GetLocalFilePath(Project project)
+    public string? GetLocalFilePath(ProjectEntity project)
     {
         var source = project.Sources.FirstOrDefault(x => x.Id == SourceId);
         if (source == null || string.IsNullOrWhiteSpace(source.Path))
@@ -67,7 +67,7 @@ public class VectorEntity
         return source.Path + SourcePath;
     }
 
-    public string? GetUrl(Project project)
+    public string? GetUrl(ProjectEntity project)
     {
         var source = project.Sources.FirstOrDefault(x => x.Id == SourceId);
         if (source == null || string.IsNullOrWhiteSpace(source.RootUrl))

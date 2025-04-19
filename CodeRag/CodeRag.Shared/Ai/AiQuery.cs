@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using CodeRag.Shared.Ai.Tools;
 using CodeRag.Shared.Configuration;
+using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.Prompting;
 using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
@@ -29,7 +30,7 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
         double scoreShouldBeLowerThanThisInSourceCodeSearch,
         int maxNumberOfAnswersBackFromDocumentationSearch,
         double scoreShouldBeLowerThanThisInDocumentSearch,
-        Project project) //todo - support get a streaming answer
+        ProjectEntity project) //todo - support get a streaming answer
     {
         long timestamp = Stopwatch.GetTimestamp();
         Kernel kernel = GetKernel(chatModel);
@@ -66,14 +67,14 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
         return kernel.GetRequiredService<ITextEmbeddingGenerationService>();
     }
 
-    private void AddDocumentationSearchPluginToKernel(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
+    private void AddDocumentationSearchPluginToKernel(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
         var collection = vectorStoreQuery.GetCollection();
         var docsTool = new SearchTool(VectorStoreDataType.Documentation, project, embeddingGenerationService, collection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
         kernel.ImportPluginFromObject(docsTool, Constants.Tools.Markdown);
     }
 
-    private void AddCodeSearchPluginToKernel(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, Project project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
+    private void AddCodeSearchPluginToKernel(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
         var collection = vectorStoreQuery.GetCollection();
         var codePlugin = new SearchTool(VectorStoreDataType.Code, project, embeddingGenerationService, collection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
@@ -167,7 +168,7 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
         return kernel;
     }
 
-    private async Task<T> GetStructuredOutputResponse<T>(Project project, AiChatModel chatModel, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch)
+    private async Task<T> GetStructuredOutputResponse<T>(ProjectEntity project, AiChatModel chatModel, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch)
     {
         Kernel kernel = GetKernel(chatModel);
         ITextEmbeddingGenerationService textEmbeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
@@ -193,7 +194,7 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
         return JsonSerializer.Deserialize<T>(json)!;
     }
 
-    public async Task<string?> GenerateCSharpXmlSummary(Project project, VectorEntity entity)
+    public async Task<string?> GenerateCSharpXmlSummary(ProjectEntity project, VectorEntity entity)
     {
         string prompt = Prompt.Create("You are an C# Expert that can generate XML Summaries.")
             .AddRule($"Always use all tools available ('{Constants.Tools.CSharp}' and '{Constants.Tools.Markdown}') before you provide your answer")
@@ -216,7 +217,7 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
         return response.XmlSummary;
     }
 
-    public async Task<string?> GenerateCodeWikiEntryForMethod(Project project, VectorEntity entity)
+    public async Task<string?> GenerateCodeWikiEntryForMethod(ProjectEntity project, VectorEntity entity)
     {
         string prompt = Prompt.Create("You are an C# Expert that can given Code and existing wiki content generates Markdown that documents the Code")
             .AddRule($"Always use all tools available ('{Constants.Tools.CSharp}' and '{Constants.Tools.Markdown}') before you provide your answer")

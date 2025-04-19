@@ -1,9 +1,9 @@
 ﻿using Blazor.Shared;
 using Blazored.LocalStorage;
 using CodeRag.Shared.Configuration;
+using CodeRag.Shared.EntityFramework.DbModels;
 using MudBlazor;
 using Workbench.Components.Dialogs;
-using Project = CodeRag.Shared.Configuration.Project;
 
 namespace Workbench.Components.Layout;
 
@@ -12,10 +12,10 @@ public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQue
     public BlazorUtils BlazorUtils { get; } = blazorUtils;
     private bool _drawerOpen;
     private bool _darkMode = true;
-    private Project? Project { get; set; }
+    private ProjectEntity? Project { get; set; }
     private bool IsProjectSelected => Project != null;
 
-    private Project[]? _projects;
+    private ProjectEntity[]? _projects;
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -31,7 +31,7 @@ public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQue
     private async Task RefreshProjects()
     {
         Guid? projectId = await localStorage.GetItemAsync<Guid>(Constants.LocalStorageKeys.Project);
-        _projects = projectQuery.GetProjects();
+        _projects = await projectQuery.GetProjectsAsync();
         await SelectProject(_projects.FirstOrDefault(x => x.Id == projectId) ?? _projects.FirstOrDefault());
     }
 
@@ -41,7 +41,7 @@ public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQue
         await localStorage.SetItemAsync(Constants.LocalStorageKeys.DrawerOpen, _drawerOpen);
     }
 
-    private async Task SelectProject(Project? project)
+    private async Task SelectProject(ProjectEntity? project)
     {
         Project = project;
         if (Project != null)
@@ -61,11 +61,11 @@ public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQue
         await ShowProjectSettings(null);
     }
 
-    private async Task ShowProjectSettings(Project? project)
+    private async Task ShowProjectSettings(ProjectEntity? project)
     {
         var parameters = new DialogParameters<ProjectDialog>
         {
-            { x => x.Project, project ?? Project.Empty() },
+            { x => x.Project, project ?? ProjectEntity.Empty() },
         };
 
         DialogOptions dialogOptions = new()

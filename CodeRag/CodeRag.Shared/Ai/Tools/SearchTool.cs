@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using CodeRag.Shared.Configuration;
+using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace CodeRag.Shared.Ai.Tools;
 
-public class SearchTool(VectorStoreDataType dataType, Project project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, VectorEntity> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
+public class SearchTool(VectorStoreDataType dataType, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, VectorEntity> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
     [UsedImplicitly]
     [KernelFunction]

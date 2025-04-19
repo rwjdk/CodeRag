@@ -1,6 +1,7 @@
 ﻿using Blazor.Shared;
 using CodeRag.Shared.Ai;
 using CodeRag.Shared.Configuration;
+using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.VectorStore;
 using Microsoft.AspNetCore.Components;
 
@@ -14,9 +15,9 @@ public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQue
     private Dictionary<string, bool>? _onlyUndocumentedCheckStates;
     private VectorEntity? _selectEntry;
     private string? _markdown;
-    private ProjectSource? _source;
+    private ProjectSourceEntity? _source;
 
-    [CascadingParameter] public required Project Project { get; set; }
+    [CascadingParameter] public required ProjectEntity Project { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

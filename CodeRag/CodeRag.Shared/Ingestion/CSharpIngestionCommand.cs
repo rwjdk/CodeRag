@@ -1,22 +1,18 @@
 ﻿using System.Text;
-using CodeRag.Shared.Ai;
+using System.Text.RegularExpressions;
 using CodeRag.Shared.Chunking.CSharp;
-using CodeRag.Shared.Configuration;
-using CodeRag.Shared.EntityFramework;
+using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Embeddings;
 using Octokit;
-using Project = CodeRag.Shared.Configuration.Project;
 
 namespace CodeRag.Shared.Ingestion;
 
 [UsedImplicitly]
 public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand vectorStoreCommand, VectorStoreQuery vectorStoreQuery) : IngestionCommand(vectorStoreCommand), IScopedService
 {
-    public override async Task Ingest(Project project, ProjectSource source)
+    public override async Task Ingest(ProjectEntity project, ProjectSourceEntity source)
     {
         if (source.Kind != ProjectSourceKind.CSharpCode)
         {
@@ -128,7 +124,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         OnNotifyProgress("Done");
     }
 
-    private async Task<List<CSharpChunk>> GetCodeEntitiesFromLocalSourceCode(ProjectSource source)
+    private async Task<List<CSharpChunk>> GetCodeEntitiesFromLocalSourceCode(ProjectSourceEntity source)
     {
         List<CSharpChunk> codeEntities = [];
         if (string.IsNullOrWhiteSpace(source.Path))
@@ -167,7 +163,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         return codeEntities;
     }
 
-    private async Task<List<CSharpChunk>> GetCodeEntitiesFromPublicGithubRepo(Project project, ProjectSource source)
+    private async Task<List<CSharpChunk>> GetCodeEntitiesFromPublicGithubRepo(ProjectEntity project, ProjectSourceEntity source)
     {
         List<CSharpChunk> codeEntities = [];
         if (string.IsNullOrWhiteSpace(source.Path))
@@ -243,25 +239,9 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         return codeEntities;
     }
 
-    private bool IgnoreFile(ProjectSource source, string path)
+    private bool IgnoreFile(ProjectSourceEntity source, string path)
     {
-        //todo - replace with a general ignore pattern system
-        string fileName = Path.GetFileName(path);
-        if (source.FilesToIgnore != null && source.FilesToIgnore.Contains(fileName, StringComparer.InvariantCultureIgnoreCase))
-        {
-            return true;
-        }
-
-        if (source.FilesWithTheseSuffixesToIgnore != null && source.FilesWithTheseSuffixesToIgnore.Any(x => x.EndsWith(fileName, StringComparison.CurrentCultureIgnoreCase)))
-        {
-            return true;
-        }
-
-        if (source.FilesWithThesePrefixesToIgnore != null && source.FilesWithThesePrefixesToIgnore.Any(x => x.StartsWith(fileName, StringComparison.CurrentCultureIgnoreCase)))
-        {
-            return true;
-        }
-
-        return false;
+        //todo - this have not tested: Should be done so a bunch
+        return (source.FileIgnorePatterns ?? []).All(regExPattern => !Regex.IsMatch(path, regExPattern.Pattern, RegexOptions.IgnoreCase));
     }
 }

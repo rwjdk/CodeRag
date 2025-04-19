@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel;
 using Workbench.Components.Dialogs;
 using CodeRag.Shared.Configuration;
 using CodeRag.Shared.Ai;
+using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.VectorStore;
 
 namespace Workbench.Components.Pages.Test;
@@ -17,7 +18,7 @@ public partial class TestPage(AiQuery aiQuery, IDialogService dialogService) : I
 {
     [CascadingParameter] public required BlazorUtils BlazorUtils { get; set; }
 
-    [CascadingParameter] public required Project Project { get; set; }
+    [CascadingParameter] public required ProjectEntity Project { get; set; }
 
     private RTextField? _chatInput;
     private string? _chatInputMessage;
@@ -46,9 +47,6 @@ public partial class TestPage(AiQuery aiQuery, IDialogService dialogService) : I
     {
         _chatModel = aiQuery.GetChatModels().FirstOrDefault();
         aiQuery.NotifyProgress += SemanticKernelQueryNotifyProgress;
-#if DEBUG
-        _chatInputMessage = Project.DefaultTestChatInput;
-#endif
     }
 
     private void SemanticKernelQueryNotifyProgress(ProgressNotification obj)

@@ -1,5 +1,6 @@
 ﻿using CodeRag.Shared.Ai;
 using CodeRag.Shared.Configuration;
+using CodeRag.Shared.EntityFramework.DbModels;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -12,7 +13,7 @@ public class VectorStoreCommand(Ai.Ai ai) : IScopedService
 {
     private readonly AzureOpenAITextEmbeddingGenerationService _embeddingGenerationService = new(ai.EmbeddingModelDeploymentName, ai.Endpoint, ai.Key);
 
-    public async Task Upsert<T>(Guid projectId, ProjectSource source, IVectorStoreRecordCollection<Guid, T> collection, T entry) where T : VectorEntity
+    public async Task Upsert<T>(Guid projectId, ProjectSourceEntity source, IVectorStoreRecordCollection<Guid, T> collection, T entry) where T : VectorEntity
     {
         try
         {

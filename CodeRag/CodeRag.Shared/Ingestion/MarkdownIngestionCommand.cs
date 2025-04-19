@@ -4,14 +4,14 @@ using System.Text.RegularExpressions;
 using System.Text;
 using CodeRag.Shared.VectorStore;
 using CodeRag.Shared.Chunking.Markdown;
-using CodeRag.Shared.Configuration;
+using CodeRag.Shared.EntityFramework.DbModels;
 
 namespace CodeRag.Shared.Ingestion;
 
 [UsedImplicitly]
 public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery vectorStoreQuery, VectorStoreCommand vectorStoreCommand) : IngestionCommand(vectorStoreCommand), IScopedService
 {
-    public override async Task Ingest(Project project, ProjectSource source)
+    public override async Task Ingest(ProjectEntity project, ProjectSourceEntity source)
     {
         if (source.Kind != ProjectSourceKind.Markdown)
         {
@@ -39,7 +39,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
         {
             var sourcePath = path.Replace(source.Path, string.Empty);
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
-            if (source.FilesToIgnore != null && source.FilesToIgnore.Contains(fileNameWithoutExtension))
+            if (IgnoreFile(source, path))
             {
                 continue;
             }
@@ -71,17 +71,14 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
             content = Regex.Replace(content, @"\r\n[\r\n]+|\r[\r]+|\n[\n]+", newLine + newLine);
             content = content.Trim();
 
-            var numberOfLine = content.Split([source.MarkdownLineSplitter ?? "\n"], StringSplitOptions.RemoveEmptyEntries).Length;
+            var numberOfLine = content.Split(["\n"], StringSplitOptions.RemoveEmptyEntries).Length;
 
             if (numberOfLine > source.MarkdownOnlyChunkIfMoreThanThisNumberOfLines)
             {
                 //Chunk larger files
                 MarkdownChunk[] chunks = chunker.GetChunks(content,
-                    source.MarkdownLineSplitter,
                     source.MarkdownLevelsToChunk,
-                    source.MarkdownChunkLineContainsToIgnore,
-                    source.MarkdownChunkLinePrefixesToIgnore,
-                    source.MarkdownChunkLineRegExPatternsToIgnore,
+                    source.MarkdownChunkLineIgnorePatterns.Select(x => x.Pattern).ToList(),
                     source.MarkdownIgnoreCommentedOutContent,
                     source.MarkdownIgnoreImages,
                     source.MarkdownChunkIgnoreIfLessThanThisAmountOfChars);
@@ -135,5 +132,12 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
         }
 
         OnNotifyProgress("Done");
+    }
+
+
+    private bool IgnoreFile(ProjectSourceEntity source, string path)
+    {
+        //todo - this have not tested: Should be done so a bunch
+        return (source.FileIgnorePatterns ?? []).All(regExPattern => !Regex.IsMatch(path, regExPattern.Pattern, RegexOptions.IgnoreCase));
     }
 }

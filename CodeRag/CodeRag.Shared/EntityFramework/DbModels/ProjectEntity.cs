@@ -1,45 +1,45 @@
-﻿using System.Globalization;
-using CodeRag.Shared.Ai;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
 using CodeRag.Shared.Prompting;
 
-namespace CodeRag.Shared.Configuration;
+namespace CodeRag.Shared.EntityFramework.DbModels;
 
-public class Project
+[Table("Projects")]
+public class ProjectEntity
 {
-    public required Guid Id { get; init; }
+    [Key] public Guid Id { get; private set; } = Guid.NewGuid();
 
-    public string? Name { get; set; }
+    [MaxLength(100)] public string? Name { get; set; }
 
-    public string? Description { get; set; }
+    [MaxLength(4000)] public string? Description { get; set; }
 
-    public required List<ProjectSource> Sources { get; set; }
+    public List<ProjectSourceEntity>? Sources { get; set; }
 
-    #region GitHub //todo - Support override of these on source level
+    #region GitHub
 
-    public string? GitHubOwner { get; set; }
+    [MaxLength(100)] public string? GitHubOwner { get; set; }
 
-    public string? GitHubRepo { get; set; }
+    [MaxLength(500)] public string? GitHubRepo { get; set; }
 
-    public string? GitHubToken { get; set; } //todo - should this be moved to Program.cs (gut feeling is no as it is an optional thing)
-
-    #endregion
-
-    #region Test Chat
-
-    public required string TestChatDeveloperInstructions { get; set; }
-
-    public string? DefaultTestChatInput { get; set; }
+    [MaxLength(500)] public string? GitHubToken { get; set; } //todo - Evaluate security of this
 
     #endregion
 
-    public static Project Empty()
+    #region Chat
+
+    [Column(TypeName = "nvarchar(max)")] public required string DeveloperInstructions { get; set; }
+
+    #endregion
+
+    public static ProjectEntity Empty()
     {
-        return new Project
+        return new ProjectEntity
         {
             Id = Guid.NewGuid(),
             Name = string.Empty,
             Sources = [],
-            TestChatDeveloperInstructions = Prompt
+            DeveloperInstructions = Prompt
                 .Create($"You are an C# expert in {Constants.Keywords.Name} ({Constants.Keywords.Description}. Assume all questions are about {Constants.Keywords.Name} unless specified otherwise")
                 .AddStep($"Use tool '{Constants.Keywords.MarkdownSearchTool}' to get an overview (break question down to keywords for the tool-usage but do NOT include words '{Constants.Keywords.Name}' in the tool request)")
                 .AddStep("Next prepare your answer with current knowledge")
@@ -53,7 +53,7 @@ public class Project
 
     public string GetFormattedTestChatInstructions()
     {
-        return TestChatDeveloperInstructions
+        return DeveloperInstructions
             .Replace(Constants.Keywords.Name, Name, true, CultureInfo.InvariantCulture)
             .Replace(Constants.Keywords.Description, Description, true, CultureInfo.InvariantCulture)
             .Replace(Constants.Keywords.MarkdownSearchTool, Constants.Tools.Markdown, true, CultureInfo.InvariantCulture)

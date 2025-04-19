@@ -1,6 +1,7 @@
 ﻿using Blazor.Shared;
 using CodeRag.Shared;
 using CodeRag.Shared.Configuration;
+using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.Ingestion;
 using Microsoft.AspNetCore.Components;
 
@@ -10,7 +11,7 @@ public partial class SourceIngestionPage(CSharpIngestionCommand cSharpIngestionC
 {
     [CascadingParameter] public required BlazorUtils BlazorUtils { get; set; }
 
-    [CascadingParameter] public required Project Project { get; set; }
+    [CascadingParameter] public required ProjectEntity Project { get; set; }
 
     private string? _lastMessage;
     private int _current;
@@ -39,7 +40,7 @@ public partial class SourceIngestionPage(CSharpIngestionCommand cSharpIngestionC
         StateHasChanged();
     }
 
-    private async Task Ingest(ProjectSource source)
+    private async Task Ingest(ProjectSourceEntity source)
     {
         _lastMessage = null;
         _current = 0;

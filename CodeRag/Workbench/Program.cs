@@ -1,6 +1,6 @@
 using Blazor.Shared.Extensions;
 using Blazored.LocalStorage;
-using CodeRag.Shared.Configuration;
+using CodeRag.Shared.EntityFramework.DbModels;
 using MudBlazor.Services;
 using Workbench.Components;
 using Workbench.Extensions;
@@ -13,7 +13,7 @@ builder.Services.AddMudServices();
 builder.Services.AddBlazorShared();
 builder.Services.AddBlazoredLocalStorage();
 builder.AutoRegisterServicesViaReflection(typeof(Program));
-builder.AutoRegisterServicesViaReflection(typeof(Project));
+builder.AutoRegisterServicesViaReflection(typeof(ProjectEntity));
 builder.AddAi();
 builder.AddVectorStore();
 
@@ -35,4 +35,6 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MigrateDatabase();
 app.Run();
