@@ -18,7 +18,7 @@ public class SqlDbContext(DbContextOptions<SqlDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<VectorEntity>()
-            .Property<float[]>("Vector")
+            .Property<float[]>(Constants.VectorCollections.VectorColumns.Vector)
             .HasColumnType("vector(1536)");
     }
 

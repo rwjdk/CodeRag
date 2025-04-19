@@ -14,6 +14,11 @@ public static class Constants
     public static class VectorCollections
     {
         public const string VectorSources = "vector_sources";
+
+        public class VectorColumns
+        {
+            public const string Vector = "Vector";
+        }
     }
 
     public static class Keywords

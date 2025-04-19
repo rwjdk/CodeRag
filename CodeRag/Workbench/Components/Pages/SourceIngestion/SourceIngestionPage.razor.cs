@@ -1,6 +1,5 @@
 ﻿using Blazor.Shared;
 using CodeRag.Shared;
-using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.Ingestion;
 using Microsoft.AspNetCore.Components;

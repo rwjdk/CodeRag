@@ -47,7 +47,7 @@ public class VectorEntity
     [VectorStoreRecordData(IsFilterable = true)]
     public Guid SourceId { get; set; }
 
-    [VectorStoreRecordVector(Dimensions: 1536, DistanceFunction.CosineDistance, IndexKind.Flat, StoragePropertyName = "Vector")]
+    [VectorStoreRecordVector(Dimensions: 1536, DistanceFunction.CosineDistance, IndexKind.Flat, StoragePropertyName = Constants.VectorCollections.VectorColumns.Vector)]
     [NotMapped]
     public ReadOnlyMemory<float>? VectorValue { get; set; }
 
