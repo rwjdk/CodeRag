@@ -3,18 +3,30 @@ using CodeRag.Shared;
 using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.Ingestion;
 using Microsoft.AspNetCore.Components;
+using Workbench.Dialogs;
 
-namespace Workbench.Components.Pages.SourceIngestion;
+namespace Workbench.Pages.SourceIngestion;
 
 public partial class SourceIngestionPage(CSharpIngestionCommand cSharpIngestionCommand, MarkdownIngestionCommand markdownIngestionCommand) : IDisposable
 {
-    [CascadingParameter] public required BlazorUtils BlazorUtils { get; set; }
-
-    [CascadingParameter] public required ProjectEntity Project { get; set; }
-
-    private string? _lastMessage;
     private int _current;
+    private string? _lastMessage;
     private int _total;
+
+    [CascadingParameter]
+    public required BlazorUtils BlazorUtils { get; set; }
+
+    [CascadingParameter]
+    public required ProjectEntity Project { get; set; }
+
+    [CascadingParameter]
+    public required Site Site { get; set; }
+
+    public void Dispose()
+    {
+        cSharpIngestionCommand.NotifyProgress -= NotifyProgress;
+        markdownIngestionCommand.NotifyProgress -= NotifyProgress;
+    }
 
 
     protected override void OnInitialized()
@@ -26,15 +38,9 @@ public partial class SourceIngestionPage(CSharpIngestionCommand cSharpIngestionC
     private void NotifyProgress(ProgressNotification obj)
     {
         _lastMessage = obj.Message;
-        if (obj.Current > 0)
-        {
-            _current = obj.Current;
-        }
+        if (obj.Current > 0) _current = obj.Current;
 
-        if (obj.Total > 0)
-        {
-            _total = obj.Total;
-        }
+        if (obj.Total > 0) _total = obj.Total;
 
         StateHasChanged();
     }
@@ -58,9 +64,8 @@ public partial class SourceIngestionPage(CSharpIngestionCommand cSharpIngestionC
         }
     }
 
-    public void Dispose()
+    private async Task ShowProjectSettings()
     {
-        cSharpIngestionCommand.NotifyProgress -= NotifyProgress;
-        markdownIngestionCommand.NotifyProgress -= NotifyProgress;
+        await Site.ShowProjectDialogAsync(Project, ProjectDialogDefaultTab.Sources);
     }
 }

@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
+using CodeRag.Shared.EntityFramework.DbModels;
 
 namespace CodeRag.Shared.VectorStore;
 

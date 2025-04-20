@@ -1,4 +1,5 @@
 ﻿using CodeRag.Shared.EntityFramework;
+using CodeRag.Shared.EntityFramework.DbModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace Workbench.Extensions;

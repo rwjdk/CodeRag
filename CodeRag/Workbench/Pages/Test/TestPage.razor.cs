@@ -1,18 +1,16 @@
-﻿using Blazor.Shared.Components;
-using Blazor.Shared;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components;
-using Microsoft.SemanticKernel.ChatCompletion;
-using MudBlazor;
+﻿using Blazor.Shared;
+using Blazor.Shared.Components;
 using CodeRag.Shared;
-using Microsoft.SemanticKernel;
-using Workbench.Components.Dialogs;
-using CodeRag.Shared.Configuration;
 using CodeRag.Shared.Ai;
 using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.VectorStore;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using MudBlazor;
+using Workbench.Dialogs;
 
-namespace Workbench.Components.Pages.Test;
+namespace Workbench.Pages.Test;
 
 public partial class TestPage(AiQuery aiQuery, IDialogService dialogService) : IDisposable
 {

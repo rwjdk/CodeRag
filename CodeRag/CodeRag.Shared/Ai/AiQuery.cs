@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using CodeRag.Shared.Ai.Tools;
-using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.Prompting;
 using CodeRag.Shared.VectorStore;
@@ -47,7 +46,7 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
             AddDocumentationSearchPluginToKernel(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
         }
 
-        ChatCompletionAgent answerAgent = GetAgent(chatModel, project.GetFormattedTestChatInstructions(), kernel);
+        ChatCompletionAgent answerAgent = GetAgent(chatModel, project.GetFormattedDeveloperInstructions(), kernel);
 
         ChatMessageContent chatMessageContent = null!;
 

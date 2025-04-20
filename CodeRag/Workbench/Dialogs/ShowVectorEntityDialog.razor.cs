@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Blazor.Shared;
+using CodeRag.Shared.EntityFramework.DbModels;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using Blazor.Shared;
-using CodeRag.Shared.VectorStore;
 
-namespace Workbench.Components.Dialogs;
+namespace Workbench.Dialogs;
 
 public partial class ShowVectorEntityDialog()
 {

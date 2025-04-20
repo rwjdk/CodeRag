@@ -1,5 +1,4 @@
 ﻿using CodeRag.Shared.Ai;
-using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework.DbModels;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;

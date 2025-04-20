@@ -1,11 +1,11 @@
 ﻿using Blazor.Shared;
 using Blazored.LocalStorage;
-using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework.DbModels;
+using CodeRag.Shared.Projects;
 using MudBlazor;
-using Workbench.Components.Dialogs;
+using DialogResult = Workbench.Dialogs.DialogResult;
 
-namespace Workbench.Components.Layout;
+namespace Workbench;
 
 public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQuery, ILocalStorageService localStorage, IDialogService dialogService)
 {
@@ -14,9 +14,8 @@ public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQue
     private bool _darkMode = true;
     private ProjectEntity? Project { get; set; }
     private bool IsProjectSelected => Project != null;
-
+    private Site Site { get; } = new(dialogService);
     private ProjectEntity[]? _projects;
-
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -61,30 +60,15 @@ public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQue
         await ShowProjectSettings(null);
     }
 
-    private async Task ShowProjectSettings(ProjectEntity? project)
-    {
-        var parameters = new DialogParameters<ProjectDialog>
-        {
-            { x => x.Project, project ?? ProjectEntity.Empty() },
-        };
-
-        DialogOptions dialogOptions = new()
-        {
-            Position = DialogPosition.TopCenter,
-            BackdropClick = false,
-            CloseButton = true,
-        };
-        var reference = await dialogService.ShowAsync<ProjectDialog>(project?.Name ?? "New Project", parameters, dialogOptions);
-        var result = await reference.Result;
-        if (result is { Canceled: false })
-        {
-            await RefreshProjects();
-        }
-    }
-
     private async Task SwitchMode()
     {
         _darkMode = !_darkMode;
         await localStorage.SetItemAsync(Constants.LocalStorageKeys.DarkMode, _darkMode);
+    }
+
+    private async Task ShowProjectSettings(ProjectEntity? project)
+    {
+        await Site.ShowProjectDialogAsync(project);
+        await RefreshProjects();
     }
 }

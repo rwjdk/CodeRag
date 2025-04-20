@@ -8,27 +8,30 @@ namespace CodeRag.Shared.EntityFramework.DbModels;
 [Table("Projects")]
 public class ProjectEntity
 {
-    [Key] public Guid Id { get; private set; } = Guid.NewGuid();
+    [Key]
+    public Guid Id { get; private set; } = Guid.NewGuid();
 
-    [MaxLength(100)] public string? Name { get; set; }
+    [MaxLength(100)]
+    public string? Name { get; set; }
 
-    [MaxLength(4000)] public string? Description { get; set; }
+    [MaxLength(4000)]
+    public string? Description { get; set; }
 
-    public List<ProjectSourceEntity>? Sources { get; set; }
+    public required ICollection<ProjectSourceEntity> Sources { get; set; }
+
+    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
+    public required string DeveloperInstructions { get; set; }
 
     #region GitHub
 
-    [MaxLength(100)] public string? GitHubOwner { get; set; }
+    [MaxLength(100)]
+    public string? GitHubOwner { get; set; }
 
-    [MaxLength(500)] public string? GitHubRepo { get; set; }
+    [MaxLength(500)]
+    public string? GitHubRepo { get; set; }
 
-    [MaxLength(500)] public string? GitHubToken { get; set; } //todo - Evaluate security of this
-
-    #endregion
-
-    #region Chat
-
-    [Column(TypeName = "nvarchar(max)")] public required string DeveloperInstructions { get; set; }
+    [MaxLength(500)]
+    public string? GitHubToken { get; set; } //todo - Evaluate security of this (should properly be removed here and be part of a key vault)
 
     #endregion
 
@@ -51,7 +54,7 @@ public class ProjectEntity
         };
     }
 
-    public string GetFormattedTestChatInstructions()
+    public string GetFormattedDeveloperInstructions()
     {
         return DeveloperInstructions
             .Replace(Constants.Keywords.Name, Name, true, CultureInfo.InvariantCulture)

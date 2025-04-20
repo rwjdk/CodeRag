@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CodeRag.Shared.Migrations
 {
     [DbContext(typeof(SqlDbContext))]
-    [Migration("20250419164914_AddVectorStore")]
-    partial class AddVectorStore
+    [Migration("20250420073342_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -94,7 +94,6 @@ namespace CodeRag.Shared.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -105,7 +104,7 @@ namespace CodeRag.Shared.Migrations
                     b.Property<bool>("PathSearchRecursive")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("ProjectEntityId")
+                    b.Property<Guid>("ProjectEntityId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("RootUrl")
@@ -145,7 +144,7 @@ namespace CodeRag.Shared.Migrations
                     b.ToTable("ProjectSourceIgnorePatterns");
                 });
 
-            modelBuilder.Entity("CodeRag.Shared.VectorStore.VectorEntity", b =>
+            modelBuilder.Entity("CodeRag.Shared.EntityFramework.DbModels.VectorEntity", b =>
                 {
                     b.Property<Guid>("VectorId")
                         .ValueGeneratedOnAdd()
@@ -157,25 +156,32 @@ namespace CodeRag.Shared.Migrations
 
                     b.Property<string>("DataType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("Kind")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("Namespace")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("Parent")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("ParentKind")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uniqueidentifier");
@@ -185,7 +191,8 @@ namespace CodeRag.Shared.Migrations
 
                     b.Property<string>("SourcePath")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("Summary")
                         .HasColumnType("nvarchar(max)");
@@ -203,9 +210,13 @@ namespace CodeRag.Shared.Migrations
 
             modelBuilder.Entity("CodeRag.Shared.EntityFramework.DbModels.ProjectSourceEntity", b =>
                 {
-                    b.HasOne("CodeRag.Shared.EntityFramework.DbModels.ProjectEntity", null)
+                    b.HasOne("CodeRag.Shared.EntityFramework.DbModels.ProjectEntity", "Project")
                         .WithMany("Sources")
-                        .HasForeignKey("ProjectEntityId");
+                        .HasForeignKey("ProjectEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("CodeRag.Shared.EntityFramework.DbModels.ProjectSourceIgnoreEntity", b =>

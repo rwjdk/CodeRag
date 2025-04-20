@@ -1,4 +1,4 @@
-﻿using CodeRag.Shared.VectorStore;
+﻿using CodeRag.Shared.EntityFramework.DbModels;
 using Microsoft.Extensions.VectorData;
 
 namespace CodeRag.Shared;

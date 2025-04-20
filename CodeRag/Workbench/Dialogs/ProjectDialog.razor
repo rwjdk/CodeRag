@@ -1,0 +1,33 @@
+﻿@using CodeRag.Shared.EntityFramework.DbModels
+<MudDialog Style="max-width: 80% !important; min-width: 80% !important; max-height: 80% !important; min-height: 80% !important;">
+    <DialogContent>
+        <RTextField Label="Name" @bind-Value="@Project.Name" />
+        <RTextField Label="Description" @bind-Value="@Project.Description" Lines="3" />
+        <MudTabs @bind-ActivePanelIndex="@_tabIndex">
+            <MudTabPanel Text="GitHub">
+                <RTextField Label="GitHub Owner" @bind-Value="@Project.GitHubOwner" />
+                <RTextField Label="GitHub Repo" @bind-Value="@Project.GitHubRepo" />
+                <RTextField Label="GitHub Token" @bind-Value="@Project.GitHubToken" InputType="InputType.Password" /> @* todo: Allow adornment click to reveal *@
+            </MudTabPanel>
+            <MudTabPanel Text="Sources">
+                <MudDataGrid Items="Project.Sources">
+                    <Columns>
+                        <PropertyColumn Property="x => x.Name" />
+                        <PropertyColumn Property="x => x.Kind" />
+                        <PropertyColumn Property="x => x.Location" />
+                    </Columns>
+                </MudDataGrid>
+
+                <RButton OnClick="()=> CreateNewSource(ProjectSourceKind.CSharpCode)">Create a new C# Source</RButton>
+                <RButton OnClick="()=> CreateNewSource(ProjectSourceKind.Markdown)">Create a new Markdown Source</RButton>
+            </MudTabPanel>
+            <MudTabPanel Text="Chat">
+                <RTextField Label="Instructions" @bind-Value="@Project.DeveloperInstructions" Lines="10" />
+            </MudTabPanel>
+        </MudTabs>
+    </DialogContent>
+    <DialogActions>
+        <RButton Color="Color.Default" OnClick="Dialog.Cancel">Cancel</RButton>
+        <RButton OnClick="Save">Save</RButton>
+    </DialogActions>
+</MudDialog>

@@ -1,11 +1,10 @@
 ﻿using Blazor.Shared;
 using CodeRag.Shared.Ai;
-using CodeRag.Shared.Configuration;
 using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.VectorStore;
 using Microsoft.AspNetCore.Components;
 
-namespace Workbench.Components.Pages.WikiGeneration;
+namespace Workbench.Pages.WikiGeneration;
 
 public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQuery aiQuery)
 {

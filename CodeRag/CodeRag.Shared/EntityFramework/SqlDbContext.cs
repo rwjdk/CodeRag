@@ -1,5 +1,4 @@
 ﻿using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.VectorStore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -24,4 +23,5 @@ public class SqlDbContext(DbContextOptions<SqlDbContext> options) : DbContext(op
 
     public DbSet<VectorEntity> Vectors => Set<VectorEntity>();
     public DbSet<ProjectEntity> Projects => Set<ProjectEntity>();
+    public DbSet<ProjectSourceEntity> ProjectSources => Set<ProjectSourceEntity>();
 }

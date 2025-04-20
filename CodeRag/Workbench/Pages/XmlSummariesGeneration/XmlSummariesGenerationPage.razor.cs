@@ -3,7 +3,7 @@ using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.VectorStore;
 using Microsoft.AspNetCore.Components;
 
-namespace Workbench.Components.Pages.XmlSummariesGeneration;
+namespace Workbench.Pages.XmlSummariesGeneration;
 
 public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuery, AiQuery aiQuery)
 {
