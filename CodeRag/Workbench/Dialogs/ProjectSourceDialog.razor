@@ -2,6 +2,28 @@
 <MudDialog Style="max-width: 70% !important; min-width: 70% !important; max-height: 70% !important; min-height: 70% !important;">
     <DialogContent>
         <RTextField Label="Name" @bind-Value="@ProjectSource.Name" />
+        <RTextField Label="Path" @bind-Value="@ProjectSource.Path" />
+        <RCheckBox Label="Search Path Recursive" @bind-Value="@ProjectSource.PathSearchRecursive" />
+        <RTextField Label="Root URL" @bind-Value="@ProjectSource.RootUrl" />
+
+        @switch (ProjectSource.Kind)
+        {
+            case ProjectSourceKind.CSharpCode:
+                <RSelectFromEnum Label="Location" T="ProjectSourceLocation" @bind-Value="@ProjectSource.Location" />
+                @* todo: add gui for ignore patterns *@
+                break;
+            case ProjectSourceKind.Markdown:
+                <RCheckBox Label="Markdown: Ignore commented out Content" @bind-Value="@ProjectSource.MarkdownIgnoreCommentedOutContent" />
+                <RCheckBox Label="Markdown: Ignore images" @bind-Value="@ProjectSource.MarkdownIgnoreImages" />
+                <RCheckBox Label="Markdown: Ignore Microsoft Learn None C# Content" @bind-Value="@ProjectSource.MarkdownIgnoreMicrosoftLearnNoneCsharpContent" />
+                <RCheckBox Label="Markdown: Filename = Doc URL Subpage" @bind-Value="@ProjectSource.MarkdownFilenameEqualDocUrlSubpage" />
+                <RNumericField Label="Markdown: Levels to Chunk" @bind-Value="@ProjectSource.MarkdownLevelsToChunk" Min="1" Max="6" />
+                <RNumericField Label="Markdown: Ignore Chunk is less that this amount of chars" @bind-Value="@ProjectSource.MarkdownChunkIgnoreIfLessThanThisAmountOfChars" Min="0" Max="9999" />
+                <RNumericField Label="Markdown: Only Chunk if more than this number of lines" @bind-Value="@ProjectSource.MarkdownOnlyChunkIfMoreThanThisNumberOfLines" Min="1" Max="99999" />
+                @* todo: add gui for ignore patterns *@
+                break;
+        }
+
     </DialogContent>
     <DialogActions>
         <RButton Color="Color.Default" OnClick="Dialog.Cancel">Cancel</RButton>

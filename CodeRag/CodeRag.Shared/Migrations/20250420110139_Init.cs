@@ -65,12 +65,14 @@ namespace CodeRag.Shared.Migrations
                     Path = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     PathSearchRecursive = table.Column<bool>(type: "bit", nullable: false),
                     RootUrl = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    MarkdownChunkLineIgnorePatternsRaw = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FileIgnorePatternsRaw = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     MarkdownIgnoreCommentedOutContent = table.Column<bool>(type: "bit", nullable: false),
                     MarkdownIgnoreImages = table.Column<bool>(type: "bit", nullable: false),
                     MarkdownIgnoreMicrosoftLearnNoneCsharpContent = table.Column<bool>(type: "bit", nullable: false),
                     MarkdownOnlyChunkIfMoreThanThisNumberOfLines = table.Column<int>(type: "int", nullable: false),
                     MarkdownLevelsToChunk = table.Column<int>(type: "int", nullable: false),
-                    MarkdownChunkIgnoreIfLessThanThisAmountOfChars = table.Column<int>(type: "int", nullable: true),
+                    MarkdownChunkIgnoreIfLessThanThisAmountOfChars = table.Column<int>(type: "int", nullable: false),
                     MarkdownFilenameEqualDocUrlSubpage = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -84,40 +86,6 @@ namespace CodeRag.Shared.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "ProjectSourceIgnorePatterns",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Pattern = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    ProjectSourceEntityId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ProjectSourceEntityId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProjectSourceIgnorePatterns", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ProjectSourceIgnorePatterns_ProjectSources_ProjectSourceEntityId",
-                        column: x => x.ProjectSourceEntityId,
-                        principalTable: "ProjectSources",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_ProjectSourceIgnorePatterns_ProjectSources_ProjectSourceEntityId1",
-                        column: x => x.ProjectSourceEntityId1,
-                        principalTable: "ProjectSources",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProjectSourceIgnorePatterns_ProjectSourceEntityId",
-                table: "ProjectSourceIgnorePatterns",
-                column: "ProjectSourceEntityId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProjectSourceIgnorePatterns_ProjectSourceEntityId1",
-                table: "ProjectSourceIgnorePatterns",
-                column: "ProjectSourceEntityId1");
-
             migrationBuilder.CreateIndex(
                 name: "IX_ProjectSources_ProjectEntityId",
                 table: "ProjectSources",
@@ -128,13 +96,10 @@ namespace CodeRag.Shared.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ProjectSourceIgnorePatterns");
+                name: "ProjectSources");
 
             migrationBuilder.DropTable(
                 name: "vector_sources");
-
-            migrationBuilder.DropTable(
-                name: "ProjectSources");
 
             migrationBuilder.DropTable(
                 name: "Projects");

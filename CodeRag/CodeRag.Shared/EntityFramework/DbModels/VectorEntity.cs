@@ -1,11 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using CodeRag.Shared.Chunking.CSharp;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
 
 namespace CodeRag.Shared.EntityFramework.DbModels;
 
 [Table(Constants.VectorCollections.VectorSources)]
+[Index(nameof(ProjectId))]
+[Index(nameof(SourceId))]
+[Index(nameof(DataType))]
 public class VectorEntity
 {
     [Key]

@@ -1,5 +1,4 @@
-﻿using Octokit;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CodeRag.Shared.EntityFramework.DbModels;
@@ -7,6 +6,10 @@ namespace CodeRag.Shared.EntityFramework.DbModels;
 [Table("ProjectSources")]
 public class ProjectSourceEntity
 {
+    private const string IgnorePatternSplitter = "<||>";
+
+    //todo: Add setting to ignore files over x number of lines (SK Markdown and Octokit Interfaces have this issue)
+
     [Key]
     public Guid Id { get; private set; } = Guid.NewGuid();
 
@@ -29,20 +32,70 @@ public class ProjectSourceEntity
     [MaxLength(1000)]
     public string? RootUrl { get; set; }
 
-    public List<ProjectSourceIgnoreEntity> FileIgnorePatterns { get; set; } = [];
+    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
+    public string? MarkdownChunkLineIgnorePatternsRaw { get; set; }
+
+    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
+    public string? FileIgnorePatternsRaw { get; set; }
 
     #region Markdown Specific Settings
 
     public bool MarkdownIgnoreCommentedOutContent { get; set; }
     public bool MarkdownIgnoreImages { get; set; }
     public bool MarkdownIgnoreMicrosoftLearnNoneCsharpContent { get; set; }
-    public int MarkdownOnlyChunkIfMoreThanThisNumberOfLines { get; set; }
-    public int MarkdownLevelsToChunk { get; set; }
-    public List<ProjectSourceIgnoreEntity>? MarkdownChunkLineIgnorePatterns { get; set; }
-    public int? MarkdownChunkIgnoreIfLessThanThisAmountOfChars { get; set; }
+    public int MarkdownOnlyChunkIfMoreThanThisNumberOfLines { get; set; } = 0;
+    public int MarkdownLevelsToChunk { get; set; } = 2;
+    public int MarkdownChunkIgnoreIfLessThanThisAmountOfChars { get; set; } = 0;
     public bool MarkdownFilenameEqualDocUrlSubpage { get; set; }
 
     #endregion
+
+    [NotMapped]
+    public List<string> MarkdownChunkLineIgnorePatterns
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(MarkdownChunkLineIgnorePatternsRaw))
+            {
+                return [];
+            }
+
+            return MarkdownChunkLineIgnorePatternsRaw.Split(IgnorePatternSplitter, StringSplitOptions.RemoveEmptyEntries).ToList();
+        }
+        set
+        {
+            if (value.Count == 0)
+            {
+                MarkdownChunkLineIgnorePatternsRaw = string.Empty;
+            }
+
+            MarkdownChunkLineIgnorePatternsRaw = string.Join(IgnorePatternSplitter, value);
+        }
+    }
+
+
+    [NotMapped]
+    public List<string> FileIgnorePatterns
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(FileIgnorePatternsRaw))
+            {
+                return [];
+            }
+
+            return FileIgnorePatternsRaw.Split(IgnorePatternSplitter, StringSplitOptions.RemoveEmptyEntries).ToList();
+        }
+        set
+        {
+            if (value.Count == 0)
+            {
+                FileIgnorePatternsRaw = string.Empty;
+            }
+
+            FileIgnorePatternsRaw = string.Join(IgnorePatternSplitter, value);
+        }
+    }
 
     public static ProjectSourceEntity Empty(ProjectEntity project, ProjectSourceKind kind)
     {
@@ -50,7 +103,13 @@ public class ProjectSourceEntity
         {
             Kind = kind,
             Project = project,
-            ProjectEntityId = project.Id
+            ProjectEntityId = project.Id,
+            PathSearchRecursive = true,
+            Location = ProjectSourceLocation.Local,
+            MarkdownChunkIgnoreIfLessThanThisAmountOfChars = 25,
+            MarkdownIgnoreImages = true,
+            MarkdownIgnoreCommentedOutContent = true,
+            MarkdownOnlyChunkIfMoreThanThisNumberOfLines = 50
         };
     }
 }

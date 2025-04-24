@@ -8,7 +8,8 @@ namespace Workbench.Pages.WikiGeneration;
 
 public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQuery aiQuery)
 {
-    [CascadingParameter] public required BlazorUtils BlazorUtils { get; set; }
+    [CascadingParameter]
+    public required BlazorUtils BlazorUtils { get; set; }
 
     private List<Data>? _data;
     private Dictionary<string, bool>? _onlyUndocumentedCheckStates;
@@ -16,7 +17,8 @@ public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQue
     private string? _markdown;
     private ProjectSourceEntity? _source;
 
-    [CascadingParameter] public required ProjectEntity Project { get; set; }
+    [CascadingParameter]
+    public required ProjectEntity Project { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -24,7 +26,7 @@ public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQue
         if (_source != null)
         {
             var mdFilenames = Directory.GetFiles(_source.Path).Select(Path.GetFileNameWithoutExtension);
-            VectorEntity[] existing = await vectorStoreQuery.GetExisting(Project.Id); //todo - only get Code Entries. not the docs
+            VectorEntity[] existing = await vectorStoreQuery.GetExistingAsync(Project.Id); //todo - only get Code Entries. not the docs
 
             string[] kinds = existing.Where(x => !string.IsNullOrWhiteSpace(x.Kind)).Select(x => x.Kind!).Distinct().ToArray();
 

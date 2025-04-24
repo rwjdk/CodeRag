@@ -55,7 +55,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         }
 
         await collection.CreateCollectionIfNotExistsAsync();
-        var existingData = await vectorStoreQuery.GetExisting(project.Id, source.Id);
+        var existingData = await vectorStoreQuery.GetExistingAsync(project.Id, source.Id);
 
         int counter = 0;
         List<Guid> idsToKeep = [];
@@ -242,6 +242,6 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
     private bool IgnoreFile(ProjectSourceEntity source, string path)
     {
         //todo - this have not tested: Should be done so a bunch
-        return (source.FileIgnorePatterns ?? []).Any(x => !string.IsNullOrWhiteSpace(x.Pattern) && Regex.IsMatch(path, x.Pattern, RegexOptions.IgnoreCase));
+        return (source.FileIgnorePatterns ?? []).Any(x => !string.IsNullOrWhiteSpace(x) && Regex.IsMatch(path, x, RegexOptions.IgnoreCase));
     }
 }

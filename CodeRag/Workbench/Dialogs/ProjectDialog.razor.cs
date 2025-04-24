@@ -1,4 +1,5 @@
-﻿using CodeRag.Shared.EntityFramework.DbModels;
+﻿using Blazor.Shared;
+using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.Projects;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -11,6 +12,9 @@ public partial class ProjectDialog(ProjectCommand projectCommand)
 
     [CascadingParameter]
     public required IMudDialogInstance Dialog { get; set; }
+
+    [CascadingParameter]
+    public required BlazorUtils BlazorUtils { get; set; }
 
     [CascadingParameter]
     public required Site Site { get; set; }
@@ -40,6 +44,27 @@ public partial class ProjectDialog(ProjectCommand projectCommand)
         if (result == DialogResult.Ok)
         {
             Project.Sources.Add(newSource);
+        }
+    }
+
+    private async Task EditSource(ProjectSourceEntity? source)
+    {
+        if (source != null)
+        {
+            await Site.ShowProjectSourceDialogAsync(Project, source);
+        }
+    }
+
+    private async Task DeleteSource(ProjectSourceEntity? source)
+    {
+        if (source != null)
+        {
+            await BlazorUtils.PromptYesNoQuestion("Are you sure you wish to remove this source?", async () =>
+            {
+                Project.Sources.Remove(source);
+                StateHasChanged();
+                await Task.CompletedTask;
+            });
         }
     }
 }

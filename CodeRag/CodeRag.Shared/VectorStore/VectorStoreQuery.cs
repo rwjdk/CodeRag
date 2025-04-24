@@ -16,7 +16,7 @@ public class VectorStoreQuery(IVectorStore vectorStore, IDbContextFactory<SqlDbC
         return vectorStore.GetCollection<Guid, VectorEntity>(Constants.VectorCollections.VectorSources);
     }
 
-    public async Task<VectorEntity[]> GetExisting(Guid projectId, Guid? sourceId = null)
+    public async Task<VectorEntity[]> GetExistingAsync(Guid projectId, Guid? sourceId = null)
     {
         SqlDbContext context = await dbContextFactory.CreateDbContextAsync();
 

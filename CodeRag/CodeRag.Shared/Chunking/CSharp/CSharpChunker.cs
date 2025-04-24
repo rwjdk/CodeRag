@@ -26,6 +26,7 @@ namespace CodeRag.Shared.Chunking.CSharp
 
         private List<CSharpChunk> ProcessInterfaces(SyntaxNode root)
         {
+            //todo - Octokit have a too big interface that can be one chunk
             List<CSharpChunk> result = [];
             InterfaceDeclarationSyntax[] nodes = root.DescendantNodes()
                 .OfType<InterfaceDeclarationSyntax>()

@@ -70,5 +70,6 @@ public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQue
     {
         await Site.ShowProjectDialogAsync(project);
         await RefreshProjects();
+        //todo - if new project select it
     }
 }

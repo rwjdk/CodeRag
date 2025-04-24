@@ -5,8 +5,13 @@
 
 Todo: Dashboard for @Project.Name
 
-@code
+@if (_treeItems != null)
 {
-    [CascadingParameter]
-    public required ProjectEntity Project { get; set; }
+    <MudTreeView Items="[_treeItems]">
+        <ItemTemplate>
+            <MudTreeViewItem
+                Value="@context.Value"
+                Items="@context.Children"/>
+        </ItemTemplate>
+    </MudTreeView>
 }

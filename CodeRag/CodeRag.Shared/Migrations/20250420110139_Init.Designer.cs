@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CodeRag.Shared.Migrations
 {
     [DbContext(typeof(SqlDbContext))]
-    [Migration("20250420073342_Init")]
+    [Migration("20250420110139_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -66,14 +66,20 @@ namespace CodeRag.Shared.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("FileIgnorePatternsRaw")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Kind")
                         .HasColumnType("int");
 
                     b.Property<int>("Location")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MarkdownChunkIgnoreIfLessThanThisAmountOfChars")
+                    b.Property<int>("MarkdownChunkIgnoreIfLessThanThisAmountOfChars")
                         .HasColumnType("int");
+
+                    b.Property<string>("MarkdownChunkLineIgnorePatternsRaw")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("MarkdownFilenameEqualDocUrlSubpage")
                         .HasColumnType("bit");
@@ -116,32 +122,6 @@ namespace CodeRag.Shared.Migrations
                     b.HasIndex("ProjectEntityId");
 
                     b.ToTable("ProjectSources");
-                });
-
-            modelBuilder.Entity("CodeRag.Shared.EntityFramework.DbModels.ProjectSourceIgnoreEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Pattern")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<Guid?>("ProjectSourceEntityId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("ProjectSourceEntityId1")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProjectSourceEntityId");
-
-                    b.HasIndex("ProjectSourceEntityId1");
-
-                    b.ToTable("ProjectSourceIgnorePatterns");
                 });
 
             modelBuilder.Entity("CodeRag.Shared.EntityFramework.DbModels.VectorEntity", b =>
@@ -219,27 +199,9 @@ namespace CodeRag.Shared.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("CodeRag.Shared.EntityFramework.DbModels.ProjectSourceIgnoreEntity", b =>
-                {
-                    b.HasOne("CodeRag.Shared.EntityFramework.DbModels.ProjectSourceEntity", null)
-                        .WithMany("FileIgnorePatterns")
-                        .HasForeignKey("ProjectSourceEntityId");
-
-                    b.HasOne("CodeRag.Shared.EntityFramework.DbModels.ProjectSourceEntity", null)
-                        .WithMany("MarkdownChunkLineIgnorePatterns")
-                        .HasForeignKey("ProjectSourceEntityId1");
-                });
-
             modelBuilder.Entity("CodeRag.Shared.EntityFramework.DbModels.ProjectEntity", b =>
                 {
                     b.Navigation("Sources");
-                });
-
-            modelBuilder.Entity("CodeRag.Shared.EntityFramework.DbModels.ProjectSourceEntity", b =>
-                {
-                    b.Navigation("FileIgnorePatterns");
-
-                    b.Navigation("MarkdownChunkLineIgnorePatterns");
                 });
 #pragma warning restore 612, 618
         }

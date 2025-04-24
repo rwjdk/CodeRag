@@ -12,11 +12,12 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     private VectorEntity? _selectEntry;
     private string? _xmlSummary;
 
-    [CascadingParameter] public required ProjectEntity Project { get; set; }
+    [CascadingParameter]
+    public required ProjectEntity Project { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        VectorEntity[] sourceCode = await vectorStoreQuery.GetExisting(Project.Id); //todo - on get code
+        VectorEntity[] sourceCode = await vectorStoreQuery.GetExistingAsync(Project.Id); //todo - on get code
 
         string[] kinds = sourceCode.Where(x => !string.IsNullOrWhiteSpace(x.Kind)).Select(x => x.Kind!).Distinct().ToArray();
 

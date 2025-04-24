@@ -15,6 +15,12 @@
                         <PropertyColumn Property="x => x.Name" />
                         <PropertyColumn Property="x => x.Kind" />
                         <PropertyColumn Property="x => x.Location" />
+                        <TemplateColumn>
+                            <CellTemplate>
+                                <RIconButton Icon="@Icons.Material.Filled.Edit" OnClick="()=> EditSource(context.Item)"></RIconButton>
+                                <RIconButton Icon="@Icons.Material.Filled.Delete" OnClick="()=> DeleteSource(context.Item)"></RIconButton>
+                            </CellTemplate>
+                        </TemplateColumn>
                     </Columns>
                 </MudDataGrid>
 

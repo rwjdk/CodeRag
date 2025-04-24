@@ -43,39 +43,11 @@ public class ProjectCommand(SqlServerCommand sqlServerCommand) : IScopedService
             if (existingSource != null)
             {
                 context.Entry(existingSource).CurrentValues.SetValues(projectSource);
-                SyncSourceIgnores(existingSource, projectSource, context);
             }
             else
             {
                 context.Entry(projectSource).State = EntityState.Added;
                 existing.Sources.Add(projectSource);
-            }
-        }
-    }
-
-    private static void SyncSourceIgnores(ProjectSourceEntity entity, ProjectSourceEntity existing, SqlDbContext context)
-    {
-        // Remove SubObjects
-        foreach (var source in existing.FileIgnorePatterns)
-        {
-            if (entity.FileIgnorePatterns.All(s => s.Id != source.Id))
-            {
-                context.Remove(source);
-            }
-        }
-
-        // Add or Update SubObjects
-        foreach (var projectSource in entity.FileIgnorePatterns)
-        {
-            var existingSource = existing.FileIgnorePatterns.FirstOrDefault(x => x.Id == projectSource.Id);
-            if (existingSource != null)
-            {
-                context.Entry(existingSource).CurrentValues.SetValues(projectSource);
-            }
-            else
-            {
-                context.Entry(projectSource).State = EntityState.Added;
-                existing.FileIgnorePatterns.Add(projectSource);
             }
         }
     }
