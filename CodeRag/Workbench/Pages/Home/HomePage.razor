@@ -1,17 +1,34 @@
 ﻿@page "/"
+@using CodeRag.Shared.Chunking.CSharp
 @using CodeRag.Shared.EntityFramework.DbModels
 
 <PageTitle>@Project.Name</PageTitle>
 
 Todo: Dashboard for @Project.Name
 
-@if (_treeItems != null)
+@if (_tree != null)
 {
-    <MudTreeView Items="[_treeItems]">
-        <ItemTemplate>
-            <MudTreeViewItem
-                Value="@context.Value"
-                Items="@context.Children"/>
-        </ItemTemplate>
-    </MudTreeView>
+    <MudGrid>
+        <MudItem xs="3">
+
+            <RSelectFromEnum T="CSharpKind" Value="_kind" ValueChanged="x => SwitchKind(x)"></RSelectFromEnum>
+            <RSelectFromEnum T="SummaryStatus" Value="_summaryStatus" ValueChanged="x=> SwitchSummaryKind(x)"></RSelectFromEnum>
+            <MudTextField T="string" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" TextChanged="OnTextChanged" Immediate="true" Clearable="true" />
+            <MudTreeView Items="_tree.Children" Dense @ref="_treeView" FilterFunc="MatchesName">
+                <ItemTemplate>
+                    <MudTreeViewItem Expanded T="Item"
+                                     Text="@context.Value.GetText(context.Children)"
+                                     TextTypo="Typo.caption"
+                                     EndText="@context.Value.GetTotalRelatedEntities(context.Children).ToString()"
+                                     EndTextTypo="Typo.caption"
+                                     Value="@context.Value"
+                                     Items="@context.Children"
+                                     Icon="@context.Value.GetIcon()"
+                                     Visible="@context.Visible">
+                    </MudTreeViewItem>
+                </ItemTemplate>
+            </MudTreeView>
+        </MudItem>
+    </MudGrid>
+
 }

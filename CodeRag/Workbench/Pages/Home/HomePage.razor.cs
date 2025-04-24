@@ -1,4 +1,5 @@
-﻿using CodeRag.Shared.EntityFramework.DbModels;
+﻿using CodeRag.Shared.Chunking.CSharp;
+using CodeRag.Shared.EntityFramework.DbModels;
 using CodeRag.Shared.VectorStore;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -13,33 +14,56 @@ public partial class HomePage(VectorStoreQuery vectorStoreQuery)
     [CascadingParameter]
     public required ProjectEntity Project { get; set; }
 
-    private TreeItemData<string> _treeItems { get; set; }
+    private TreeItemData<Item>? _tree;
+    private MudTreeView<Item>? _treeView;
+
+    private string _searchPhrase;
+    private SummaryStatus _summaryStatus = SummaryStatus.MissingSummary;
+    private CSharpKind _kind;
+    private VectorEntity[] _existing;
+
+    private async void OnTextChanged(string searchPhrase)
+    {
+        _searchPhrase = searchPhrase;
+        if (_treeView != null)
+        {
+            await _treeView.FilterAsync();
+        }
+    }
+
+    private Task<bool> MatchesName(TreeItemData<Item> item)
+    {
+        if (string.IsNullOrEmpty(item.Value.Info.Name))
+        {
+            return Task.FromResult(false);
+        }
+
+        return Task.FromResult(item.Value.Info.Name.Contains(_searchPhrase, StringComparison.OrdinalIgnoreCase));
+    }
 
     protected override async Task OnInitializedAsync()
     {
         _cSharpSources = Project.Sources.Where(x => x.Kind == ProjectSourceKind.CSharpCode).ToArray();
         _selectedCSharpSource = _cSharpSources.FirstOrDefault(); //todo: Handle if no sources exist
 
-        var existing = await vectorStoreQuery.GetExistingAsync(Project.Id, _selectedCSharpSource.Id);
-
-        //_treeItems = TreeBuilder.BuildFromPaths(existing.Select(x => x.SourcePath).OrderBy(x => x).ToList());
-        _treeItems = BuildTree(_selectedCSharpSource.Path, existing);
+        _existing = await vectorStoreQuery.GetExistingAsync(Project.Id, _selectedCSharpSource.Id);
+        await Refresh();
     }
 
-    public static TreeItemData<string> BuildTree(string rootPath, VectorEntity[] existing)
+    private TreeItemData<Item> BuildTree(string rootPath, VectorEntity[] existing)
     {
         var rootInfo = new DirectoryInfo(rootPath);
-        var rootNode = new TreeItemData<string> { Value = rootInfo.Name };
+        var rootNode = new TreeItemData<Item> { Value = new Item(rootInfo, []) };
         BuildChildren(rootNode, rootInfo, existing);
         return rootNode;
     }
 
-    private static void BuildChildren(TreeItemData<string> parentNode, DirectoryInfo dirInfo, VectorEntity[] existing)
+    private void BuildChildren(TreeItemData<Item> parentNode, DirectoryInfo dirInfo, VectorEntity[] existing)
     {
         parentNode.Children ??= [];
         foreach (var dir in dirInfo.GetDirectories())
         {
-            var dirNode = new TreeItemData<string> { Value = dir.Name };
+            var dirNode = new TreeItemData<Item> { Value = new Item(dir, []) };
             BuildChildren(dirNode, dir, existing);
             if (dirNode.Children is { Count: > 0 })
             {
@@ -47,43 +71,80 @@ public partial class HomePage(VectorStoreQuery vectorStoreQuery)
             }
         }
 
-        foreach (var file in dirInfo.GetFiles("*.cs"))
+        foreach (var file in dirInfo.GetFiles())
         {
-            var matches = existing.Where(x => file.FullName.EndsWith(x.SourcePath)).ToList();
-            parentNode.Children.Add(new TreeItemData<string> { Value = $"{file.FullName} ({matches.Count})" });
+            var matches = existing.Where(x => file.FullName == _selectedCSharpSource.Path + x.SourcePath).ToList();
+            if (matches.Count > 0)
+            {
+                parentNode.Children.Add(new TreeItemData<Item> { Value = new Item(file, matches) });
+            }
         }
     }
 
-    public class TreeBuilder
+    private record Item(FileSystemInfo Info, List<VectorEntity> RelatedEntities)
     {
-        public static TreeItemData<string> BuildFromPaths(List<string> paths)
+        public string? GetText(List<TreeItemData<Item>>? children)
         {
-            var root = new TreeItemData<string> { Value = "src" };
-
-            foreach (var path in paths)
-            {
-                var parts = path.Trim('\\').Split('\\');
-                AddPath(root, parts, 1); // Skip "src"
-            }
-
-            return root;
+            return Info.Name;
         }
 
-        private static void AddPath(TreeItemData<string> currentNode, string[] parts, int index)
+        public int GetTotalRelatedEntities(List<TreeItemData<Item>>? children)
         {
-            currentNode.Children ??= [];
-            if (index >= parts.Length) return;
-
-            var part = parts[index];
-            var existing = currentNode.Children.FirstOrDefault(c => c.Value == part);
-
-            if (existing == null)
+            if (children == null) return RelatedEntities.Count;
+            int sum = 0;
+            foreach (var child in children)
             {
-                existing = new TreeItemData<string> { Value = part };
-                currentNode.Children.Add(existing);
+                sum += child.Value.RelatedEntities.Count;
+                sum += GetTotalRelatedEntities(child.Children);
             }
 
-            AddPath(existing, parts, index + 1);
+            return sum;
         }
+
+        public string? GetIcon()
+        {
+            if (Info.Attributes.HasFlag(FileAttributes.Directory))
+            {
+                return Icons.Material.Filled.Folder;
+            }
+
+            return null;
+        }
+    }
+
+    private enum SummaryStatus
+    {
+        All,
+        MissingSummary,
+        HasSummary
+    }
+
+    private async Task SwitchKind(CSharpKind kind)
+    {
+        _kind = kind;
+        await Refresh();
+    }
+
+    private async Task Refresh()
+    {
+        var existing = _existing.Where(x => x.Kind == _kind.ToString());
+        switch (_summaryStatus)
+        {
+            case SummaryStatus.MissingSummary:
+                existing = existing.Where(x => string.IsNullOrWhiteSpace(x.Summary));
+                break;
+            case SummaryStatus.HasSummary:
+                existing = existing.Where(x => !string.IsNullOrWhiteSpace(x.Summary));
+                break;
+        }
+
+
+        _tree = BuildTree(_selectedCSharpSource.Path, existing.ToArray());
+    }
+
+    private async Task SwitchSummaryKind(SummaryStatus summaryStatus)
+    {
+        _summaryStatus = summaryStatus;
+        await Refresh();
     }
 }
