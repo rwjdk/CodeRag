@@ -3,7 +3,7 @@
     <DialogContent>
         <RTextField Label="Name" @bind-Value="@ProjectSource.Name" />
         <RTextField Label="Path" @bind-Value="@ProjectSource.Path" />
-        <RCheckBox Label="Search Path Recursive" @bind-Value="@ProjectSource.PathSearchRecursive" />
+        <RCheckBox Label="Search Path Recursive" @bind-Value="@ProjectSource.Recursive" />
         <RTextField Label="Root URL" @bind-Value="@ProjectSource.RootUrl" />
 
         @switch (ProjectSource.Kind)

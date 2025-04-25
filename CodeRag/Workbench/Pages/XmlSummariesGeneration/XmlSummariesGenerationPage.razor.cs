@@ -69,6 +69,6 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
 
     private async Task GenerateXmlSummary()
     {
-        _xmlSummary = await aiQuery.GenerateCSharpXmlSummary(Project, _selectEntry);
+        _xmlSummary = await aiQuery.GenerateCSharpXmlSummary(Project, _selectEntry.Content);
     }
 }

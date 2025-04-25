@@ -17,6 +17,7 @@ builder.AutoRegisterServicesViaReflection(typeof(Program));
 builder.AutoRegisterServicesViaReflection(typeof(ProjectEntity));
 builder.AddAi();
 builder.AddVectorStore();
+builder.AddGitHub();
 
 var app = builder.Build();
 

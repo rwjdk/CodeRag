@@ -32,7 +32,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
 
         await collection.CreateCollectionIfNotExistsAsync();
 
-        string[] paths = Directory.GetFiles(source.Path, "*.md", source.PathSearchRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+        string[] paths = Directory.GetFiles(source.Path, "*.md", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         List<VectorEntity> entries = [];
 
         foreach (string path in paths)

@@ -103,12 +103,7 @@ public class VectorEntity
 
     public string GetTargetMarkdownFilename()
     {
-        if (Kind == CSharpKind.Method.ToString() || Kind == CSharpKind.Property.ToString() || Kind == CSharpKind.Constant.ToString()) return $"{Namespace}-{Parent}.{Name}.md";
-
-        // ReSharper disable once ConvertIfStatementToReturnStatement
-        if (Kind == CSharpKind.Constructor.ToString()) return $"{Namespace}-{Parent}.{Name}.ctor.md";
-
-        return $"{Namespace}-{Name}.md";
+        return Kind == nameof(CSharpKind.Method) ? $"{Namespace}-{Parent}.{Name}.md" : $"{Namespace}-{Name}.md";
     }
 
     public override string ToString()

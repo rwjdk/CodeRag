@@ -10,20 +10,22 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
 using Workbench.Dialogs;
 
-namespace Workbench.Pages.Test;
+namespace Workbench.Pages.Chat;
 
-public partial class TestPage(AiQuery aiQuery, IDialogService dialogService) : IDisposable
+public partial class ChatPage(AiQuery aiQuery, IDialogService dialogService) : IDisposable
 {
-    [CascadingParameter] public required BlazorUtils BlazorUtils { get; set; }
+    [CascadingParameter]
+    public required BlazorUtils BlazorUtils { get; set; }
 
-    [CascadingParameter] public required ProjectEntity Project { get; set; }
+    [CascadingParameter]
+    public required ProjectEntity Project { get; set; }
 
     private RTextField? _chatInput;
     private string? _chatInputMessage;
     private bool _currentMessageIsProcessing;
     private bool _shouldRender = true;
 
-    private readonly List<ChatMessageContent> _conversation = new List<ChatMessageContent>();
+    private readonly List<ChatMessageContent> _conversation = [];
     private AiChatModel? _chatModel;
     private bool _useSourceCodeSearch = true;
     private bool _useDocumentationSearch = true;

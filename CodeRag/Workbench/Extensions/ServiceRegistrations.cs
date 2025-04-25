@@ -1,6 +1,7 @@
 ﻿using CodeRag.Shared;
 using CodeRag.Shared.Ai;
 using CodeRag.Shared.EntityFramework;
+using CodeRag.Shared.GitHub;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
@@ -47,6 +48,17 @@ public static class ServiceRegistrations
         builder.Services.AddDbContextFactory<SqlDbContext>(options => { options.UseSqlServer(connectionString); });
 
         builder.Services.AddScoped<IVectorStore, SqlServerVectorStore>(_ => new SqlServerVectorStore(connectionString));
+    }
+
+    public static void AddGitHub(this WebApplicationBuilder builder)
+    {
+        var gitHubToken = builder.Configuration[Constants.ConfigurationVariables.GitHubToken];
+        if (string.IsNullOrWhiteSpace(gitHubToken))
+        {
+            throw new MissingConfigurationVariableException(Constants.ConfigurationVariables.GitHubToken);
+        }
+
+        builder.Services.AddSingleton(new GitHubConnection(gitHubToken));
     }
 
     public static void AddAi(this WebApplicationBuilder builder)

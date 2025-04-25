@@ -4,6 +4,7 @@ using CodeRag.Shared.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CodeRag.Shared.Migrations
 {
     [DbContext(typeof(SqlDbContext))]
-    partial class SqlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250424075310_ProjectTweaks")]
+    partial class ProjectTweaks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,6 +44,10 @@ namespace CodeRag.Shared.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("GitHubRepo")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GitHubToken")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -102,11 +109,11 @@ namespace CodeRag.Shared.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<bool>("PathSearchRecursive")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("ProjectEntityId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Recursive")
-                        .HasColumnType("bit");
 
                     b.Property<string>("RootUrl")
                         .HasMaxLength(1000)

@@ -10,10 +10,4 @@ public enum CSharpKind
     Class,
     Struct,
     Record,
-    Property,
-    Constructor
-
-    //todo - Event
-    ,
-    Constant
 }

@@ -30,9 +30,6 @@ public class ProjectEntity
     [MaxLength(500)]
     public string? GitHubRepo { get; set; }
 
-    [MaxLength(500)]
-    public string? GitHubToken { get; set; } //todo - Evaluate security of this (should properly be removed here and be part of a key vault)
-
     #endregion
 
     public static ProjectEntity Empty()

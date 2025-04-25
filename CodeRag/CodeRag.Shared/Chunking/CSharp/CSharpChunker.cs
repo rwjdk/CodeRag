@@ -12,7 +12,7 @@ namespace CodeRag.Shared.Chunking.CSharp
         public List<CSharpChunk> GetCodeEntities(string code) //todo allow the passing of settings
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
-            SyntaxNode root = tree.GetRoot();
+            var root = tree.GetRoot();
 
             List<CSharpChunk> entries = [];
             entries.AddRange(ProcessTypeDeclaration<ClassDeclarationSyntax>(root, CSharpKind.Class));
@@ -42,7 +42,7 @@ namespace CodeRag.Shared.Chunking.CSharp
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
                 string parent = string.Empty;
-                result.Add(new CSharpChunk(CSharpKind.Interface, ns, parent, CSharpKind.None, name, xmlSummary, node.ToString(), []));
+                result.Add(new CSharpChunk(CSharpKind.Interface, ns, parent, CSharpKind.None, name, xmlSummary, node.ToString(), [], root));
             }
 
             return result;
@@ -66,7 +66,7 @@ namespace CodeRag.Shared.Chunking.CSharp
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
                 string parent = string.Empty;
-                result.Add(new CSharpChunk(CSharpKind.Delegate, ns, parent, CSharpKind.None, name, xmlSummary, node.ToString(), []));
+                result.Add(new CSharpChunk(CSharpKind.Delegate, ns, parent, CSharpKind.None, name, xmlSummary, node.ToString(), [], node));
             }
 
             return result;
@@ -87,7 +87,7 @@ namespace CodeRag.Shared.Chunking.CSharp
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
                 string parent = string.Empty;
-                result.Add(new CSharpChunk(CSharpKind.Enum, ns, parent, CSharpKind.None, name, xmlSummary, RemoveAttributes(node).ToString(), []));
+                result.Add(new CSharpChunk(CSharpKind.Enum, ns, parent, CSharpKind.None, name, xmlSummary, RemoveAttributes(node).ToString(), [], node));
             }
 
             return result;
@@ -131,13 +131,13 @@ namespace CodeRag.Shared.Chunking.CSharp
                     {
                         string name = method.Identifier.ValueText;
                         string xmlSummary = GetXmlSummary(method);
-                        string content = (method.ToString().Replace(method.Body?.ToString() ?? Guid.NewGuid().ToString(), "").Trim() + " { /*...*/ }").Trim();
+                        string content = (method.ToString().Replace(method.Body?.ToString() ?? Guid.NewGuid().ToString(), "").Trim()).Trim();
                         string parent = node.Identifier.ValueText;
                         CSharpKind parentKind = kind;
                         List<string> dependencies = GetMethodDependencies(method);
                         dependencies = dependencies.Distinct().ToList();
 
-                        result.Add(new CSharpChunk(CSharpKind.Method, ns, parent, parentKind, name, xmlSummary, content, dependencies));
+                        result.Add(new CSharpChunk(CSharpKind.Method, ns, parent, parentKind, name, xmlSummary, content, dependencies, method));
                     }
                 }
 
@@ -182,7 +182,7 @@ namespace CodeRag.Shared.Chunking.CSharp
                     sb.AppendLine("}");
                     string parent = string.Empty;
                     dependencies = dependencies.Distinct().ToList();
-                    result.Add(new CSharpChunk(kind, ns, parent, CSharpKind.None, name, GetXmlSummary(node), sb.ToString(), dependencies));
+                    result.Add(new CSharpChunk(kind, ns, parent, CSharpKind.None, name, GetXmlSummary(node), sb.ToString(), dependencies, node));
                 }
             }
 

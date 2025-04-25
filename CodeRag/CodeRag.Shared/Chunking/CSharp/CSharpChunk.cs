@@ -1,9 +1,19 @@
-﻿using System.Text;
+﻿using Microsoft.CodeAnalysis;
+using System.Text;
 
 namespace CodeRag.Shared.Chunking.CSharp;
 
-public record CSharpChunk(CSharpKind Kind, string Namespace, string? Parent, CSharpKind? ParentKind, string Name, string XmlSummary, string Content, List<string> Dependencies)
+public class CSharpChunk(CSharpKind kind, string @namespace, string? parent, CSharpKind? parentKind, string name, string xmlSummary, string content, List<string> dependencies, SyntaxNode node)
 {
+    public CSharpKind Kind { get; } = kind;
+    public string Namespace { get; } = @namespace;
+    public string? Parent { get; } = parent;
+    public CSharpKind? ParentKind { get; } = parentKind;
+    public string Name { get; } = name;
+    public string XmlSummary { get; set; } = xmlSummary;
+    public string Content { get; } = content;
+    public List<string> Dependencies { get; } = dependencies;
+    public SyntaxNode Node { get; } = node;
     public string KindAsString => Kind.ToString();
     public string? ParentKindAsString => ParentKind.ToString();
 

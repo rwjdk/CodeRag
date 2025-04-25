@@ -1,0 +1,47 @@
+﻿@page "/PrReview"
+@using CodeRag.Shared.Ai
+@using Octokit
+<h2>Review Pull Request using AI</h2>
+
+@if (string.IsNullOrWhiteSpace(Project.GitHubOwner) || string.IsNullOrWhiteSpace(Project.GitHubRepo))
+{
+    <MudAlert Severity="Severity.Warning">This feature require that you define GitHub Owner and Repo in the Project Settings</MudAlert>
+}
+else
+{
+    @if (_pullRequests != null)
+    {
+        <RSelect T="AiChatModel" Items="aiQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
+        <RSelect T="PullRequest" Items="_pullRequests" Label="Pull Request to Review" @bind-Value="_selectedPullRequest" ToStringFunc="@(x=> x?.Title ?? "???")"/>
+
+        @if (_selectedPullRequest != null)
+        {
+            <h3>@_selectedPullRequest.Title</h3>
+            <RButton OnClick="DoAiReview">AI Review</RButton>
+
+            @if (_review != null)
+            {
+                <h4>Review</h4>
+                @_review.Summary
+
+                @if (_review.PotentialIssuesFound?.Any() == true)
+                {
+                    <h4>@_review.PotentialIssuesFound.Length Potential issues found</h4>
+                }
+                else
+                {
+                    <h4>No issues found 😎</h4>
+                }
+
+                <RButton OnClick="AddPrReviewComment">Add this review as Comment on the PR</RButton>
+        
+            }
+        }    
+    }
+    else
+    {
+        <RProgressIndicator/>
+    }
+
+    
+}

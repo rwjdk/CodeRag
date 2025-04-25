@@ -7,7 +7,6 @@
             <MudTabPanel Text="GitHub">
                 <RTextField Label="GitHub Owner" @bind-Value="@Project.GitHubOwner" />
                 <RTextField Label="GitHub Repo" @bind-Value="@Project.GitHubRepo" />
-                <RTextField Label="GitHub Token" @bind-Value="@Project.GitHubToken" InputType="InputType.Password" /> @* todo: Allow adornment click to reveal *@
             </MudTabPanel>
             <MudTabPanel Text="Sources">
                 <MudDataGrid Items="Project.Sources">

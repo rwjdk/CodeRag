@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using CodeRag.Shared.Chunking.CSharp;
 using CodeRag.Shared.EntityFramework.DbModels;
+using CodeRag.Shared.GitHub;
 using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
@@ -10,7 +11,7 @@ using Octokit;
 namespace CodeRag.Shared.Ingestion;
 
 [UsedImplicitly]
-public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand vectorStoreCommand, VectorStoreQuery vectorStoreQuery) : IngestionCommand(vectorStoreCommand), IScopedService
+public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand vectorStoreCommand, VectorStoreQuery vectorStoreQuery, GitHubQuery gitHubQuery) : IngestionCommand(vectorStoreCommand), IScopedService
 {
     public override async Task Ingest(ProjectEntity project, ProjectSourceEntity source)
     {
@@ -132,7 +133,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
             return codeEntities; //todo - exception instead?
         }
 
-        string[] sourceCodeFiles = Directory.GetFiles(source.Path, "*.cs", source.PathSearchRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+        string[] sourceCodeFiles = Directory.GetFiles(source.Path, "*.cs", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
         List<string> ignoredFiles = [];
         foreach (string sourceCodeFilePath in sourceCodeFiles)
@@ -171,27 +172,8 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
             return codeEntities; //todo - exception instead?
         }
 
-        GitHubClient client = new GitHubClient(new ProductHeaderValue(Constants.AppName))
-        {
-            Credentials = new Credentials(project.GitHubToken)
-        };
-
-        var gitHubOwner = project.GitHubOwner;
-        var gitHubRepo = project.GitHubRepo;
-        var repo = await client.Repository.Get(gitHubOwner, gitHubRepo);
-        var defaultBranch = repo.DefaultBranch; //todo - support other branches
-
-        var reference = await client.Git.Reference.Get(gitHubOwner, gitHubRepo, $"heads/{defaultBranch}");
-        var commit = await client.Git.Commit.Get(gitHubOwner, gitHubRepo, reference.Object.Sha);
-        TreeResponse? tree;
-        if (source.PathSearchRecursive)
-        {
-            tree = await client.Git.Tree.GetRecursive(gitHubOwner, gitHubRepo, commit.Tree.Sha);
-        }
-        else
-        {
-            tree = await client.Git.Tree.Get(gitHubOwner, gitHubRepo, commit.Tree.Sha); //todo - have not tested this
-        }
+        var gitHubClient = gitHubQuery.GetGitHubClient();
+        var treeResponse = await gitHubQuery.GetTreeAsync(gitHubClient, project.GitHubOwner, project.GitHubRepo, source.Recursive);
 
         string prefix = source.Path;
         if (!prefix.EndsWith("/"))
@@ -199,7 +181,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
             prefix += "/";
         }
 
-        var sourceCodeFiles = tree.Tree.Where(x => x.Type == TreeType.Blob && x.Path.StartsWith(prefix) && x.Path.EndsWith(".cs")).ToArray();
+        var sourceCodeFiles = treeResponse.Tree.Where(x => x.Type == TreeType.Blob && x.Path.StartsWith(prefix) && x.Path.EndsWith(".cs")).ToArray();
         OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
         List<string> ignoredFiles = [];
         int downloadCounter = 0;
@@ -214,13 +196,12 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
 
             OnNotifyProgress($"{downloadCounter}/{sourceCodeFiles.Length} - Downloading '{sourceCodeFilePath}' from GitHub");
             var sourcePath = sourceCodeFilePath.Replace(source.Path, string.Empty);
-            byte[]? fileContent = await client.Repository.Content.GetRawContent(gitHubOwner, gitHubRepo, sourceCodeFilePath);
-            if (fileContent == null)
+            var code = await gitHubQuery.GetFileContentAsync(gitHubClient, project.GitHubOwner, project.GitHubRepo, sourceCodeFilePath);
+            if (string.IsNullOrWhiteSpace(code))
             {
                 continue;
             }
 
-            string code = Encoding.UTF8.GetString(fileContent);
             List<CSharpChunk> entitiesForFile = chunker.GetCodeEntities(code);
             foreach (CSharpChunk codeEntity in entitiesForFile)
             {

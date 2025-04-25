@@ -18,34 +18,56 @@ public class ProjectSourceEntity
     public required ProjectEntity Project { get; set; }
 
     [MaxLength(100)]
-    public string? Name { get; set; }
+    public required string Name { get; set; }
 
     public required ProjectSourceKind Kind { get; set; }
 
-    public ProjectSourceLocation Location { get; set; }
+    public required ProjectSourceLocation Location { get; set; }
 
     [MaxLength(1000)]
-    public string? Path { get; set; }
+    public required string Path { get; set; }
 
-    public bool PathSearchRecursive { get; set; }
+    public required bool Recursive { get; set; }
 
     [MaxLength(1000)]
     public string? RootUrl { get; set; }
 
-    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public string? MarkdownChunkLineIgnorePatternsRaw { get; set; }
+    [NotMapped]
+    public List<string> FileIgnorePatterns
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(FileIgnorePatternsRaw))
+            {
+                return [];
+            }
+
+            return FileIgnorePatternsRaw.Split(IgnorePatternSplitter, StringSplitOptions.RemoveEmptyEntries).ToList();
+        }
+        set
+        {
+            if (value.Count == 0)
+            {
+                FileIgnorePatternsRaw = string.Empty;
+            }
+
+            FileIgnorePatternsRaw = string.Join(IgnorePatternSplitter, value);
+        }
+    }
 
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public string? FileIgnorePatternsRaw { get; set; }
 
     #region Markdown Specific Settings
 
+    // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
+    public string? MarkdownChunkLineIgnorePatternsRaw { get; set; }
     public bool MarkdownIgnoreCommentedOutContent { get; set; }
     public bool MarkdownIgnoreImages { get; set; }
     public bool MarkdownIgnoreMicrosoftLearnNoneCsharpContent { get; set; }
-    public int MarkdownOnlyChunkIfMoreThanThisNumberOfLines { get; set; } = 0;
+    public int MarkdownOnlyChunkIfMoreThanThisNumberOfLines { get; set; }
     public int MarkdownLevelsToChunk { get; set; } = 2;
-    public int MarkdownChunkIgnoreIfLessThanThisAmountOfChars { get; set; } = 0;
+    public int MarkdownChunkIgnoreIfLessThanThisAmountOfChars { get; set; }
     public bool MarkdownFilenameEqualDocUrlSubpage { get; set; }
 
     #endregion
@@ -73,43 +95,21 @@ public class ProjectSourceEntity
         }
     }
 
-
-    [NotMapped]
-    public List<string> FileIgnorePatterns
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(FileIgnorePatternsRaw))
-            {
-                return [];
-            }
-
-            return FileIgnorePatternsRaw.Split(IgnorePatternSplitter, StringSplitOptions.RemoveEmptyEntries).ToList();
-        }
-        set
-        {
-            if (value.Count == 0)
-            {
-                FileIgnorePatternsRaw = string.Empty;
-            }
-
-            FileIgnorePatternsRaw = string.Join(IgnorePatternSplitter, value);
-        }
-    }
-
     public static ProjectSourceEntity Empty(ProjectEntity project, ProjectSourceKind kind)
     {
         return new ProjectSourceEntity
         {
             Kind = kind,
+            Name = string.Empty,
+            Path = string.Empty,
             Project = project,
             ProjectEntityId = project.Id,
-            PathSearchRecursive = true,
+            Recursive = true,
             Location = ProjectSourceLocation.Local,
             MarkdownChunkIgnoreIfLessThanThisAmountOfChars = 25,
             MarkdownIgnoreImages = true,
             MarkdownIgnoreCommentedOutContent = true,
-            MarkdownOnlyChunkIfMoreThanThisNumberOfLines = 50
+            MarkdownOnlyChunkIfMoreThanThisNumberOfLines = 50,
         };
     }
 }

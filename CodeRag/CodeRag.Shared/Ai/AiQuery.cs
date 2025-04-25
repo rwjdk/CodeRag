@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using CodeRag.Shared.Ai.Tools;
 using CodeRag.Shared.EntityFramework.DbModels;
+using CodeRag.Shared.Models;
 using CodeRag.Shared.Prompting;
 using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
@@ -193,11 +194,11 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
         return JsonSerializer.Deserialize<T>(json)!;
     }
 
-    public async Task<string?> GenerateCSharpXmlSummary(ProjectEntity project, VectorEntity entity)
+    public async Task<string?> GenerateCSharpXmlSummary(ProjectEntity project, string signature)
     {
         string prompt = Prompt.Create("You are an C# Expert that can generate XML Summaries.")
             .AddRule($"Always use all tools available ('{Constants.Tools.CSharp}' and '{Constants.Tools.Markdown}') before you provide your answer")
-            .AddRule("Always report back in C# XML Summary Format")
+            .AddRule("Always report back in C# XML Summary Format and describe all parameters and the return type")
             .AddRule("Do not mention that the method is asynchronously and that the Cancellation-token can be used")
             .AddRule("The description should be short and focus on what the C# entity do")
             .AddRule("CancellationToken params should just be referred to as 'Cancellation Token'")
@@ -210,7 +211,7 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
             project: project,
             chatModel: chatModel,
             instructions: prompt,
-            input: "Generate XML Summary for this code Entity: " + entity.Content,
+            input: "Generate XML Summary for this code Entity: " + signature,
             useSourceCodeSearch: true,
             useDocumentationSearch: true);
         return response.XmlSummary;
@@ -237,6 +238,46 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
     public List<AiChatModel> GetChatModels()
     {
         return ai.Models;
+    }
+
+    public async Task<Review> GetGithubPullRequestReview(AiChatModel chatModel, string prDiffContent)
+    {
+        //todo - instructions should be configurable
+        var agent = GetAgentForStructuredOutput<Review>(chatModel, """
+                                                                   You are a highly experienced and extremely thorough C# code reviewer
+                                                                   Your task is to review the provided GitHub PR diff.
+
+                                                                   You will particularly pay attention to logical and performance bugs and regressions, and generally be very meticulous in determining what this PR introduces in terms of new and/or changed features and/or behaviors.
+
+                                                                   Next, you will perform a very thorough review, but not output your results yet.
+                                                                   You will then review the code again, and make sure you haven't missed anything in your first review.
+                                                                   Should you at any point discover that it would be beneficial to you as the reviewer to see additional types, you may at any point continue to ask me for additional types, and then I may provide them to you.
+
+                                                                   Once your initial review as well as your second pass through has been completed, go through all your findings and double-check that you didn't make a mistake, it's important that you do not point out any errors that are not actually errors, likewise its equally important that you don't miss or leave out any actual bugs.
+
+                                                                   If you are in doubt whether something is a problem or not, you will include the details in your review, making sure to mention your uncertainty for the relevant points.
+
+                                                                   Always keep your answers short and concise but sufficient for me to complete the task of understanding your concerns/findings, and for me to implement your suggested changes. 
+                                                                   Assume that all code can compile and use the latest C# Syntax Rules (Please note that in the latest C# you can use [] for list initializers so do not report this back as a bug)
+                                                                   Don't comment on "missing newline at the end of the file"
+                                                                   """, GetKernel(chatModel));
+
+
+        StringBuilder message = new();
+        message.AppendLine("Please make a Code Review with the following information <pr_diff>");
+        message.AppendLine("<pr_diff>");
+        message.AppendLine(prDiffContent);
+        message.AppendLine("</pr_diff>");
+
+        message.AppendLine("Based on the above please do the review");
+
+        await foreach (var content in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, message.ToString())))
+        {
+            var json = content.Message.ToString();
+            return JsonSerializer.Deserialize<Review>(json)!;
+        }
+
+        throw new Exception("Unable to get Review");
     }
 }
 
