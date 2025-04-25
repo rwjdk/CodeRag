@@ -1,0 +1,10 @@
+﻿<MudExpansionPanel Text="@Message" Expanded="false" Style="background-color: var(--mud-palette-error); border: 0; color: white;">
+    <div>
+        @Exception.ToString()
+    </div>
+</MudExpansionPanel>
+
+@code {
+    [Parameter, EditorRequired] public required string Message { get; set; }
+    [Parameter, EditorRequired] public required Exception Exception { get; set; }
+}

@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>a5291f3c-5426-45d8-8c98-fbcb23d00992</UserSecretsId>
+		<NoWarn>SKEXP0001,SKEXP0050,SKEXP0010,SKEXP0020,SKEXP0110,SKEXP0070,SKEXP0110</NoWarn>
+		<NoError>SKEXP0001,SKEXP0050,SKEXP0010,SKEXP0020,SKEXP0110,SKEXP0070,SKEXP0110</NoError>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Markdig" Version="0.40.0" />
+		<PackageReference Include="Markdown.ColorCode" Version="3.0.0" />
+		<PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+		<PackageReference Include="MudBlazor" Version="8.5.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\BlazorUtils\BlazorUtilities.csproj" />
+		<ProjectReference Include="..\Shared\Shared.csproj" />
+	</ItemGroup>
+
+</Project>

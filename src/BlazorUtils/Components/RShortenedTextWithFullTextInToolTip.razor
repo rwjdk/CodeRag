@@ -1,0 +1,16 @@
+﻿@if (Text.Length-3 < ShortendTextMaxLength)
+{
+    @Text
+}
+else
+{
+    <MudTooltip Text="@Text">
+        @Text.Substring(0, ShortendTextMaxLength-3)...
+    </MudTooltip>
+}
+
+
+@code {
+    [Parameter, EditorRequired] public required string Text { get; set; }
+    [Parameter] public required int ShortendTextMaxLength { get; set; }
+}

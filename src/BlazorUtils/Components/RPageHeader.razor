@@ -1,0 +1,14 @@
+﻿<PageTitle>@Title</PageTitle>
+@if (SubTitle != null)
+{
+    <h1>@Title</h1>
+    <div style="font-size: 12px; font-style: italic; color: gray; padding-bottom: 10px;">@SubTitle</div>
+}
+else
+{
+    <h1 style="padding-bottom: 10px;">@Title</h1>
+}
+@code {
+    [Parameter, EditorRequired] public required string Title { get; set; }
+    [Parameter] public RenderFragment? SubTitle { get; set; }
+}

@@ -1,0 +1,79 @@
+﻿@using JetBrains.Annotations
+@if (_show)
+{
+    <MudProgressLinear Color="Color.Primary" Size="Size.Large" Value="@Value" Max="Max" Class="my-7">
+        @if (!string.IsNullOrWhiteSpace(Caption))
+        {
+            <MudText Typo="Typo.subtitle1" Color="Color.Default" Style="margin-top: 40px">
+                <strong>@Caption</strong>
+            </MudText>
+        }
+    </MudProgressLinear>
+}
+
+@code {
+    [Parameter] public int Value { get; set; }
+    [Parameter] public int Max { get; set; }
+    [Parameter] public string? Caption { get; set; }
+    private bool _show;
+    private string? _captionTemplate;
+    private string? _captionOnCompletion;
+    private bool _hideOnCompletion;
+
+    // ReSharper disable once UnusedMember.Global
+    public void Show(int max, string? captionTemplate = null, string? captionOnCompletion = null, bool hideOnCompletion = false)
+    {
+        _hideOnCompletion = hideOnCompletion;
+        _captionOnCompletion = captionOnCompletion;
+        Value = 0;
+        _show = true;
+        Max = max;
+        _captionTemplate = captionTemplate;
+        if (!string.IsNullOrWhiteSpace(_captionTemplate))
+        {
+            Caption = string.Format(_captionTemplate, Value, Max);
+        }
+        StateHasChanged();
+    }
+
+    // ReSharper disable once UnusedMember.Global
+    public void Hide()
+    {
+        _show = false;
+        StateHasChanged();
+    }
+
+    [UsedImplicitly]
+    public void ChangeCaption(string newCaption)
+    {
+        Caption = newCaption;
+        StateHasChanged();
+    }
+
+    // ReSharper disable once UnusedMember.Global
+    public void ReportProgress()
+    {
+        Value++;
+
+        if (Value >= Max)
+        {
+            if (_hideOnCompletion)
+            {
+                _show = false;
+            }
+            else if (!string.IsNullOrWhiteSpace(_captionOnCompletion))
+            {
+                Caption = _captionOnCompletion;
+            }
+        }
+        else
+        {
+            if (!string.IsNullOrWhiteSpace(_captionTemplate))
+            {
+                Caption = string.Format(_captionTemplate, Value, Max);
+            }
+        }
+
+        StateHasChanged();
+    }
+}

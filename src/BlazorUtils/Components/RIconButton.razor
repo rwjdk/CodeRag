@@ -1,0 +1,40 @@
+﻿@if (!string.IsNullOrWhiteSpace(ToolTip))
+{
+    <MudTooltip Text="@ToolTip">
+        @IconButton
+    </MudTooltip>
+}
+else
+{
+    @IconButton
+}
+
+@code {
+    [Parameter] public Color Color { get; set; } = Color.Default;
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public string? Target { get; set; }
+    [Parameter, EditorRequired] public required string Icon { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public Variant Variant { get; set; } = Variant.Text;
+    [Parameter] public Size Size { get; set; } = Size.Small;
+    [Parameter] public ButtonType ButtonType { get; set; } = ButtonType.Button;
+    [Parameter] public string? Style { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? ToolTip { get; set; }
+
+    private RenderFragment IconButton =>
+        @<MudIconButton
+             Variant="@Variant"
+             Color="@Color"
+             Size="@Size"
+             OnClick="OnClick"
+             Href="@Href"
+             Target="@Target"
+             Icon="@Icon"
+             Disabled="@Disabled"
+             Style="@Style"
+             Class="@Class">
+    </MudIconButton>;
+
+}
