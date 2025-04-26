@@ -2,4 +2,64 @@
 
 <PageTitle>@Project.Name</PageTitle>
 
-Todo: Dashboard for @Project.Name
+<div style="text-align: center">
+    <h1>@Project.Name</h1>
+    <br />
+    What would you like to do today?
+    <br/>
+    <br/>
+    <MudGrid Justify="Justify.Center">
+        <MudItem>
+            <a href="/XmlSummariesGeneration">
+            <MudPaper Elevation="5" Style="padding: 8px" Width="300px" Height="120px">
+                <MudIcon Icon="@Icons.Material.Filled.Code" Size="Size.Large"/>
+                <h2>Generate Inline Code Documentation</h2>
+            </MudPaper>
+            </a>
+        </MudItem>
+        <MudItem>
+            <a href="/WikiGeneration">
+            <MudPaper Elevation="5" Style="padding: 8px" Width="300px" Height="120px">
+                <MudIcon Icon="@Icons.Material.Filled.MenuBook" Size="Size.Large" />
+                <h2>Generate External Markdown Documentation</h2>
+            </MudPaper>
+            </a>
+        </MudItem>
+        <MudItem>
+            <a href="/PrReview">
+            <MudPaper Elevation="5" Style="padding: 8px" Width="300px" Height="120px">
+                <MudIcon Icon="@Icons.Material.Filled.Reviews" Size="Size.Large"/>
+                <h2>Preform a GitHub Pull Request Review</h2>
+            </MudPaper>
+            </a>
+        </MudItem>
+        <MudItem>
+            <a href="/Chat">
+            <MudPaper Elevation="5" Style="padding: 8px" Width="300px" Height="120px">
+                <MudIcon Icon="@Icons.Material.Filled.AutoGraph" Size="Size.Large"/>
+                <h2>Test Quality of Setup in for Chat-Scenarios</h2>
+            </MudPaper>
+            </a>
+        </MudItem>
+    </MudGrid>
+    <br/><br/>
+    <MudGrid Justify="Justify.Center">
+        <MudItem>
+            <div style="cursor: pointer" @onclick="()=> Site.ShowProjectDialogAsync(Project, false)">
+            <MudPaper Elevation="5" Style="padding: 8px" Width="300px" Height="120px">
+                <MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Large"/>
+                <h2>Edit Project Settings and Sync Sources</h2>
+            </MudPaper>
+            </div>
+        </MudItem>
+        <MudItem>
+            <div style="cursor: pointer" @onclick="()=> Site.ShowProjectDialogAsync(null, true)">
+            <MudPaper Elevation="5" Style="padding: 8px" Width="300px" Height="120px">
+                <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Large"/>
+                <h2>Create a brand<br/> New Project</h2>
+            </MudPaper>
+            </div>
+        </MudItem>
+    </MudGrid>
+
+</div>

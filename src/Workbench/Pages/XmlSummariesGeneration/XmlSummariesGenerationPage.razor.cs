@@ -8,12 +8,13 @@ using Shared.Ai;
 using Shared.Chunking.CSharp;
 using Shared.EntityFramework.DbModels;
 using Shared.VectorStore;
+using Workbench.Models;
 
 namespace Workbench.Pages.XmlSummariesGeneration;
 
 public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuery, CSharpChunker cSharpChunker, AiQuery aiQuery)
 {
-    private ProjectSourceEntity[]? _cSharpSources;
+    private ProjectSourceEntity[]? _sources;
     private ProjectSourceEntity? _selectedSource;
 
     [CascadingParameter]
@@ -31,6 +32,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     private VectorEntity[]? _existingVectorEntities;
     private Item? _selectedItem;
     private RProgressBar? _progressBar;
+    private AiChatModel? _chatModel;
 
     private async Task OnSearchTextChanged(string searchPhrase)
     {
@@ -54,9 +56,9 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     protected override async Task OnInitializedAsync()
     {
         //todo - this page throw exception is source location is GitHub
-
-        _cSharpSources = Project.Sources.Where(x => x.Kind == ProjectSourceKind.CSharpCode).ToArray();
-        _selectedSource = _cSharpSources.FirstOrDefault();
+        _chatModel = aiQuery.GetChatModels().FirstOrDefault();
+        _sources = Project.Sources.Where(x => x.Kind == ProjectSourceKind.CSharpCode).ToArray();
+        _selectedSource = _sources.FirstOrDefault();
         await Refresh();
     }
 
@@ -140,13 +142,6 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         }
     }
 
-    private enum SummaryStatus
-    {
-        All,
-        MissingSummary,
-        HasSummary
-    }
-
     private async Task SwitchKind(CSharpKind kind)
     {
         _kind = kind;
@@ -173,7 +168,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         }
     }
 
-    private async Task SwitchSummaryKind(SummaryStatus summaryStatus)
+    private async Task SwitchSummaryStatus(SummaryStatus summaryStatus)
     {
         _summaryStatus = summaryStatus;
         await Refresh();
@@ -199,7 +194,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
 
     private async Task Generate(CSharpChunk chunk)
     {
-        var xmlSummary = await aiQuery.GenerateCSharpXmlSummary(Project, chunk.Content);
+        var xmlSummary = await aiQuery.GenerateCSharpXmlSummary(Project, chunk.Content, _chatModel);
         chunk.XmlSummary = xmlSummary;
     }
 

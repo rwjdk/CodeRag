@@ -1,7 +1,21 @@
 ﻿@page "/PrReview"
 @using Octokit
 @using Shared.Ai
-<h2>Review Pull Request using AI</h2>
+<MudGrid Spacing="1" Class="align-items-center">
+    <MudItem>
+        <h1>Pull Request Reviews</h1>
+    </MudItem>
+    <MudSpacer />
+    @if (!string.IsNullOrWhiteSpace(Project.GitHubOwner) && !string.IsNullOrWhiteSpace(Project.GitHubRepo) && _pullRequests != null)
+    {
+        <MudItem>
+            <RSelect T="PullRequest" Items="_pullRequests" Label="Pull Request to Review" @bind-Value="_selectedPullRequest" ToStringFunc="@(x=> x?.Title ?? "???")" />
+        </MudItem>
+    }
+    <MudItem>
+        <RSelect T="AiChatModel" Label="AI-Model to use" Items="aiQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
+    </MudItem>
+</MudGrid>
 
 @if (string.IsNullOrWhiteSpace(Project.GitHubOwner) || string.IsNullOrWhiteSpace(Project.GitHubRepo))
 {
@@ -11,9 +25,6 @@ else
 {
     @if (_pullRequests != null)
     {
-        <RSelect T="AiChatModel" Items="aiQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
-        <RSelect T="PullRequest" Items="_pullRequests" Label="Pull Request to Review" @bind-Value="_selectedPullRequest" ToStringFunc="@(x=> x?.Title ?? "???")"/>
-
         @if (_selectedPullRequest != null)
         {
             <h3>@_selectedPullRequest.Title</h3>
@@ -42,6 +53,4 @@ else
     {
         <RProgressIndicator/>
     }
-
-    
 }

@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using OpenAI.Chat;
 using Shared.Ai.Tools;
+using Shared.Chunking.CSharp;
 using Shared.EntityFramework.DbModels;
 using Shared.Models;
 using Shared.Prompting;
@@ -194,7 +195,7 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
         return JsonSerializer.Deserialize<T>(json)!;
     }
 
-    public async Task<string?> GenerateCSharpXmlSummary(ProjectEntity project, string signature)
+    public async Task<string?> GenerateCSharpXmlSummary(ProjectEntity project, string signature, AiChatModel model)
     {
         string prompt = Prompt.Create("You are an C# Expert that can generate XML Summaries.")
             .AddRule($"Always use all tools available ('{Constants.Tools.CSharp}' and '{Constants.Tools.Markdown}') before you provide your answer")
@@ -206,7 +207,7 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
             .AddRule("Don't use wording 'with the specified options' and similar. Be short and on point")
             .AddRule("Don't end the sentences with '.'")
             .ToString();
-        AiChatModel chatModel = ai.Models.First();
+        AiChatModel chatModel = model;
         XmlSummaryGeneration response = await GetStructuredOutputResponse<XmlSummaryGeneration>(
             project: project,
             chatModel: chatModel,
@@ -217,7 +218,7 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
         return response.XmlSummary;
     }
 
-    public async Task<string?> GenerateCodeWikiEntryForMethod(ProjectEntity project, VectorEntity entity)
+    public async Task<string?> GenerateCodeWikiEntryForMethod(ProjectEntity project, CSharpChunk entity)
     {
         string prompt = Prompt.Create("You are an C# Expert that can given Code and existing wiki content generates Markdown that documents the Code")
             .AddRule($"Always use all tools available ('{Constants.Tools.CSharp}' and '{Constants.Tools.Markdown}') before you provide your answer")
@@ -229,7 +230,7 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
             project: project,
             chatModel: chatModel,
             instructions: prompt,
-            input: $"Generate XML Summary for this code Method: {entity.Name} in {nameof(VectorEntity.SourcePath)} '{entity.SourcePath}'",
+            input: $"Generate XML Summary for this code Method: {entity.Name} in {nameof(VectorEntity.SourcePath)} '{entity.LocalSourcePath}' {entity.Content}",
             useSourceCodeSearch: true,
             useDocumentationSearch: true);
         return response.ToMarkdown();

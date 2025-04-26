@@ -10,6 +10,7 @@ using Shared.EntityFramework.DbModels;
 using Shared.Ingestion;
 using Shared.Projects;
 using Shared.VectorStore;
+using Workbench.Models;
 
 namespace Workbench.Dialogs;
 

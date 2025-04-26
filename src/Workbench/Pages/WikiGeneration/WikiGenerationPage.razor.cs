@@ -1,86 +1,205 @@
 ﻿using BlazorUtilities;
+using BlazorUtilities.Components;
 using Microsoft.AspNetCore.Components;
+using MudBlazor;
 using Shared.Ai;
+using Shared.Chunking.CSharp;
 using Shared.EntityFramework.DbModels;
 using Shared.VectorStore;
+using Workbench.Models;
 
 namespace Workbench.Pages.WikiGeneration;
 
-public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQuery aiQuery)
+public partial class WikiGenerationPage(VectorStoreQuery vectorStoreQuery, AiQuery aiQuery, CSharpChunker cSharpChunker)
 {
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }
 
-    private List<Data>? _data;
-    private Dictionary<string, bool>? _onlyUndocumentedCheckStates;
-    private VectorEntity? _selectEntry;
     private string? _markdown;
-    private ProjectSourceEntity? _source;
+    private ProjectSourceEntity? _selectedSource;
+    private CSharpKind _kind = CSharpKind.Method;
+    private AiChatModel? _chatModel;
+    private ProjectSourceEntity[]? _sources;
+    private SummaryStatus _summaryStatus = SummaryStatus.All;
+    private TreeItemData<Item>? _tree;
+    private MudTreeView<Item>? _treeView;
+    private VectorEntity[]? _existingVectorEntities;
+    private Item? _selectedItem;
+    private RProgressBar? _progressBar;
+
 
     [CascadingParameter]
     public required ProjectEntity Project { get; set; }
 
+    private async Task OnSearchTextChanged(string searchPhrase)
+    {
+        _searchPhrase = searchPhrase;
+        if (_treeView != null)
+        {
+            await _treeView.FilterAsync();
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        _source = Project.Sources.FirstOrDefault(x => x.Kind == ProjectSourceKind.Markdown); //todo - rewrite this to allow multiple sources
-        if (_source != null)
+        _chatModel = aiQuery.GetChatModels().FirstOrDefault();
+        _sources = Project.Sources.Where(x => x.Kind == ProjectSourceKind.CSharpCode).ToArray();
+        _selectedSource = _sources.FirstOrDefault();
+        if (_selectedSource != null)
         {
-            var mdFilenames = Directory.GetFiles(_source.Path).Select(Path.GetFileNameWithoutExtension);
-            VectorEntity[] existing = await vectorStoreQuery.GetExistingAsync(Project.Id); //todo - only get Code Entries. not the docs
+            await Refresh();
+        }
+    }
 
-            string[] kinds = existing.Where(x => !string.IsNullOrWhiteSpace(x.Kind)).Select(x => x.Kind!).Distinct().ToArray();
+    private async Task SwitchSource(ProjectSourceEntity source)
+    {
+        _selectedSource = source;
+        if (_selectedSource != null)
+        {
+            await Refresh();
+        }
+        else
+        {
+            _existingVectorEntities = null;
+        }
+    }
 
-            List<Data> data = [];
-            Dictionary<string, bool> onlyUndocumentedCheckStates = [];
-            foreach (string kind in kinds)
+    private async Task Refresh()
+    {
+        _existingVectorEntities = await vectorStoreQuery.GetExistingAsync(Project.Id);
+        var existing = _existingVectorEntities.Where(x => x.Kind == _kind.ToString());
+        switch (_summaryStatus)
+        {
+            case SummaryStatus.MissingSummary:
+                existing = existing.Where(x => string.IsNullOrWhiteSpace(x.Summary)); //todo - apply right match (code wiki do not have entry)
+                break;
+            case SummaryStatus.HasSummary:
+                existing = existing.Where(x => !string.IsNullOrWhiteSpace(x.Summary)); //todo - apply right match (code wiki do not have entry)
+                break;
+        }
+
+        _tree = BuildTree(_selectedSource.Path, existing.ToArray());
+    }
+
+    private TreeItemData<Item> BuildTree(string rootPath, VectorEntity[] existing)
+    {
+        var rootInfo = new DirectoryInfo(rootPath);
+        var rootNode = new TreeItemData<Item> { Value = new Item(rootInfo, [], []) };
+        BuildChildren(rootNode, rootInfo, existing);
+        return rootNode;
+    }
+
+    private void BuildChildren(TreeItemData<Item> parentNode, DirectoryInfo dirInfo, VectorEntity[] existing)
+    {
+        parentNode.Children ??= [];
+        foreach (var dir in dirInfo.GetDirectories())
+        {
+            var dirNode = new TreeItemData<Item> { Value = new Item(dir, [], []) };
+            BuildChildren(dirNode, dir, existing);
+            if (dirNode.Children is { Count: > 0 })
             {
-                VectorEntity[] allOfKind = existing.Where(x => x.Kind == kind).OrderBy(x => x.Name).ToArray();
-                VectorEntity[] undocumentedOfKind = allOfKind.Where(x => !mdFilenames.Contains(x.GetTargetMarkdownFilename())).OrderBy(x => x.Name).ToArray();
-                VectorEntity[] documentedOfKind = allOfKind.Except(undocumentedOfKind).ToArray();
-                data.Add(new Data(kind, allOfKind, documentedOfKind, undocumentedOfKind));
-                onlyUndocumentedCheckStates.Add(kind, true);
+                parentNode.Children.Add(dirNode);
+            }
+        }
+
+        foreach (var file in dirInfo.GetFiles("*.cs"))
+        {
+            List<CSharpChunk> entities = cSharpChunker.GetCodeEntities(File.ReadAllText(file.FullName)).Where(x => x.Kind == _kind).ToList();
+            var matches = entities.Where(x => x.Kind == _kind);
+            switch (_summaryStatus)
+            {
+                case SummaryStatus.MissingSummary:
+                    matches = matches.Where(x => string.IsNullOrWhiteSpace(x.XmlSummary));
+                    break;
+                case SummaryStatus.HasSummary:
+                    matches = matches.Where(x => !string.IsNullOrWhiteSpace(x.XmlSummary));
+                    break;
             }
 
-            _data = data;
-            _onlyUndocumentedCheckStates = onlyUndocumentedCheckStates;
+            entities = matches.ToList();
+
+            var vectorMatches = existing.Where(x => file.FullName == _selectedSource.Path + x.SourcePath).ToArray();
+            if (entities.Count > 0)
+            {
+                parentNode.Children.Add(new TreeItemData<Item> { Value = new Item(file, entities, vectorMatches) });
+            }
         }
     }
 
-    private record Data(string Kind, VectorEntity[] All, VectorEntity[] Documented, VectorEntity[] UnDocumented)
+    private class Item(FileSystemInfo info, List<CSharpChunk> codeChunks, VectorEntity[] vectorEntities)
     {
-        public int Order => 1; //todo - set order based on importance of kind
-        public string TabCaption => $"{KindPlural} ({(Documented.Length)}/{All.Length})";
-        public string KindPlural => Kind + "s";
-    }
+        public FileSystemInfo Info { get; } = info;
+        public List<CSharpChunk> CodeChunks { get; } = codeChunks;
+        public VectorEntity[] VectorEntities { get; } = vectorEntities;
 
-    private void SwitchAllUndocumentedState(string dataEntryKind, bool newState)
-    {
-        if (_onlyUndocumentedCheckStates != null)
+        public string GetText(List<TreeItemData<Item>>? children)
         {
-            _onlyUndocumentedCheckStates[dataEntryKind] = newState;
-            StateHasChanged();
+            return Info.Name;
         }
-    }
 
-    private void SwitchSelectedItem(VectorEntity VectorEntity)
-    {
-        if (_selectEntry?.VectorId != VectorEntity.VectorId)
+        public int GetTotalRelatedEntities(List<TreeItemData<Item>>? children)
         {
-            _selectEntry = VectorEntity;
-            _markdown = null;
+            if (children == null) return CodeChunks.Count;
+            int sum = 0;
+            foreach (var child in children)
+            {
+                sum += child.Value.CodeChunks.Count;
+                sum += GetTotalRelatedEntities(child.Children);
+            }
+
+            return sum;
+        }
+
+        public string? GetIcon()
+        {
+            if (Info.Attributes.HasFlag(FileAttributes.Directory))
+            {
+                return Icons.Material.Filled.Folder;
+            }
+
+            return null;
         }
     }
 
-    private async Task GenerateCodeWiki()
+
+    private async Task SwitchKind(CSharpKind kind)
     {
-        _markdown = await aiQuery.GenerateCodeWikiEntryForMethod(Project, _selectEntry);
+        _kind = kind;
+        await Refresh();
     }
 
-    private async Task AcceptMarkdown()
+    private void SwitchSelected(Item? selectedItem)
     {
-        var sourcePath = _source!.Path;
-        var path = Path.Combine(sourcePath, _selectEntry.GetTargetMarkdownFilename());
-        await File.WriteAllTextAsync(path, _markdown);
-        BlazorUtils.ShowSuccess($"{Path.GetFileName(path)} saved to {_source.Path}");
+        _selectedItem = selectedItem;
+        _markdown = null;
+    }
+
+    private string? _searchPhrase;
+
+    private Task<bool> MatchesName(TreeItemData<Item> item)
+    {
+        if (string.IsNullOrEmpty(item.Value!.Info.Name))
+        {
+            return Task.FromResult(false);
+        }
+
+        return Task.FromResult(_searchPhrase != null && item.Value.Info.Name.Contains(_searchPhrase, StringComparison.OrdinalIgnoreCase));
+    }
+
+
+    private async Task GenerateCodeWiki(CSharpChunk chunk)
+    {
+        _markdown = await aiQuery.GenerateCodeWikiEntryForMethod(Project, chunk);
+    }
+
+    private async Task SwitchSummaryStatus(SummaryStatus summaryStatus)
+    {
+        _summaryStatus = summaryStatus;
+        await Refresh();
+    }
+
+    private Task GenerateAll()
+    {
+        throw new NotImplementedException();
     }
 }

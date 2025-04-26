@@ -3,11 +3,11 @@ using BlazorUtilities;
 using MudBlazor;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
-using DialogResult = Workbench.Dialogs.DialogResult;
+using Workbench.Models;
 
 namespace Workbench;
 
-public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQuery, ILocalStorageService localStorage, IDialogService dialogService)
+public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService localStorage, IDialogService dialogService, IServiceProvider serviceProvider)
 {
     public BlazorUtils BlazorUtils { get; } = blazorUtils;
     private bool _drawerOpen;
@@ -16,6 +16,15 @@ public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQue
     private bool IsProjectSelected => Project != null;
     private Site Site { get; } = new(dialogService);
     private ProjectEntity[]? _projects;
+    private ProjectQuery? _projectQuery;
+    private bool _initialized;
+
+
+    protected override void OnInitialized()
+    {
+        _projectQuery = serviceProvider.GetService<ProjectQuery>();
+        _initialized = true;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -23,14 +32,17 @@ public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQue
         {
             _drawerOpen = await localStorage.GetItemAsync<bool>(Constants.LocalStorageKeys.DrawerOpen);
             _darkMode = await localStorage.GetItemAsync<bool>(Constants.LocalStorageKeys.DarkMode);
-            await RefreshProjects();
+            if (_projectQuery != null)
+            {
+                await RefreshProjects();
+            }
         }
     }
 
     private async Task RefreshProjects()
     {
         Guid? projectId = await localStorage.GetItemAsync<Guid>(Constants.LocalStorageKeys.Project);
-        _projects = await projectQuery.GetProjectsAsync();
+        _projects = await _projectQuery!.GetProjectsAsync();
         await SelectProject(_projects.FirstOrDefault(x => x.Id == projectId) ?? _projects.FirstOrDefault());
     }
 

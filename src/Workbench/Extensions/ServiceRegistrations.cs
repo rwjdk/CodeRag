@@ -1,18 +1,62 @@
-﻿using CodeRag.Shared;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Connectors.SqlServer;
-using Shared;
+﻿using Shared;
 using Shared.Ai;
-using Shared.EntityFramework;
-using Shared.GitHub;
+using Workbench.Models;
 
 namespace Workbench.Extensions;
 
 public static class ServiceRegistrations
 {
+    public static Configuration? GetConfiguration(this WebApplicationBuilder builder, out List<MissingConfiguration> missingConfigurations)
+    {
+        missingConfigurations = [];
+        const string endpointVariable = Constants.ConfigurationVariables.AiEndpoint;
+        const string keyVariable = Constants.ConfigurationVariables.AiKey;
+        const string embeddingDeploymentNameVariable = Constants.ConfigurationVariables.AiEmbeddingDeploymentName;
+        const string modelDeploymentsVariable = Constants.ConfigurationVariables.AiModelDeployments;
+
+        string readMeUrl = "https://github.com/rwjdk/CodeRag/blob/main/README.md";
+        string? endpoint = builder.Configuration[endpointVariable];
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            missingConfigurations.Add(new MissingConfiguration(endpointVariable, false, "Normally defined in appsettings.json", readMeUrl));
+        }
+
+        string? key = builder.Configuration[keyVariable];
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            missingConfigurations.Add(new MissingConfiguration(keyVariable, true, "Defined in secrets.json", readMeUrl));
+        }
+
+        string? embeddingDeploymentName = builder.Configuration[embeddingDeploymentNameVariable];
+        if (string.IsNullOrWhiteSpace(embeddingDeploymentName))
+        {
+            missingConfigurations.Add(new MissingConfiguration(embeddingDeploymentNameVariable, false, "Normally defined in appsettings.json", readMeUrl));
+        }
+
+        var chatModels = builder.Configuration.GetSection(modelDeploymentsVariable).Get<List<AiChatModel>>();
+        if (chatModels == null)
+        {
+            missingConfigurations.Add(new MissingConfiguration(modelDeploymentsVariable, false, "Normally defined in appsettings.json", readMeUrl));
+        }
+
+        string sqlServerConnectionStringVariable = Constants.ConfigurationVariables.SqlServerConnectionString;
+        string? sqlServerConnectionString = builder.Configuration[sqlServerConnectionStringVariable];
+        if (string.IsNullOrWhiteSpace(sqlServerConnectionString))
+        {
+            missingConfigurations.Add(new MissingConfiguration(sqlServerConnectionStringVariable, true, "Defined in secrets.json", readMeUrl));
+        }
+
+        string gitHubTokenVariable = Constants.ConfigurationVariables.GitHubToken;
+        string? gitHubToken = builder.Configuration[gitHubTokenVariable];
+        if (string.IsNullOrWhiteSpace(gitHubToken))
+        {
+            missingConfigurations.Add(new MissingConfiguration(gitHubTokenVariable, true, "Defined in secrets.json", readMeUrl));
+        }
+
+        return missingConfigurations.Count > 0 ? null : new Configuration(endpoint!, key!, embeddingDeploymentName!, sqlServerConnectionString!, gitHubToken!, chatModels!);
+    }
+
+
     public static void AutoRegisterServicesViaReflection(this WebApplicationBuilder builder, Type rootType)
     {
         var types = rootType.Assembly.GetTypes();
@@ -36,63 +80,5 @@ public static class ServiceRegistrations
                 builder.Services.AddScoped(type);
             }
         }
-    }
-
-    public static void AddVectorStore(this WebApplicationBuilder builder)
-    {
-        string? connectionString = builder.Configuration[Constants.ConfigurationVariables.SqlServerConnectionString];
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new MissingConfigurationVariableException(Constants.ConfigurationVariables.SqlServerConnectionString);
-        }
-
-        builder.Services.AddDbContextFactory<SqlDbContext>(options => { options.UseSqlServer(connectionString); });
-
-        builder.Services.AddScoped<IVectorStore, SqlServerVectorStore>(_ => new SqlServerVectorStore(connectionString));
-    }
-
-    public static void AddGitHub(this WebApplicationBuilder builder)
-    {
-        string? gitHubToken = builder.Configuration[Constants.ConfigurationVariables.GitHubToken];
-        if (string.IsNullOrWhiteSpace(gitHubToken))
-        {
-            throw new MissingConfigurationVariableException(Constants.ConfigurationVariables.GitHubToken);
-        }
-
-        builder.Services.AddSingleton(new GitHubConnection(gitHubToken));
-    }
-
-    public static void AddAi(this WebApplicationBuilder builder)
-    {
-        const string endpointVariable = Constants.ConfigurationVariables.AiEndpoint;
-        const string keyVariable = Constants.ConfigurationVariables.AiKey;
-        const string embeddingDeploymentNameVariable = Constants.ConfigurationVariables.AiEmbeddingDeploymentName;
-        const string modelDeploymentsVariable = Constants.ConfigurationVariables.AiModelDeployments;
-
-        string? endpoint = builder.Configuration[endpointVariable];
-        if (string.IsNullOrWhiteSpace(endpoint))
-        {
-            throw new MissingConfigurationVariableException(endpointVariable);
-        }
-
-        string? key = builder.Configuration[keyVariable];
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            throw new MissingConfigurationVariableException(keyVariable);
-        }
-
-        string? embeddingDeploymentName = builder.Configuration[embeddingDeploymentNameVariable];
-        if (string.IsNullOrWhiteSpace(embeddingDeploymentName))
-        {
-            throw new MissingConfigurationVariableException(embeddingDeploymentNameVariable);
-        }
-
-        var models = builder.Configuration.GetSection(modelDeploymentsVariable).Get<List<AiChatModel>>();
-        if (models == null)
-        {
-            throw new MissingConfigurationVariableException(modelDeploymentsVariable);
-        }
-
-        builder.Services.AddSingleton(new Ai(endpoint, key, embeddingDeploymentName, models));
     }
 }

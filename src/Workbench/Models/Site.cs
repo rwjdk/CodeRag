@@ -3,7 +3,7 @@ using Shared.EntityFramework.DbModels;
 using Workbench.Dialogs;
 using DialogResult = Workbench.Dialogs.DialogResult;
 
-namespace Workbench;
+namespace Workbench.Models;
 
 public class Site(IDialogService dialogService)
 {
