@@ -33,6 +33,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     private Item? _selectedItem;
     private RProgressBar? _progressBar;
     private AiChatModel? _chatModel;
+    private CSharpChunk? _selectedChunk;
 
     private async Task OnSearchTextChanged(string searchPhrase)
     {
@@ -190,15 +191,18 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     private void SwitchSelected(Item? selectedItem)
     {
         _selectedItem = selectedItem;
+        _selectedChunk = null;
     }
 
     private async Task Generate(CSharpChunk chunk)
     {
+        using WorkingProgress workingProgress = BlazorUtils.StartWorking();
         var xmlSummary = await aiQuery.GenerateCSharpXmlSummary(Project, chunk.Content, _chatModel);
         chunk.XmlSummary = xmlSummary;
+        workingProgress.ShowSuccess("New XML Summary generated. Use the Save Button to Accept the changes");
     }
 
-    private async Task Accept(string path, CSharpChunk chunk)
+    private async Task Save(string path, CSharpChunk chunk)
     {
         SyntaxTree tree = CSharpSyntaxTree.ParseText(await File.ReadAllTextAsync(path));
         var root = await tree.GetRootAsync();
@@ -211,6 +215,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
 
         var newRoot = root.ReplaceNode(oldNode, newMethod);
         await File.WriteAllTextAsync(path, newRoot.ToFullString().Replace("\r\n", "\n").Replace("\n", "\r\n"));
+        BlazorUtils.ShowSuccess($"Saved new XML Summary for {chunk.Name}");
     }
 
 
@@ -220,7 +225,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         foreach (var chunk in _selectedItem.CodeChunks)
         {
             await Generate(chunk);
-            await Accept(_selectedItem.Info.FullName, chunk);
+            await Save(_selectedItem.Info.FullName, chunk);
             workingProgress.ReportProgress();
         }
 

@@ -1,37 +1,40 @@
 ﻿@using System.Linq.Expressions
+@using MudBlazor.Utilities
 @* ReSharper disable CSharpWarnings::CS8619 *@
 @* ReSharper disable CSharpWarnings::CS8620 *@
 <MudTextField @ref="_element"
-              Value="@Value"
-              Label="@Label"
-              Variant="@Variant"
-              Margin="@Margin"
-              ValueChanged="@ValueChanged"
-              TextChanged="@TextChanged"
-              Clearable="@Clearable"
-              AdornmentIcon="@AdornmentIcon"
-              Adornment="@Adornment"
-              DebounceInterval="@DebounceInterval"
-              OnDebounceIntervalElapsed="OnDebounceIntervalElapsed"
-              Class="@Class"
-              Style="@Style"
-              Placeholder="@Placeholder"
-              Lines="@Lines"
-              AutoFocus="@AutoFocus"
-              AutoGrow="@AutoGrow"
-              @onfocus="OnFocus"
-              @onfocusout="OnFocusOut"
-              Required="@Required"
-              Validation="Validation"
-              Immediate="@Immediate"
-              Disabled="@Disabled"
-              FullWidth="@FullWidth"
-              OnAdornmentClick="@OnAdornmentClick"
-              OnKeyUp="@OnKeyUp"
-              OnKeyDown="@OnKeyDown"
-              InputType="@InputType"
-              TextUpdateSuppression="@TextUpdateSuppression"
-              For="For" />
+Value="@Value"
+Label="@Label"
+Variant="@Variant"
+Margin="@Margin"
+ValueChanged="@ValueChanged"
+TextChanged="@TextChanged"
+Clearable="@Clearable"
+AdornmentIcon="@AdornmentIcon"
+AdornmentColor="@AdornmentColor"
+Adornment="@Adornment"
+DebounceInterval="@DebounceInterval"
+OnDebounceIntervalElapsed="OnDebounceIntervalElapsed"
+Class="@Class"
+Style="@Style"
+Placeholder="@Placeholder"
+Lines="@Lines"
+ReadOnly="@ReadOnly"
+AutoFocus="@AutoFocus"
+AutoGrow="@AutoGrow"
+@onfocus="OnFocus"
+@onfocusout="OnFocusOut"
+Required="@Required"
+Validation="Validation"
+Immediate="@Immediate"
+Disabled="@Disabled"
+FullWidth="@FullWidth"
+OnAdornmentClick="@OnAdornmentClick"
+OnKeyUp="@OnKeyUp"
+OnKeyDown="@OnKeyDown"
+InputType="@InputType"
+TextUpdateSuppression="@TextUpdateSuppression"
+For="For" />
 @* ReSharper restore CSharpWarnings::CS8620 *@
 @* ReSharper restore CSharpWarnings::CS8619 *@
 
@@ -69,6 +72,9 @@
     public EventCallback OnFocusOut { get; set; }
 
     [Parameter]
+    public Color AdornmentColor { get; set; } = Color.Default;
+
+    [Parameter]
     public string? Label { get; set; }
 
     [Parameter]
@@ -88,6 +94,9 @@
 
     [Parameter]
     public bool Clearable { get; set; }
+    
+    [Parameter]
+    public bool ReadOnly { get; set; }
 
     [Parameter]
     public bool Required { get; set; }
