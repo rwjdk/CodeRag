@@ -1,4 +1,4 @@
-﻿namespace CodeRag.Shared;
+﻿namespace Shared;
 
 public static class Constants
 {

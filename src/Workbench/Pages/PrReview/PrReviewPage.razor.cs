@@ -1,10 +1,10 @@
 ﻿using BlazorUtilities;
-using CodeRag.Shared.Ai;
-using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.GitHub;
-using CodeRag.Shared.Models;
 using Microsoft.AspNetCore.Components;
 using Octokit;
+using Shared.Ai;
+using Shared.EntityFramework.DbModels;
+using Shared.GitHub;
+using Shared.Models;
 
 namespace Workbench.Pages.PrReview;
 

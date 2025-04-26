@@ -1,12 +1,13 @@
 ﻿using CodeRag.Shared;
-using CodeRag.Shared.Ai;
-using CodeRag.Shared.EntityFramework;
-using CodeRag.Shared.GitHub;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
+using Shared;
+using Shared.Ai;
+using Shared.EntityFramework;
+using Shared.GitHub;
 
 namespace Workbench.Extensions;
 
@@ -39,7 +40,7 @@ public static class ServiceRegistrations
 
     public static void AddVectorStore(this WebApplicationBuilder builder)
     {
-        var connectionString = builder.Configuration[Constants.ConfigurationVariables.SqlServerConnectionString];
+        string? connectionString = builder.Configuration[Constants.ConfigurationVariables.SqlServerConnectionString];
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new MissingConfigurationVariableException(Constants.ConfigurationVariables.SqlServerConnectionString);
@@ -52,7 +53,7 @@ public static class ServiceRegistrations
 
     public static void AddGitHub(this WebApplicationBuilder builder)
     {
-        var gitHubToken = builder.Configuration[Constants.ConfigurationVariables.GitHubToken];
+        string? gitHubToken = builder.Configuration[Constants.ConfigurationVariables.GitHubToken];
         if (string.IsNullOrWhiteSpace(gitHubToken))
         {
             throw new MissingConfigurationVariableException(Constants.ConfigurationVariables.GitHubToken);
@@ -68,19 +69,19 @@ public static class ServiceRegistrations
         const string embeddingDeploymentNameVariable = Constants.ConfigurationVariables.AiEmbeddingDeploymentName;
         const string modelDeploymentsVariable = Constants.ConfigurationVariables.AiModelDeployments;
 
-        var endpoint = builder.Configuration[endpointVariable];
+        string? endpoint = builder.Configuration[endpointVariable];
         if (string.IsNullOrWhiteSpace(endpoint))
         {
             throw new MissingConfigurationVariableException(endpointVariable);
         }
 
-        var key = builder.Configuration[keyVariable];
+        string? key = builder.Configuration[keyVariable];
         if (string.IsNullOrWhiteSpace(key))
         {
             throw new MissingConfigurationVariableException(keyVariable);
         }
 
-        var embeddingDeploymentName = builder.Configuration[embeddingDeploymentNameVariable];
+        string? embeddingDeploymentName = builder.Configuration[embeddingDeploymentNameVariable];
         if (string.IsNullOrWhiteSpace(embeddingDeploymentName))
         {
             throw new MissingConfigurationVariableException(embeddingDeploymentNameVariable);

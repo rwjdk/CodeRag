@@ -1,19 +1,20 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
-using CodeRag.Shared.Chunking.CSharp;
-using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.GitHub;
-using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Octokit;
+using Shared.Chunking.CSharp;
+using Shared.EntityFramework;
+using Shared.EntityFramework.DbModels;
+using Shared.GitHub;
+using Shared.VectorStore;
 
-namespace CodeRag.Shared.Ingestion;
+namespace Shared.Ingestion;
 
 [UsedImplicitly]
-public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand vectorStoreCommand, VectorStoreQuery vectorStoreQuery, GitHubQuery gitHubQuery) : IngestionCommand(vectorStoreCommand), IScopedService
+public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand vectorStoreCommand, VectorStoreQuery vectorStoreQuery, GitHubQuery gitHubQuery, SqlServerCommand sqlServerCommand) : IngestionCommand(vectorStoreCommand), IScopedService
 {
-    public override async Task Ingest(ProjectEntity project, ProjectSourceEntity source)
+    public override async Task IngestAsync(ProjectEntity project, ProjectSourceEntity source)
     {
         if (source.Kind != ProjectSourceKind.CSharpCode)
         {
@@ -64,7 +65,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         {
             counter++;
 
-            OnNotifyProgress($"Processing: {codeEntity.Path}", counter, codeEntities.Count);
+            OnNotifyProgress("Step 2: Embedding Data", counter, codeEntities.Count);
 
             StringBuilder content = new();
             content.AppendLine($"// Namespace: {codeEntity.Namespace}");
@@ -118,7 +119,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         var idsToDelete = existingData.Select(x => x.VectorId).Except(idsToKeep).ToList();
         if (idsToDelete.Count != 0)
         {
-            OnNotifyProgress("Removing entities that are no longer in source");
+            OnNotifyProgress("Removing entities that are no longer in source...");
             await collection.DeleteBatchAsync(idsToDelete);
         }
 
@@ -136,6 +137,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         string[] sourceCodeFiles = Directory.GetFiles(source.Path, "*.cs", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
         List<string> ignoredFiles = [];
+        int counter = 0;
         foreach (string sourceCodeFilePath in sourceCodeFiles)
         {
             if (IgnoreFile(source, sourceCodeFilePath))
@@ -144,6 +146,8 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
                 continue;
             }
 
+            counter++;
+            OnNotifyProgress("Step 1: Parsing Local files from Disk", counter, sourceCodeFiles.Length);
             var sourcePath = sourceCodeFilePath.Replace(source.Path, string.Empty);
             string code = await File.ReadAllTextAsync(sourceCodeFilePath);
             List<CSharpChunk> entitiesForFile = chunker.GetCodeEntities(code);
@@ -184,17 +188,17 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         var sourceCodeFiles = treeResponse.Tree.Where(x => x.Type == TreeType.Blob && x.Path.StartsWith(prefix) && x.Path.EndsWith(".cs")).ToArray();
         OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
         List<string> ignoredFiles = [];
-        int downloadCounter = 0;
+        int counter = 0;
         foreach (string sourceCodeFilePath in sourceCodeFiles.Select(x => x.Path)) //todo - should download of all files not happen upfront, but on the fly to reduce rate limiting and allow partial imports
         {
-            downloadCounter++;
+            counter++;
             if (IgnoreFile(source, sourceCodeFilePath))
             {
                 ignoredFiles.Add(sourceCodeFilePath);
                 continue;
             }
 
-            OnNotifyProgress($"{downloadCounter}/{sourceCodeFiles.Length} - Downloading '{sourceCodeFilePath}' from GitHub");
+            OnNotifyProgress("Step 1: Downloading files from GitHub", counter, sourceCodeFiles.Length);
             var sourcePath = sourceCodeFilePath.Replace(source.Path, string.Empty);
             var code = await gitHubQuery.GetFileContentAsync(gitHubClient, project.GitHubOwner, project.GitHubRepo, sourceCodeFilePath);
             if (string.IsNullOrWhiteSpace(code))

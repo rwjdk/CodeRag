@@ -1,6 +1,5 @@
-﻿using CodeRag.Shared.EntityFramework;
-using CodeRag.Shared.EntityFramework.DbModels;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Shared.EntityFramework;
 
 namespace Workbench.Extensions;
 

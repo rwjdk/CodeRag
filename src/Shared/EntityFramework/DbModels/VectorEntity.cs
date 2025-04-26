@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using CodeRag.Shared.Chunking.CSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
+using Shared.Chunking.CSharp;
 
-namespace CodeRag.Shared.EntityFramework.DbModels;
+namespace Shared.EntityFramework.DbModels;
 
 [Table(Constants.VectorCollections.VectorSources)]
 [Index(nameof(ProjectId))]

@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace CodeRag.Shared.Chunking.CSharp
+namespace Shared.Chunking.CSharp
 {
     [UsedImplicitly]
     public class CSharpChunker : IScopedService

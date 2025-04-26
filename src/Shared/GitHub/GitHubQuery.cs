@@ -1,8 +1,8 @@
-﻿using JetBrains.Annotations;
+﻿using System.Text;
+using JetBrains.Annotations;
 using Octokit;
-using System.Text;
 
-namespace CodeRag.Shared.GitHub;
+namespace Shared.GitHub;
 
 [UsedImplicitly]
 public class GitHubQuery(GitHubConnection connection) : IScopedService

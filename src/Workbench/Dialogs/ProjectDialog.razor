@@ -1,30 +1,50 @@
-﻿@using CodeRag.Shared.EntityFramework.DbModels
+﻿@using Shared.EntityFramework.DbModels
 <MudDialog Style="max-width: 80% !important; min-width: 80% !important; max-height: 80% !important; min-height: 80% !important;">
     <DialogContent>
         <RTextField Label="Name" @bind-Value="@Project.Name" />
         <RTextField Label="Description" @bind-Value="@Project.Description" Lines="3" />
-        <MudTabs @bind-ActivePanelIndex="@_tabIndex">
-            <MudTabPanel Text="GitHub">
-                <RTextField Label="GitHub Owner" @bind-Value="@Project.GitHubOwner" />
-                <RTextField Label="GitHub Repo" @bind-Value="@Project.GitHubRepo" />
-            </MudTabPanel>
+        <RTextField Label="GitHub Owner" @bind-Value="@Project.GitHubOwner" />
+        <RTextField Label="GitHub Repo" @bind-Value="@Project.GitHubRepo" />
+        <MudTabs>
             <MudTabPanel Text="Sources">
                 <MudDataGrid Items="Project.Sources">
                     <Columns>
-                        <PropertyColumn Property="x => x.Name" />
+                        <PropertyColumn Property="x => x.Name" Title="Source Name" />
                         <PropertyColumn Property="x => x.Kind" />
                         <PropertyColumn Property="x => x.Location" />
-                        <TemplateColumn>
+                        <TemplateColumn Title="Ingest to Vector Store" CellStyle="max-width: 300px; min-width: 300px">
                             <CellTemplate>
-                                <RIconButton Icon="@Icons.Material.Filled.Edit" OnClick="()=> EditSource(context.Item)"></RIconButton>
-                                <RIconButton Icon="@Icons.Material.Filled.Delete" OnClick="()=> DeleteSource(context.Item)"></RIconButton>
+                                @if (_syncingSource == context.Item && BlazorUtils.IsWorking)
+                                {
+                                    <div class="font-size-10">@_lastMessage</div>
+                                    <MudProgressLinear Color="Color.Primary" Size="Size.Small" Value="@_current" Max="@_total" />
+                                }
+                                else
+                                {
+                                    @* todo: Do not allow use of this button in Add Mode (first after the project is added) *@
+                                    <RIconButton Icon="@Icons.Material.Filled.Sync" Disabled="@(BlazorUtils.IsWorking || AddMode)" ToolTip="Sync the Source with the Vector Store" OnClick="() => SyncSource(context.Item)" />
+                                    <span>Last sync: @GetLastSync(context.Item)</span>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Actions">
+                            <CellTemplate>
+                                <RIconButton Icon="@Icons.Material.Filled.Edit" ToolTip="Edit this source" Disabled="BlazorUtils.IsWorking" OnClick="() => EditSource(context.Item)" />
+                                <RIconButton Icon="@Icons.Material.Filled.Delete" ToolTip="Delete this source" Disabled="BlazorUtils.IsWorking" OnClick="() => DeleteSource(context.Item)" />
                             </CellTemplate>
                         </TemplateColumn>
                     </Columns>
                 </MudDataGrid>
-
-                <RButton OnClick="()=> CreateNewSource(ProjectSourceKind.CSharpCode)">Create a new C# Source</RButton>
-                <RButton OnClick="()=> CreateNewSource(ProjectSourceKind.Markdown)">Create a new Markdown Source</RButton>
+                <br />
+                <MudMenu Dense>
+                    <ActivatorContent>
+                        <RButton Disabled="BlazorUtils.IsWorking">New Source</RButton>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Code" OnClick="()=> CreateNewSource(ProjectSourceKind.CSharpCode)">Create new C# Source</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.MenuBook" OnClick="()=> CreateNewSource(ProjectSourceKind.Markdown)">Create new Markdown Source</MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
             </MudTabPanel>
             <MudTabPanel Text="Chat">
                 <RTextField Label="Instructions" @bind-Value="@Project.DeveloperInstructions" Lines="10" />
@@ -32,7 +52,7 @@
         </MudTabs>
     </DialogContent>
     <DialogActions>
-        <RButton Color="Color.Default" OnClick="Dialog.Cancel">Cancel</RButton>
-        <RButton OnClick="Save">Save</RButton>
+        <RButton Color="Color.Default" Disabled="BlazorUtils.IsWorking" OnClick="Dialog.Cancel">Cancel</RButton>
+        <RButton OnClick="Save" Disabled="BlazorUtils.IsWorking">Save</RButton>
     </DialogActions>
 </MudDialog>

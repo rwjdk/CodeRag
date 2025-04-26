@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.VectorStore;
+﻿using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
+using Shared.EntityFramework.DbModels;
+using Shared.VectorStore;
 
-namespace CodeRag.Shared.Ai.Tools;
+namespace Shared.Ai.Tools;
 
 public class SearchTool(VectorStoreDataType dataType, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, VectorEntity> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {

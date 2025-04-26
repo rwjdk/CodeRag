@@ -1,4 +1,4 @@
-﻿namespace CodeRag.Shared.Ai;
+﻿namespace Shared.Ai;
 
 public class AiChatModel
 {

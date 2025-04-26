@@ -1,3 +1,3 @@
-﻿namespace CodeRag.Shared.GitHub;
+﻿namespace Shared.GitHub;
 
 public record GitHubConnection(string GitHubToken);

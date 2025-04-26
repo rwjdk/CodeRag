@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
-using CodeRag.Shared.Prompting;
+using Shared.Prompting;
 
-namespace CodeRag.Shared.EntityFramework.DbModels;
+namespace Shared.EntityFramework.DbModels;
 
 [Table("Projects")]
 public class ProjectEntity

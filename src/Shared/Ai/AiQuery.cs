@@ -2,11 +2,6 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using CodeRag.Shared.Ai.Tools;
-using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.Models;
-using CodeRag.Shared.Prompting;
-using CodeRag.Shared.VectorStore;
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -14,9 +9,14 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using OpenAI.Chat;
+using Shared.Ai.Tools;
+using Shared.EntityFramework.DbModels;
+using Shared.Models;
+using Shared.Prompting;
+using Shared.VectorStore;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
-namespace CodeRag.Shared.Ai;
+namespace Shared.Ai;
 
 [UsedImplicitly]
 public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService

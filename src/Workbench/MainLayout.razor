@@ -1,4 +1,4 @@
-﻿@using CodeRag.Shared.EntityFramework.DbModels
+﻿@using Shared.EntityFramework.DbModels
 @inherits LayoutComponentBase
 <CascadingValue Value="BlazorUtils">
     <CascadingValue Value="Site">
@@ -17,7 +17,7 @@
                     <MudAppBar Elevation="1" Dense>
                         <MudGrid Style="align-items: center">
                             <MudItem>
-                                <MudText Typo="Typo.h5">@CodeRag.Shared.Constants.AppName Workbench</MudText>
+                                <MudText Typo="Typo.h5">@Shared.Constants.AppName Workbench</MudText>
                             </MudItem>
                             <MudSpacer />
                             <MudItem>
@@ -52,10 +52,9 @@
                             <SidebarMenuItem Icon="@Icons.Material.Filled.Home" Href="/" Caption="Home" DrawerOpen="_drawerOpen" Match="NavLinkMatch.All" />
                             @if (IsProjectSelected)
                             {
-                                <SidebarMenuItem Icon="@Icons.Material.Filled.Dataset" Href="/SourceIngestion" Caption="Source Ingestion" DrawerOpen="_drawerOpen" />
                                 <SidebarMenuItem Icon="@Icons.Material.Filled.Code" Href="/XmlSummariesGeneration" Caption="XML Summaries" DrawerOpen="_drawerOpen" />
                                 <SidebarMenuItem Icon="@Icons.Material.Filled.MenuBook" Href="/WikiGeneration" Caption="Code Wiki" DrawerOpen="_drawerOpen" />
-                                <SidebarMenuItem Icon="@Icons.Material.Filled.Reviews" Href="/PrReview" Caption="Pull Request Reviews" DrawerOpen="_drawerOpen" />
+                                <SidebarMenuItem Icon="@Icons.Material.Filled.Reviews" Href="/PrReview" Caption="PR Reviews" DrawerOpen="_drawerOpen" />
                                 <SidebarMenuItem Icon="@Icons.Material.Filled.AutoGraph" Href="/Chat" Caption="Test Chat" DrawerOpen="_drawerOpen" />
                                 
                             }
@@ -64,7 +63,7 @@
                         <MudNavMenu>
                             @if (IsProjectSelected)
                             {
-                                <SidebarMenuItem Icon="@Icons.Material.Filled.Settings" OnClick="() => ShowProjectSettings(Project)" Caption="Project Settings" DrawerOpen="_drawerOpen" />
+                                <SidebarMenuItem Icon="@Icons.Material.Filled.Settings" OnClick="() => ShowProjectSettings(Project, false)" Caption="Project Settings" DrawerOpen="_drawerOpen" />
                             }
                             <SidebarMenuItem Icon="@Icons.Material.Filled.ChromeReaderMode" OnClick="DrawerToggle" Caption="Collapse Menu" AlternativeCaptionForTooltip="Expand Menu" DrawerOpen="_drawerOpen" />
                         </MudNavMenu>
@@ -77,7 +76,7 @@
                             }
                             else
                             {
-                                <h1>Welcome to @CodeRag.Shared.Constants.AppName</h1>
+                                <h1>Welcome to @Shared.Constants.AppName</h1>
                                 <RButton Size="Size.Large" OnClick="NewProject">Click here to add your First Project</RButton>
                             }
                         </div>

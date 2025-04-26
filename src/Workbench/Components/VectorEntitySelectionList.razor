@@ -1,6 +1,4 @@
-﻿@using CodeRag.Shared.EntityFramework.DbModels
-@using CodeRag.Shared.VectorStore
-
+﻿@using Shared.EntityFramework.DbModels
 <MudDataGrid T="VectorEntity" Items="Items" Dense SelectedItem="_selectEntry" SelectedItemChanged="x => SwitchSelectedItem(x)" Height="70vh">
     <Columns>
         <TemplateColumn T="VectorEntity">

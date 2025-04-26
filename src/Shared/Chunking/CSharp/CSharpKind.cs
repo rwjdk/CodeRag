@@ -1,4 +1,4 @@
-﻿namespace CodeRag.Shared.Chunking.CSharp;
+﻿namespace Shared.Chunking.CSharp;
 
 public enum CSharpKind
 {

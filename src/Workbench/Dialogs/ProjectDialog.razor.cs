@@ -1,14 +1,25 @@
 ﻿using BlazorUtilities;
-using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.Projects;
+using BlazorUtilities.Helpers;
+using CodeRag.Shared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.VectorData;
 using MudBlazor;
+using Shared;
+using Shared.EntityFramework;
+using Shared.EntityFramework.DbModels;
+using Shared.Ingestion;
+using Shared.Projects;
+using Shared.VectorStore;
 
 namespace Workbench.Dialogs;
 
-public partial class ProjectDialog(ProjectCommand projectCommand)
+public partial class ProjectDialog(ProjectCommand projectCommand, CSharpIngestionCommand cSharpIngestionCommand, MarkdownIngestionCommand markdownIngestionCommand, VectorStoreCommand vectorStoreCommand) : IDisposable
 {
-    private int _tabIndex;
+    private int _current;
+    private string? _lastMessage;
+    private int _total;
+    private ProjectSourceEntity? _syncingSource;
+    private readonly List<Guid> _sourceIdsPendingDeletion = [];
 
     [CascadingParameter]
     public required IMudDialogInstance Dialog { get; set; }
@@ -20,19 +31,45 @@ public partial class ProjectDialog(ProjectCommand projectCommand)
     public required Site Site { get; set; }
 
     [Parameter, EditorRequired]
-    public required ProjectEntity Project { get; set; }
+    public required bool AddMode { get; set; }
 
     [Parameter, EditorRequired]
-    public required ProjectDialogDefaultTab DefaultTab { get; set; }
+    public required ProjectEntity Project { get; set; }
 
     protected override void OnInitialized()
     {
-        _tabIndex = Convert.ToInt32(DefaultTab);
+        cSharpIngestionCommand.NotifyProgress += NotifyProgress;
+        markdownIngestionCommand.NotifyProgress += NotifyProgress;
+    }
+
+    public void Dispose()
+    {
+        cSharpIngestionCommand.NotifyProgress -= NotifyProgress;
+        markdownIngestionCommand.NotifyProgress -= NotifyProgress;
+    }
+
+    private void NotifyProgress(ProgressNotification obj)
+    {
+        _lastMessage = obj.Message;
+        if (obj is { Total: > 0, Current: > 0 })
+        {
+            _lastMessage = $"{obj.Current}/{obj.Total}: {_lastMessage}";
+            _total = obj.Total;
+            _current = obj.Current;
+        }
+
+        StateHasChanged();
     }
 
     private async Task Save()
     {
         //todo - Validation
+        foreach (var sourceId in _sourceIdsPendingDeletion)
+        {
+            await vectorStoreCommand.DeleteSourceDataAsync(sourceId);
+        }
+
+        _sourceIdsPendingDeletion.Clear();
         await projectCommand.UpsertProjectAsync(Project);
         Dialog.Close();
     }
@@ -61,10 +98,63 @@ public partial class ProjectDialog(ProjectCommand projectCommand)
         {
             await BlazorUtils.PromptYesNoQuestion("Are you sure you wish to remove this source?", async () =>
             {
-                Project.Sources.Remove(source);
+                _sourceIdsPendingDeletion.Add(source.Id);
+                await Task.FromResult(Project.Sources.Remove(source));
                 StateHasChanged();
-                await Task.CompletedTask;
             });
         }
+    }
+
+    private async Task SyncSource(ProjectSourceEntity? source)
+    {
+        if (source != null)
+        {
+            _syncingSource = source;
+            _lastMessage = null;
+            _current = 0;
+            _total = 0;
+            using var workingProgress = BlazorUtils.StartWorking();
+            switch (source.Kind)
+            {
+                case ProjectSourceKind.CSharpCode:
+                    await cSharpIngestionCommand.IngestAsync(Project, source);
+                    break;
+                case ProjectSourceKind.Markdown:
+                    await markdownIngestionCommand.IngestAsync(Project, source);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            await projectCommand.UpdateLastSourceSyncDateAsync(source);
+            _syncingSource = null;
+            StateHasChanged();
+        }
+    }
+
+    private MarkupString GetLastSync(ProjectSourceEntity source)
+    {
+        if (source.LastSync.HasValue)
+        {
+            var span = DateTime.UtcNow - source.LastSync.Value;
+            if (span.TotalDays > 1)
+            {
+                return new MarkupString(Plural.DaysMarkup(Convert.ToInt32(span.TotalDays)) + " ago");
+            }
+
+            if (span.TotalHours > 1)
+            {
+                return new MarkupString(Plural.HoursMarkup(Convert.ToInt32(span.TotalHours)) + " ago");
+            }
+
+            if (span.TotalMinutes > 1)
+            {
+                return new MarkupString(Plural.MinutesMarkup(Convert.ToInt32(span.TotalMinutes)) + " ago");
+            }
+
+            return new MarkupString("Less than a minute ago");
+        }
+
+        return new MarkupString("Never");
     }
 }

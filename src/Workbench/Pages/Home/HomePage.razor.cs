@@ -1,6 +1,6 @@
 ﻿using BlazorUtilities;
-using CodeRag.Shared.EntityFramework.DbModels;
 using Microsoft.AspNetCore.Components;
+using Shared.EntityFramework.DbModels;
 
 namespace Workbench.Pages.Home;
 

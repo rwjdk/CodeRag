@@ -1,9 +1,9 @@
-﻿using CodeRag.Shared.EntityFramework;
-using CodeRag.Shared.EntityFramework.DbModels;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Shared.EntityFramework;
+using Shared.EntityFramework.DbModels;
 
-namespace CodeRag.Shared.Projects;
+namespace Shared.Projects;
 
 [UsedImplicitly]
 public class ProjectQuery(SqlServerQuery sqlServerQuery) : IScopedService

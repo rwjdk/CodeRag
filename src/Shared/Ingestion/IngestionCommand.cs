@@ -1,10 +1,10 @@
-﻿using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.VectorStore;
+﻿using Shared.EntityFramework.DbModels;
+using Shared.VectorStore;
 
-namespace CodeRag.Shared.Ingestion;
+namespace Shared.Ingestion;
 
 public abstract class IngestionCommand(VectorStoreCommand vectorStoreCommand) : ProgressNotificationBase
 {
     public VectorStoreCommand VectorStoreCommand { get; } = vectorStoreCommand;
-    public abstract Task Ingest(ProjectEntity project, ProjectSourceEntity source);
+    public abstract Task IngestAsync(ProjectEntity project, ProjectSourceEntity source);
 }

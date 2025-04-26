@@ -1,4 +1,4 @@
-﻿namespace CodeRag.Shared.VectorStore;
+﻿namespace Shared.VectorStore;
 
 public enum VectorStoreDataType
 {

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CodeRag.Shared.EntityFramework.DbModels;
+namespace Shared.EntityFramework.DbModels;
 
 [Table("ProjectSources")]
 public class ProjectSourceEntity
@@ -16,6 +16,8 @@ public class ProjectSourceEntity
     public required Guid ProjectEntityId { get; set; }
 
     public required ProjectEntity Project { get; set; }
+
+    public DateTime? LastSync { get; set; }
 
     [MaxLength(100)]
     public required string Name { get; set; }

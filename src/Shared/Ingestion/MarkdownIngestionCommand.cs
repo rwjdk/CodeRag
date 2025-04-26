@@ -1,17 +1,18 @@
-﻿using JetBrains.Annotations;
-using Microsoft.Extensions.VectorData;
+﻿using System.Text;
 using System.Text.RegularExpressions;
-using System.Text;
-using CodeRag.Shared.VectorStore;
-using CodeRag.Shared.Chunking.Markdown;
-using CodeRag.Shared.EntityFramework.DbModels;
+using JetBrains.Annotations;
+using Microsoft.Extensions.VectorData;
+using Shared.Chunking.Markdown;
+using Shared.EntityFramework;
+using Shared.EntityFramework.DbModels;
+using Shared.VectorStore;
 
-namespace CodeRag.Shared.Ingestion;
+namespace Shared.Ingestion;
 
 [UsedImplicitly]
-public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery vectorStoreQuery, VectorStoreCommand vectorStoreCommand) : IngestionCommand(vectorStoreCommand), IScopedService
+public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery vectorStoreQuery, VectorStoreCommand vectorStoreCommand, SqlServerCommand sqlServerCommand) : IngestionCommand(vectorStoreCommand), IScopedService
 {
-    public override async Task Ingest(ProjectEntity project, ProjectSourceEntity source)
+    public override async Task IngestAsync(ProjectEntity project, ProjectSourceEntity source)
     {
         if (source.Kind != ProjectSourceKind.Markdown)
         {
@@ -35,8 +36,10 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
         string[] paths = Directory.GetFiles(source.Path, "*.md", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         List<VectorEntity> entries = [];
 
+        int counter = 0;
         foreach (string path in paths)
         {
+            counter++;
             var sourcePath = path.Replace(source.Path, string.Empty);
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
             if (IgnoreFile(source, path))
@@ -44,6 +47,8 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
                 continue;
             }
 
+
+            OnNotifyProgress("Step 1: Parsing Local files from Disk", counter, paths.Length);
             string content = await File.ReadAllTextAsync(path, Encoding.UTF8);
 
             if (source.MarkdownIgnoreCommentedOutContent)
@@ -106,12 +111,12 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
 
         var existingData = await vectorStoreQuery.GetExistingAsync(project.Id, source.Id);
 
-        int counter = 0;
+        counter = 0;
         List<Guid> idsToKeep = [];
         foreach (var entry in entries)
         {
             counter++;
-            OnNotifyProgress($"Processing: '{entry.Name}'", counter, entries.Count);
+            OnNotifyProgress("Step 2: Embedding Data", counter, entries.Count);
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
             if (existing == null)
             {

@@ -1,12 +1,10 @@
-﻿using CodeRag.Shared.EntityFramework;
+﻿using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.CompilerServices;
-using System.Text;
-using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
-using CodeRag.Shared.EntityFramework.DbModels;
+using Shared.EntityFramework;
+using Shared.EntityFramework.DbModels;
 
-namespace CodeRag.Shared.VectorStore;
+namespace Shared.VectorStore;
 
 [UsedImplicitly]
 public class VectorStoreQuery(IVectorStore vectorStore, IDbContextFactory<SqlDbContext> dbContextFactory) : IScopedService

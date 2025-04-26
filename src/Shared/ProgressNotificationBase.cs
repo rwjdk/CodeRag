@@ -1,7 +1,7 @@
-﻿using CodeRag.Shared.EntityFramework.DbModels;
-using Microsoft.Extensions.VectorData;
+﻿using Microsoft.Extensions.VectorData;
+using Shared.EntityFramework.DbModels;
 
-namespace CodeRag.Shared;
+namespace Shared;
 
 public class ProgressNotificationBase
 {

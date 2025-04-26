@@ -1,6 +1,6 @@
 ﻿@page "/PrReview"
-@using CodeRag.Shared.Ai
 @using Octokit
+@using Shared.Ai
 <h2>Review Pull Request using AI</h2>
 
 @if (string.IsNullOrWhiteSpace(Project.GitHubOwner) || string.IsNullOrWhiteSpace(Project.GitHubRepo))

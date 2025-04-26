@@ -1,8 +1,8 @@
 ﻿using Blazored.LocalStorage;
 using BlazorUtilities;
-using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.Projects;
 using MudBlazor;
+using Shared.EntityFramework.DbModels;
+using Shared.Projects;
 using DialogResult = Workbench.Dialogs.DialogResult;
 
 namespace Workbench;
@@ -57,7 +57,7 @@ public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQue
 
     internal async Task NewProject()
     {
-        await ShowProjectSettings(null);
+        await ShowProjectSettings(null, true);
     }
 
     private async Task SwitchMode()
@@ -66,9 +66,9 @@ public partial class MainLayout(BlazorUtils blazorUtils, ProjectQuery projectQue
         await localStorage.SetItemAsync(Constants.LocalStorageKeys.DarkMode, _darkMode);
     }
 
-    private async Task ShowProjectSettings(ProjectEntity? project)
+    private async Task ShowProjectSettings(ProjectEntity? project, bool addMode)
     {
-        await Site.ShowProjectDialogAsync(project);
+        await Site.ShowProjectDialogAsync(project, addMode);
         await RefreshProjects();
         //todo - if new project select it
     }

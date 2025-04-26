@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Text;
 
-namespace CodeRag.Shared.Models;
+namespace Shared.Models;
 
 public class Review
 {

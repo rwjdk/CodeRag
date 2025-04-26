@@ -1,8 +1,8 @@
-﻿using CodeRag.Shared.EntityFramework.DbModels;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Shared.EntityFramework.DbModels;
 
-namespace CodeRag.Shared.EntityFramework;
+namespace Shared.EntityFramework;
 
 public class SqlDbContext(DbContextOptions<SqlDbContext> options) : DbContext(options)
 {

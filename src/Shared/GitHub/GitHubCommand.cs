@@ -1,6 +1,6 @@
 ﻿using Octokit;
 
-namespace CodeRag.Shared.GitHub;
+namespace Shared.GitHub;
 
 public class GitHubCommand() : IScopedService
 {

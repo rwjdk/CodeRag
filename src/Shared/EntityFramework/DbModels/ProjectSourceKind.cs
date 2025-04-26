@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace CodeRag.Shared.EntityFramework.DbModels;
+﻿namespace Shared.EntityFramework.DbModels;
 
 public enum ProjectSourceKind
 {

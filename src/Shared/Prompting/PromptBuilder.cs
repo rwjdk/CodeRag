@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace CodeRag.Shared.Prompting
+namespace Shared.Prompting
 {
     public class Prompt
     {

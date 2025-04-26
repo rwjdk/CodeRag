@@ -1,13 +1,14 @@
 ﻿using BlazorUtilities;
 using BlazorUtilities.Components;
 using CodeRag.Shared;
-using CodeRag.Shared.Ai;
-using CodeRag.Shared.EntityFramework.DbModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
+using Shared;
+using Shared.Ai;
+using Shared.EntityFramework.DbModels;
 using Workbench.Dialogs;
 
 namespace Workbench.Pages.Chat;

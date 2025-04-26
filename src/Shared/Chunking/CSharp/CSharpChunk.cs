@@ -1,7 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
-using System.Text;
+﻿using System.Text;
+using Microsoft.CodeAnalysis;
 
-namespace CodeRag.Shared.Chunking.CSharp;
+namespace Shared.Chunking.CSharp;
 
 public class CSharpChunk(CSharpKind kind, string @namespace, string? parent, CSharpKind? parentKind, string name, string xmlSummary, string content, List<string> dependencies, SyntaxNode node)
 {

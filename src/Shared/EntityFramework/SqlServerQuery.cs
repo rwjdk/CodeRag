@@ -2,7 +2,7 @@
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace CodeRag.Shared.EntityFramework;
+namespace Shared.EntityFramework;
 
 [UsedImplicitly]
 public class SqlServerQuery(IDbContextFactory<SqlDbContext> dbContextFactory) : IScopedService

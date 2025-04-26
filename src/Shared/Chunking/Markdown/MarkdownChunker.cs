@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 
-namespace CodeRag.Shared.Chunking.Markdown
+namespace Shared.Chunking.Markdown
 {
     [UsedImplicitly]
     public class MarkdownChunker : IScopedService

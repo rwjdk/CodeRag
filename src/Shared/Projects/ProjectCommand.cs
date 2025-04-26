@@ -1,9 +1,9 @@
-﻿using CodeRag.Shared.EntityFramework;
-using CodeRag.Shared.EntityFramework.DbModels;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Shared.EntityFramework;
+using Shared.EntityFramework.DbModels;
 
-namespace CodeRag.Shared.Projects;
+namespace Shared.Projects;
 
 [UsedImplicitly]
 public class ProjectCommand(SqlServerCommand sqlServerCommand) : IScopedService
@@ -50,5 +50,18 @@ public class ProjectCommand(SqlServerCommand sqlServerCommand) : IScopedService
                 existing.Sources.Add(projectSource);
             }
         }
+    }
+
+    public async Task UpdateLastSourceSyncDateAsync(ProjectSourceEntity source)
+    {
+        source.LastSync = DateTime.UtcNow;
+        var context = await sqlServerCommand.CreateDbContextAsync();
+        var existingSource = context.ProjectSources.FirstOrDefault(x => x.Id == source.Id);
+        if (existingSource != null)
+        {
+            existingSource.LastSync = source.LastSync;
+        }
+
+        await context.SaveChangesAsync();
     }
 }

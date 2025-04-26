@@ -22,6 +22,21 @@ public static class Plural
         return new MarkupString(Hours(Convert.ToDecimal(count), format));
     }
 
+    public static MarkupString MinutesMarkup(int count, string format = $"<strong>{CountKeyword}</strong> {UnitKeyword}")
+    {
+        return new MarkupString(Minutes(Convert.ToDecimal(count), format));
+    }
+
+    public static MarkupString MinutesMarkup(decimal count, string format = $"<strong>{CountKeyword}</strong> {UnitKeyword}")
+    {
+        return new MarkupString(Minutes(count, format));
+    }
+
+    public static string Minutes(decimal count, string format = $"<strong>{CountKeyword}</strong> {UnitKeyword}")
+    {
+        return Pluralize(count, "minute", "minutes", format);
+    }
+
     private static string Hours(decimal count, string format = $"<strong>{CountKeyword}</strong> {UnitKeyword}")
     {
         return Pluralize(count, "hour", "hours", format);

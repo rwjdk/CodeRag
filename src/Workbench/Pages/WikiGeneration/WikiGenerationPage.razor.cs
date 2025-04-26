@@ -1,8 +1,8 @@
 ﻿using BlazorUtilities;
-using CodeRag.Shared.Ai;
-using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.VectorStore;
 using Microsoft.AspNetCore.Components;
+using Shared.Ai;
+using Shared.EntityFramework.DbModels;
+using Shared.VectorStore;
 
 namespace Workbench.Pages.WikiGeneration;
 

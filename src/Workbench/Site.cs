@@ -1,5 +1,5 @@
-﻿using CodeRag.Shared.EntityFramework.DbModels;
-using MudBlazor;
+﻿using MudBlazor;
+using Shared.EntityFramework.DbModels;
 using Workbench.Dialogs;
 using DialogResult = Workbench.Dialogs.DialogResult;
 
@@ -7,12 +7,12 @@ namespace Workbench;
 
 public class Site(IDialogService dialogService)
 {
-    public async Task<DialogResult> ShowProjectDialogAsync(ProjectEntity? project, ProjectDialogDefaultTab defaultTab = ProjectDialogDefaultTab.GitHub)
+    public async Task<DialogResult> ShowProjectDialogAsync(ProjectEntity? project, bool addMode)
     {
         var parameters = new DialogParameters<ProjectDialog>
         {
             { x => x.Project, project ?? ProjectEntity.Empty() },
-            { x => x.DefaultTab, defaultTab },
+            { x => x.AddMode, addMode },
         };
 
         DialogOptions dialogOptions = new()

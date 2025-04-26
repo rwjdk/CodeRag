@@ -1,7 +1,7 @@
-﻿using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.Projects;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using Shared.EntityFramework.DbModels;
+using Shared.Projects;
 
 namespace Workbench.Dialogs;
 

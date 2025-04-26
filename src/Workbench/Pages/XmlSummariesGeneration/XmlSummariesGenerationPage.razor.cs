@@ -1,13 +1,13 @@
 ﻿using BlazorUtilities;
 using BlazorUtilities.Components;
-using CodeRag.Shared.Ai;
-using CodeRag.Shared.Chunking.CSharp;
-using CodeRag.Shared.EntityFramework.DbModels;
-using CodeRag.Shared.VectorStore;
 using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using MudBlazor;
+using Shared.Ai;
+using Shared.Chunking.CSharp;
+using Shared.EntityFramework.DbModels;
+using Shared.VectorStore;
 
 namespace Workbench.Pages.XmlSummariesGeneration;
 
