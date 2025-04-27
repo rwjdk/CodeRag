@@ -99,7 +99,7 @@
                                 </MudGrid>
                             </MudItem>
                             <MudItem xs="12">
-                                <RTextField Style="font-family: 'Courier New'" Value="@chunk.Node.ToString()" AutoGrow />
+                                <RTextField Style="font-family: 'Courier New'" Value="@(chunk.GetDisplayString())" AutoGrow />
                             </MudItem>
                         </MudGrid>
                     }

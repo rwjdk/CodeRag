@@ -3,6 +3,7 @@ using BlazorUtilities.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Formatting;
 using MudBlazor;
 using Shared.Ai;
 using Shared.Chunking.CSharp;
@@ -214,6 +215,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         var newMethod = oldNode.WithLeadingTrivia(parsedTrivia);
 
         var newRoot = root.ReplaceNode(oldNode, newMethod);
+        newRoot = Formatter.Format(newRoot, new AdhocWorkspace());
         await File.WriteAllTextAsync(path, newRoot.ToFullString().Replace("\r\n", "\n").Replace("\n", "\r\n"));
         BlazorUtils.ShowSuccess($"Saved new XML Summary for {chunk.Name}");
     }

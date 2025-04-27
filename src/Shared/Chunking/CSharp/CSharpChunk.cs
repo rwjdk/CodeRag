@@ -1,5 +1,7 @@
-﻿using System.Text;
+﻿using System.Runtime.Serialization;
+using System.Text;
 using Microsoft.CodeAnalysis;
+using Formatter = Microsoft.CodeAnalysis.Formatting.Formatter;
 
 namespace Shared.Chunking.CSharp;
 
@@ -40,5 +42,10 @@ public class CSharpChunk(CSharpKind kind, string @namespace, string? parent, CSh
     public override string ToString()
     {
         return $"{Kind}: {Path}";
+    }
+
+    public string GetDisplayString()
+    {
+        return Formatter.Format(Node, new AdhocWorkspace()).ToString();
     }
 }

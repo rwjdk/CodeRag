@@ -230,17 +230,8 @@ namespace Shared.Chunking.CSharp
             return enumDecl.WithMembers(newMembers);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="node"></param>
-        /// <returns></returns>
         private static string GetXmlSummary(SyntaxNode node)
         {
-            //#if DEBUG
-            //            return string.Empty; //todo- remove again after test
-            //#endif
-
             DocumentationCommentTriviaSyntax? trivia = node.GetLeadingTrivia().Select(t => t.GetStructure()).OfType<DocumentationCommentTriviaSyntax>().FirstOrDefault();
             if (trivia == null)
             {
