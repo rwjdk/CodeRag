@@ -3,17 +3,17 @@
 @using Shared.Ai
 <MudGrid Spacing="1" Class="align-items-center">
     <MudItem>
-        <h1>Pull Request Reviews</h1>
+        <h1>AI Reviews</h1>
     </MudItem>
     <MudSpacer />
     @if (!string.IsNullOrWhiteSpace(Project.GitHubOwner) && !string.IsNullOrWhiteSpace(Project.GitHubRepo) && _pullRequests != null)
     {
         <MudItem>
-            <RSelect T="PullRequest" Items="_pullRequests" Label="Pull Request to Review" @bind-Value="_selectedPullRequest" ToStringFunc="@(x=> x?.Title ?? "???")" />
+            <RSelect Disabled="BlazorUtils.IsWorking" T="PullRequest" Items="_pullRequests" Label="Pull Request to Review" @bind-Value="_selectedPullRequest" ToStringFunc="@(x=> x?.Title ?? "???")" />
         </MudItem>
     }
     <MudItem>
-        <RSelect T="AiChatModel" Label="AI-Model to use" Items="aiQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
+        <RSelect Disabled="BlazorUtils.IsWorking" T="AiChatModel" Label="AI-Model to use" Items="aiQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
     </MudItem>
 </MudGrid>
 
@@ -27,30 +27,58 @@ else
     {
         @if (_selectedPullRequest != null)
         {
-            <h3>@_selectedPullRequest.Title</h3>
-            <RButton OnClick="DoAiReview">AI Review</RButton>
+            <MudGrid>
+                <MudItem xs="3">
+                    <h2>Pull Request Details</h2>
+                    <ul>
+                        <li class="bold">@_selectedPullRequest.Title #@_selectedPullRequest.Number <RIconButton Icon="@Icons.Material.Filled.Launch" Target="_blank" Href="@_selectedPullRequest.HtmlUrl"></RIconButton></li>
+                        <ul>
+                            <li>Created: @_selectedPullRequest.CreatedAt.LocalDateTime.ToLongDateString()</li>
+                            <li>Owner: @_selectedPullRequest.User.Login</li>
+                        </ul>
+                    </ul>
+                    <br />
 
-            @if (_review != null)
-            {
-                <h4>Review</h4>
-                @_review.Summary
+                    <RButton OnClick="DoAiReview" Disabled="BlazorUtils.IsWorking">Conduct AI Review</RButton>
+                </MudItem>
+                <MudItem xs="6">
+                    @if (BlazorUtils.IsWorking)
+                    {
+                        <RProgressIndicator />
+                    }
 
-                @if (_review.PotentialIssuesFound?.Any() == true)
-                {
-                    <h4>@_review.PotentialIssuesFound.Length Potential issues found</h4>
-                }
-                else
-                {
-                    <h4>No issues found 😎</h4>
-                }
+                    @if (_review != null)
+                    {
+                        <h2>Pull Request Review</h2>
+                        @_review.Summary
 
-                <RButton OnClick="AddPrReviewComment">Add this review as Comment on the PR</RButton>
-        
-            }
-        }    
+                        @if (_review.PotentialIssuesFound?.Any() == true)
+                        {
+                            <h3>@_review.PotentialIssuesFound.Length Potential issues found</h3>
+                            <ul>
+                                @foreach (var issue in _review.PotentialIssuesFound)
+                                {
+                                    <li>@issue</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <h3>No issues found 😎</h3>
+                        }
+                        <br/><br/>
+                        <RButton OnClick="AddPrReviewComment">Add this review as Comment on the PR</RButton>
+
+                    }
+                </MudItem>
+                <MudItem xs="3">
+                    &nbsp;
+                </MudItem>
+            </MudGrid>
+        }
     }
     else
     {
-        <RProgressIndicator/>
+        <RProgressIndicator />
     }
 }

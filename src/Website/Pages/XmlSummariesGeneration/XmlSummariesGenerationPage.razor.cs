@@ -28,7 +28,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     private MudTreeView<Item>? _treeView;
 
     private string? _searchPhrase;
-    private SummaryStatus _summaryStatus = SummaryStatus.All;
+    private SummaryStatus _summaryStatus = SummaryStatus.MissingSummary;
     private CSharpKind _kind = CSharpKind.Method;
     private VectorEntity[]? _existingVectorEntities;
     private Item? _selectedItem;
@@ -61,6 +61,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         _chatModel = aiQuery.GetChatModels().FirstOrDefault();
         _sources = Project.Sources.Where(x => x.Kind == ProjectSourceKind.CSharpCode).ToArray();
         _selectedSource = _sources.FirstOrDefault();
+        _existingVectorEntities = await vectorStoreQuery.GetExistingAsync(Project.Id, _selectedSource.Id);
         await Refresh();
     }
 
@@ -154,7 +155,6 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     {
         if (_selectedSource != null)
         {
-            _existingVectorEntities = await vectorStoreQuery.GetExistingAsync(Project.Id, _selectedSource.Id);
             var existing = _existingVectorEntities.Where(x => x.Kind == _kind.ToString());
             switch (_summaryStatus)
             {
@@ -181,6 +181,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         _selectedSource = source;
         if (_selectedSource != null)
         {
+            _existingVectorEntities = await vectorStoreQuery.GetExistingAsync(Project.Id, _selectedSource.Id);
             await Refresh();
         }
         else

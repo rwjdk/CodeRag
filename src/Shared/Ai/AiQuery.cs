@@ -41,7 +41,9 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
 
         ITextEmbeddingGenerationService embeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
 
-        input.Add(new ChatMessageContent(AuthorRole.User, messageToSend));
+        ChatMessageContent messageContent = new(AuthorRole.User, messageToSend);
+        previousConversation.Add(messageContent);
+        input.Add(messageContent);
 
         if (useSourceCodeSearch)
         {
@@ -57,7 +59,7 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
 
         ChatCompletionAgent answerAgent = GetAgent(chatModel, project.GetFormattedDeveloperInstructions(), kernel);
 
-        input.Add(new ChatMessageContent(AuthorRole.User, messageToSend));
+        input.Add(messageContent);
 
         ChatMessageContent response = null!;
 
@@ -99,10 +101,11 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
+        executionSettings.ResponseFormat = typeof(T);
+
         if (chatModel.Temperature.HasValue)
         {
             executionSettings.Temperature = chatModel.Temperature.Value;
-            executionSettings.ResponseFormat = typeof(T);
         }
 
         if (!string.IsNullOrWhiteSpace(chatModel.ReasoningEffortLevel))

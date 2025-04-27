@@ -28,7 +28,7 @@ CodeRag is an AI Solution that parses your C# Code Repo + existing documentation
 - Markdown Documentation Generation
 - GitHub Pull Request Reviews
 
-#### Additional Planned Features
+### (Additional Planned Features)
 - GitHub WebHook Integration for automated PR Reviews on creation/sync
 - API Access for automation of ingestion
 - MCP Support

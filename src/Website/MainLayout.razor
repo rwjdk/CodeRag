@@ -75,13 +75,20 @@
                                         </MudItem>
                                         <MudItem>
                                             <MudTooltip Text="Simulate Login/Logout">
-                                                @if (LoggedIn)
+                                                @if (Site.DebugMode)
                                                 {
-                                                    <RButton Color="Color.Secondary" OnClick="Logout">Log out</RButton>
+                                                    @if (LoggedIn)
+                                                    {
+                                                        <RButton Color="Color.Secondary" OnClick="Logout">Log out</RButton>
+                                                    }
+                                                    else
+                                                    {
+                                                        <RButton Color="Color.Secondary" OnClick="Login">Log in</RButton>
+                                                    }
                                                 }
                                                 else
                                                 {
-                                                    <RButton Color="Color.Secondary" OnClick="Login">Log in</RButton>
+                                                    <RButton Color="Color.Secondary" OnClick="AdminExperience">Try the Admin Experience</RButton>
                                                 }
                                             </MudTooltip>
                                         </MudItem>
@@ -100,7 +107,6 @@
                                             @if (IsProjectSelected)
                                             {
                                                 <SidebarMenuItem Icon="@Icons.Material.Filled.Code" Href="/XmlSummariesGeneration" Caption="XML Summaries" DrawerOpen="_drawerOpen" />
-                                                <SidebarMenuItem Icon="@Icons.Material.Filled.MenuBook" Href="/WikiGeneration" Caption="Code Wiki" DrawerOpen="_drawerOpen" />
                                                 <SidebarMenuItem Icon="@Icons.Material.Filled.Reviews" Href="/PrReview" Caption="PR Reviews" DrawerOpen="_drawerOpen" />
                                                 <SidebarMenuItem Icon="@Icons.Material.Filled.AutoGraph" Href="/Chat" Caption="Test Chat" DrawerOpen="_drawerOpen" />
                                             }
@@ -123,8 +129,10 @@
                                         }
                                         else
                                         {
-                                            <h1>Welcome to @Shared.Constants.AppName</h1>
-                                            <RButton Size="Size.Large" OnClick="NewProject">Click here to add your First Project</RButton>
+                                            <div style="text-align: center">
+                                                <h1>Welcome to @Shared.Constants.AppName</h1>
+                                                <RButton Size="Size.Large" OnClick="NewProject">Click here to add your First Project</RButton>
+                                            </div>
                                         }
                                     </div>
                                 </MudMainContent>

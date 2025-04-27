@@ -8,7 +8,7 @@ using Website.Models;
 
 namespace Website;
 
-public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService localStorage, IDialogService dialogService, IServiceProvider serviceProvider, NavigationManager navigationManager)
+public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService localStorage, IDialogService dialogService, IServiceProvider serviceProvider)
 {
     public BlazorUtils BlazorUtils { get; } = blazorUtils;
     private bool _drawerOpen;
@@ -34,7 +34,15 @@ public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService lo
         {
             _drawerOpen = await localStorage.GetItemAsync<bool>(Constants.LocalStorageKeys.DrawerOpen);
             _darkMode = await localStorage.GetItemAsync<bool>(Constants.LocalStorageKeys.DarkMode);
-            LoggedIn = await localStorage.GetItemAsync<bool>(Constants.LocalStorageKeys.IsLoggedIn);
+            if (Site.DebugMode)
+            {
+                LoggedIn = await localStorage.GetItemAsync<bool>(Constants.LocalStorageKeys.IsLoggedIn);
+            }
+            else
+            {
+                LoggedIn = false; //Admin Tools disabled for deployed demo.
+            }
+
             if (_projectQuery != null)
             {
                 await RefreshProjects();
@@ -102,5 +110,10 @@ public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService lo
         //NB: Logout is simulated in order to make it easier to demo
         await localStorage.SetItemAsync(Constants.LocalStorageKeys.IsLoggedIn, false);
         LoggedIn = false;
+    }
+
+    private async Task AdminExperience()
+    {
+        await BlazorUtils.PromptYesNoQuestion("The Admin Experience for CodeRag is disabled in this online demo, but you can try it by cloning the Repo. Go to to GitHub Repo?", async () => { await BlazorUtils.OpenUrlInNewTab("https://www.github.com/rwjdk/CodeRag"); });
     }
 }

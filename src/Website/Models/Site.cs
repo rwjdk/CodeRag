@@ -7,6 +7,13 @@ namespace Website.Models;
 
 public class Site(IDialogService dialogService)
 {
+#if DEBUG
+    public bool DebugMode => true;
+#else
+    public bool DebugMode => false;
+#endif
+
+
     public async Task<DialogResult> ShowProjectDialogAsync(ProjectEntity? project, bool addMode)
     {
         var parameters = new DialogParameters<ProjectDialog>
