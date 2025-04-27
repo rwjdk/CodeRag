@@ -10,12 +10,12 @@ An AI Expert for your C# Codebase
 
 # What if we made AI help with filling the above boxes? 😎
 
-CodeRag is an AI Solution that parses your C# Code Repo + existing documentation you may have; add it to a VectorStore (RAG) and offer you (and you users/colleagues) an AI solution to help better understand the code, help with documentation, and even do Code Reviews
+CodeRag is an AI Solution that parses your C# Code Repo + existing documentation you may have; add it to a VectorStore (RAG) and offer you (and users/colleagues) an AI solution to help better understand the code, help with documentation, and even Code Reviews
 
 ## Public or Private
 ``PUBLIC`` CodeRag offers any GitHub public repos to be indexed, with the Owner getting access to tweak settings.
 
-``PRIVATE`` For Private Repos, you can clone this Repo and self-host for code-security (Require an Azure OpenAI Resource and an Azure SQL Database)
+``PRIVATE`` For Private Repos, you can clone this Repo and self-host for code-security (Require an Azure OpenAI Resource, an Azure SQL Database and a GitHub Account)
 
 ## Features
 
@@ -28,6 +28,14 @@ CodeRag is an AI Solution that parses your C# Code Repo + existing documentation
 - Markdown Documentation Generation
 - GitHub Pull Request Reviews
 
+#### Additional Planned Features
+- GitHub WebHook Integration for automated PR Reviews on creation/sync
+- API Access for automation of ingestion
+- MCP Support
+
+## Architecture
+
+![Architecture](Images/Architecture.png)
 
 ## Setup
 In order to clone and run this repo locally you will need the following Azure Resources

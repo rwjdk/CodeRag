@@ -24,7 +24,8 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
 {
     public async Task<ChatMessageContent?> GetAnswer(
         AiChatModel chatModel,
-        List<ChatMessageContent> conversation,
+        List<ChatMessageContent> previousConversation,
+        string messageToSend,
         bool useSourceCodeSearch,
         bool useDocumentationSearch,
         int maxNumberOfAnswersBackFromSourceCodeSearch,
@@ -36,31 +37,39 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
         long timestamp = Stopwatch.GetTimestamp();
         Kernel kernel = GetKernel(chatModel);
 
+        List<ChatMessageContent> input = previousConversation.Select(x => new ChatMessageContent(x.Role, x.Content)).ToList();
+
         ITextEmbeddingGenerationService embeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
+
+        input.Add(new ChatMessageContent(AuthorRole.User, messageToSend));
 
         if (useSourceCodeSearch)
         {
-            AddCodeSearchPluginToKernel(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, embeddingGenerationService, kernel);
+            var codeSearchTool = AddCodeSearchPluginToKernel(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, embeddingGenerationService, kernel);
+            input.Add(new ChatMessageContent(AuthorRole.User, "Relevant Code: " + await codeSearchTool.Search(messageToSend)));
         }
 
         if (useDocumentationSearch)
         {
-            AddDocumentationSearchPluginToKernel(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
+            SearchTool docsSearch = AddDocumentationSearchPluginToKernel(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
+            input.Add(new ChatMessageContent(AuthorRole.User, "Relevant Documentation: " + await docsSearch.Search(messageToSend)));
         }
 
         ChatCompletionAgent answerAgent = GetAgent(chatModel, project.GetFormattedDeveloperInstructions(), kernel);
 
-        ChatMessageContent chatMessageContent = null!;
+        input.Add(new ChatMessageContent(AuthorRole.User, messageToSend));
+
+        ChatMessageContent response = null!;
 
         OnNotifyProgress("Sending Request to AI");
-        await foreach (AgentResponseItem<ChatMessageContent> item in answerAgent.InvokeAsync(conversation))
+        await foreach (AgentResponseItem<ChatMessageContent> item in answerAgent.InvokeAsync(input))
         {
-            chatMessageContent = item.Message;
+            response = item.Message;
         }
 
         TimeSpan elapsedTime = Stopwatch.GetElapsedTime(timestamp);
         OnNotifyProgress($"Done - Total time: {Convert.ToInt32(elapsedTime.TotalSeconds)} sec");
-        return chatMessageContent;
+        return response;
     }
 
     private ITextEmbeddingGenerationService GetTextEmbeddingGenerationService(Kernel kernel)
@@ -68,18 +77,20 @@ public class AiQuery(Ai ai, VectorStoreQuery vectorStoreQuery) : ProgressNotific
         return kernel.GetRequiredService<ITextEmbeddingGenerationService>();
     }
 
-    private void AddDocumentationSearchPluginToKernel(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
+    private SearchTool AddDocumentationSearchPluginToKernel(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
         var collection = vectorStoreQuery.GetCollection();
         var docsTool = new SearchTool(VectorStoreDataType.Documentation, project, embeddingGenerationService, collection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
         kernel.ImportPluginFromObject(docsTool, Constants.Tools.Markdown);
+        return docsTool;
     }
 
-    private void AddCodeSearchPluginToKernel(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
+    private SearchTool AddCodeSearchPluginToKernel(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
     {
         var collection = vectorStoreQuery.GetCollection();
         var codePlugin = new SearchTool(VectorStoreDataType.Code, project, embeddingGenerationService, collection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
         kernel.ImportPluginFromObject(codePlugin, Constants.Tools.CSharp);
+        return codePlugin;
     }
 
     private ChatCompletionAgent GetAgentForStructuredOutput<T>(AiChatModel chatModel, string instructions, Kernel kernel)

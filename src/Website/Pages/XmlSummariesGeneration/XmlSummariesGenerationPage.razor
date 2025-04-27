@@ -1,0 +1,114 @@
+﻿@page "/XmlSummariesGeneration"
+@using Shared.Ai
+@using Shared.Chunking.CSharp
+@using Shared.EntityFramework.DbModels
+@using Website.Models
+<MudGrid Spacing="1" Class="align-items-center">
+    <MudItem>
+        <h1>XML Summaries Generation</h1>
+    </MudItem>
+    <MudSpacer />
+    @if (_sources is { Length: > 1 })
+    {
+        <MudItem>
+            <RSelect T="ProjectSourceEntity" Label="Source" Items="_sources" Value="_selectedSource" ValueChanged="x => SwitchSource(x)" ToStringFunc="@(x => x!.Name ?? "???")" />
+        </MudItem>
+    }
+    <MudItem>
+        @if (_selectedSource != null)
+        {
+            <RSelectFromEnum Style="width: 150px" Label="Kind" T="CSharpKind" Value="_kind" ValuesToExclude="[CSharpKind.None]" ValueChanged="x => SwitchKind(x)"></RSelectFromEnum>
+        }
+    </MudItem>
+    <MudItem>
+        @if (_selectedSource != null)
+        {
+            <RSelectFromEnum Style="width: 250px" Label="Status" T="SummaryStatus" Value="_summaryStatus" ValueChanged="x => SwitchSummaryStatus(x)"></RSelectFromEnum>
+        }
+    </MudItem>
+    <MudItem>
+        <RSelect T="AiChatModel" Label="AI-Model to use" Items="aiQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
+    </MudItem>
+</MudGrid>
+
+
+
+@if (_tree != null)
+{
+    <MudGrid>
+        <MudItem xs="3">
+            @if (_selectedSource != null)
+            {
+                <h2>@(_kind + "s") that match criteria </h2>
+                <MudTextField T="string" Placeholder="Search" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" TextChanged="OnSearchTextChanged" Immediate="true" Clearable="true" />
+                <MudTreeView T="Item" Items="_tree.Children" Dense @ref="_treeView" FilterFunc="MatchesName" SelectedValue="_selectedItem" SelectedValueChanged="x=> SwitchSelected(x)" SelectionMode="SelectionMode.SingleSelection">
+                    <ItemTemplate>
+                        <MudTreeViewItem T="Item"
+                                         Text="@context.Value!.GetText(context.Children)"
+                                         TextTypo="Typo.caption"
+                                         EndText="@context.Value.GetTotalRelatedEntities(context.Children).ToString()"
+                                         EndTextTypo="Typo.caption"
+                                         Value="@context.Value"
+                                         Items="@context.Children"
+                                         Icon="@context.Value.GetIcon()"
+                                         Visible="@context.Visible">
+                        </MudTreeViewItem>
+                    </ItemTemplate>
+                </MudTreeView>
+            }
+        </MudItem>
+        <MudItem xs="9">
+            @if (_selectedItem != null)
+            {
+                <MudGrid Spacing="3" Class="align-items-center" Style="margin-top: 14px">
+                    <MudItem xs="@(_selectedChunk != null ? 12 : 9)">
+                        @* todo: skip this step if only one chunk *@
+                        <RSelect Clearable Style="width: 600px" T="CSharpChunk" @bind-Value="_selectedChunk" Label="@($"{_kind} to generate XML Summary for in {_selectedItem.Info.Name} ")" Items="_selectedItem.CodeChunks.DistinctBy(x => x.Name)" ToStringFunc="x => x!.Name" />
+                    </MudItem>
+                    @if (_selectedChunk == null)
+                    {
+                        <MudItem xs="3">
+                            <RButton Style="width: 100%" OnClick="() => GenerateAll()">... or Generate and Accept for all</RButton>
+                        </MudItem>
+                    }
+                </MudGrid>
+                <RProgressBar @ref="_progressBar" />
+                @if (_selectedChunk != null)
+                {
+                    @foreach (var chunk in _selectedItem.CodeChunks.Where(x => x.Name == _selectedChunk.Name))
+                    {
+                        @* todo: use vector-entities to check diff from real file *@
+                        <MudGrid Spacing="0">
+                            <MudItem xs="12">
+                                <MudGrid Class="align-items-center" Spacing="1">
+                                    <MudItem Style="@(string.IsNullOrWhiteSpace(_selectedChunk.XmlSummary) ? "width: 100%" : "width: calc(100% - 30px)")">
+                                        <RTextField Adornment="Adornment.End" AdornmentColor="Color.Primary" AdornmentIcon="@Icons.Material.Filled.AutoAwesome" OnAdornmentClick="() => Generate(chunk)" Placeholder="Enter XML Summary here or press the Generate button" Style="font-family: 'Courier New'" @bind-Value="chunk.XmlSummary" AutoGrow/>
+                                        @if (BlazorUtils.IsWorking)
+                                        {
+                                            <RProgressIndicator />
+                                        }
+                                    </MudItem>
+                                    @if (!string.IsNullOrWhiteSpace(_selectedChunk.XmlSummary))
+                                    {
+                                        <MudItem Style="max-width: 30px">
+                                            <RIconButton Icon="@Icons.Material.Filled.Save" Color="Color.Primary" OnClick="() => Save(_selectedItem.Info.FullName, chunk)" />
+                                            <br/>
+                                            <RIconButton Icon="@Icons.Material.Filled.Clear" OnClick="() => _selectedChunk.XmlSummary = null" />
+                                        </MudItem>
+                                    }
+                                </MudGrid>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <RTextField Style="font-family: 'Courier New'" Value="@(chunk.GetDisplayString())" AutoGrow />
+                            </MudItem>
+                        </MudGrid>
+                    }
+                }
+            }
+        </MudItem>
+    </MudGrid>
+}
+else
+{
+    <RProgressIndicator />
+}

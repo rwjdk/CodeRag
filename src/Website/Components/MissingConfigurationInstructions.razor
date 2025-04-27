@@ -1,0 +1,76 @@
+﻿@using Website.Models
+<div style="margin: 10px; padding: 10px">
+    <h1>Site is not yet configured</h1>
+    <div>This site have not yet been configured with the needed Configurations (Please do so before you can continue)</div>
+    <MudDataGrid Dense Items="AppState.MissingConfigurations">
+        <Columns>
+            <TemplateColumn Title="Configuration Key">
+                <CellTemplate>
+                    <div style="font-weight: bold">@context.Item.Variable</div>
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Sensitive Information">
+                <CellTemplate>
+                    @if (context.Item.Sensitive)
+                    {
+                        <div>Yes</div>
+                    }
+                    else
+                    {
+                        <div>Not Normally considered sensitive</div>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Instructions">
+                <CellTemplate>
+                    @context.Item.Instructions
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn>
+                <CellTemplate>
+                    <a href="@context.Item!.MoreInfoUrl" target="_blank">More Info</a>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+    </MudDataGrid>
+
+    <h2>Sample appSettings.json</h2>
+<pre>
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "AiEndpoint": "https://myService.openai.azure.com/", //Your Azure OpenAI Endpoint
+  "AiEmbeddingDeploymentName": "text-embedding-3-small", //Your name of you EmbeddingModel deployed in Azure OpenAI
+  "AiModelDeployments": [ //One or more ChatModelDeployments
+    {
+      "DeploymentName": "gpt-4.1-mini", //Name of Deployment
+      "Temperature": 0 //Temp to use (0 - 2; lower value is recommended)
+    },
+    {
+      "DeploymentName": "gpt-4.1",
+      "Temperature": 0
+    },
+    {
+      "DeploymentName": "o3-mini",
+      "ReasoningEffortLevel": "high", //For Reasoning Models you can define low/medium/high for reasoning effort
+      "TimeoutInSeconds": 300 //As reasoning models tend to 'think' longer a higher timeout is normally needed
+    }
+  ]
+}
+</pre>
+
+
+    <h2>Sample secrets.json</h2>
+<pre>
+{
+  "AiKey": "1234567890abcdefg", //Your Azure OpenAI Service Key
+  "SqlServerConnectionString": "Server=tcp:myserver.database.windows.net,1433;Initial Catalog=myDb;Persist Security Info=False;User ID=myuser;Password=myPW;", //Your SQL Server ConnectionString
+  "GitHubToken": "github_pat_1234567890abcdefg" //Your GitHubToken
+}
+</pre>
+</div>
