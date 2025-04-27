@@ -47,7 +47,13 @@
                 </MudMenu>
             </MudTabPanel>
             <MudTabPanel Text="Chat">
-                <RTextField Label="Instructions" @bind-Value="@Project.DeveloperInstructions" Lines="10" />
+                <RTextField Label="Instructions" @bind-Value="@Project.ChatInstructions" Lines="10" />
+            </MudTabPanel>
+            <MudTabPanel Text="XML Summaries">
+                <RTextField Label="Instructions" @bind-Value="@Project.CSharpXmlSummaryInstructions" Lines="10" />
+            </MudTabPanel>
+            <MudTabPanel Text="PR Review">
+                <RTextField Label="Instructions" @bind-Value="@Project.PullRequestReviewInstructions" Lines="10" />
             </MudTabPanel>
             <MudTabPanel Text="API & Automations">
                 <MudAlert Severity="Severity.Warning">Coming Soon you will be able to use all Feature as API/MCP for Automations in other systems for example periodically Ingestion Sync</MudAlert>

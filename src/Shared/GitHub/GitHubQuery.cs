@@ -37,7 +37,7 @@ public class GitHubQuery(GitHubConnection connection) : IScopedService
             return await client.Git.Tree.GetRecursive(owner, repo, commit.Tree.Sha);
         }
 
-        return await client.Git.Tree.Get(owner, repo, commit.Tree.Sha); //todo - have not tested this
+        return await client.Git.Tree.Get(owner, repo, commit.Tree.Sha);
     }
 
     public async Task<string?> GetFileContentAsync(GitHubClient client, string gitHubOwner, string gitHubRepo, string path)

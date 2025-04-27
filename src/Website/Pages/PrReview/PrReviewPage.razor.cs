@@ -2,18 +2,19 @@
 using Microsoft.AspNetCore.Components;
 using Octokit;
 using Shared.Ai;
+using Shared.Ai.Queries;
 using Shared.EntityFramework.DbModels;
 using Shared.GitHub;
 using Shared.Models;
 
 namespace Website.Pages.PrReview;
 
-public partial class PrReviewPage(GitHubQuery gitHubQuery, GitHubCommand gitHubCommand, AiQuery aiQuery)
+public partial class PrReviewPage(GitHubQuery gitHubQuery, GitHubCommand gitHubCommand, AiPullRequestReviewQuery aiPullRequestReviewQuery)
 {
     private PullRequest[]? _pullRequests;
     private PullRequest? _selectedPullRequest;
     private GitHubClient? _gitHubClient;
-    private AiChatModel _chatModel = aiQuery.GetChatModels().First(); //todo - what if non exist
+    private AiChatModel _chatModel = aiPullRequestReviewQuery.GetChatModels().First();
     private Review? _review;
 
     [CascadingParameter]
@@ -37,7 +38,7 @@ public partial class PrReviewPage(GitHubQuery gitHubQuery, GitHubCommand gitHubC
     {
         using WorkingProgress workingProgress = BlazorUtils.StartWorking();
         string prDiff = await gitHubQuery.GetPrDiff(_gitHubClient, Project.GitHubOwner, Project.GitHubRepo, _selectedPullRequest.Number);
-        _review = await aiQuery.GetGithubPullRequestReview(_chatModel, prDiff);
+        _review = await aiPullRequestReviewQuery.GetGithubPullRequestReview(_chatModel, prDiff, Project.PullRequestReviewInstructions);
     }
 
     private async Task AddPrReviewComment()

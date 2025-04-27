@@ -23,7 +23,7 @@ namespace Shared.Chunking.Markdown
 
                 if ((linesToIgnorePatterns ?? []).Any(x => !string.IsNullOrWhiteSpace(x) && Regex.IsMatch(line, x, RegexOptions.IgnoreCase)))
                 {
-                    //todo - this have not bee tested in a great deal
+                    //todo - this have not been tested in a great deal
                     continue;
                 }
 

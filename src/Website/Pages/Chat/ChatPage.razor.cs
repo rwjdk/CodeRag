@@ -8,12 +8,13 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
 using Shared;
 using Shared.Ai;
+using Shared.Ai.Queries;
 using Shared.EntityFramework.DbModels;
 using Website.Dialogs;
 
 namespace Website.Pages.Chat;
 
-public partial class ChatPage(AiQuery aiQuery, IDialogService dialogService) : IDisposable
+public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogService) : IDisposable
 {
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }
@@ -46,8 +47,8 @@ public partial class ChatPage(AiQuery aiQuery, IDialogService dialogService) : I
 
     protected override void OnInitialized()
     {
-        _chatModel = aiQuery.GetChatModels().FirstOrDefault();
-        aiQuery.NotifyProgress += SemanticKernelQueryNotifyProgress;
+        _chatModel = aiChatQuery.GetChatModels().FirstOrDefault();
+        aiChatQuery.NotifyProgress += SemanticKernelQueryNotifyProgress;
     }
 
     private void SemanticKernelQueryNotifyProgress(ProgressNotification obj)
@@ -72,7 +73,7 @@ public partial class ChatPage(AiQuery aiQuery, IDialogService dialogService) : I
             {
                 await _chatInput.Clear();
 
-                ChatMessageContent? output = await aiQuery.GetAnswer(
+                ChatMessageContent? output = await aiChatQuery.GetAnswer(
                     _chatModel,
                     _conversation,
                     messageToSend,
@@ -107,7 +108,7 @@ public partial class ChatPage(AiQuery aiQuery, IDialogService dialogService) : I
 
     public void Dispose()
     {
-        aiQuery.NotifyProgress -= SemanticKernelQueryNotifyProgress;
+        aiChatQuery.NotifyProgress -= SemanticKernelQueryNotifyProgress;
     }
 
     private async Task ShowSourceCodeVectorEntry(VectorEntity entity)

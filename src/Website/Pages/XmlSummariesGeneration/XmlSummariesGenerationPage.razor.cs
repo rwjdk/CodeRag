@@ -10,10 +10,11 @@ using Shared.Chunking.CSharp;
 using Shared.EntityFramework.DbModels;
 using Shared.VectorStore;
 using Website.Models;
+using Shared.Ai.Queries;
 
 namespace Website.Pages.XmlSummariesGeneration;
 
-public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuery, CSharpChunker cSharpChunker, AiQuery aiQuery)
+public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuery, CSharpChunker cSharpChunker, AiXmlSummaryQuery aiXmlSummaryQuery)
 {
     private ProjectSourceEntity[]? _sources;
     private ProjectSourceEntity? _selectedSource;
@@ -58,7 +59,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     protected override async Task OnInitializedAsync()
     {
         //todo - this page throw exception is source location is GitHub
-        _chatModel = aiQuery.GetChatModels().FirstOrDefault();
+        _chatModel = aiXmlSummaryQuery.GetChatModels().FirstOrDefault();
         _sources = Project.Sources.Where(x => x.Kind == ProjectSourceKind.CSharpCode).ToArray();
         _selectedSource = _sources.FirstOrDefault();
         _existingVectorEntities = await vectorStoreQuery.GetExistingAsync(Project.Id, _selectedSource.Id);
@@ -68,7 +69,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     private TreeItemData<Item> BuildTree(string rootPath, VectorEntity[] existing)
     {
         var rootInfo = new DirectoryInfo(rootPath);
-        var rootNode = new TreeItemData<Item> { Value = new Item(rootInfo, [], []) };
+        var rootNode = new TreeItemData<Item> { Value = new Item(rootInfo, []) };
         BuildChildren(rootNode, rootInfo, existing);
         return rootNode;
     }
@@ -78,7 +79,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         parentNode.Children ??= [];
         foreach (var dir in dirInfo.GetDirectories())
         {
-            var dirNode = new TreeItemData<Item> { Value = new Item(dir, [], []) };
+            var dirNode = new TreeItemData<Item> { Value = new Item(dir, []) };
             BuildChildren(dirNode, dir, existing);
             if (dirNode.Children is { Count: > 0 })
             {
@@ -102,24 +103,17 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
 
             entities = matches.ToList();
 
-            var vectorMatches = existing.Where(x => file.FullName == _selectedSource.Path + x.SourcePath).ToArray();
             if (entities.Count > 0)
             {
-                parentNode.Children.Add(new TreeItemData<Item> { Value = new Item(file, entities, vectorMatches) });
+                parentNode.Children.Add(new TreeItemData<Item> { Value = new Item(file, entities) });
             }
         }
     }
 
-    private class Item(FileSystemInfo info, List<CSharpChunk> codeChunks, VectorEntity[] vectorEntities)
+    private class Item(FileSystemInfo info, List<CSharpChunk> codeChunks)
     {
         public FileSystemInfo Info { get; } = info;
         public List<CSharpChunk> CodeChunks { get; } = codeChunks;
-        public VectorEntity[] VectorEntities { get; } = vectorEntities;
-
-        public string GetText(List<TreeItemData<Item>>? children)
-        {
-            return Info.Name;
-        }
 
         public int GetTotalRelatedEntities(List<TreeItemData<Item>>? children)
         {
@@ -199,7 +193,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     private async Task Generate(CSharpChunk chunk)
     {
         using WorkingProgress workingProgress = BlazorUtils.StartWorking();
-        var xmlSummary = await aiQuery.GenerateCSharpXmlSummary(Project, chunk.Content, _chatModel);
+        var xmlSummary = await aiXmlSummaryQuery.GenerateCSharpXmlSummary(Project, chunk.Content, _chatModel);
         chunk.XmlSummary = xmlSummary;
         workingProgress.ShowSuccess("New XML Summary generated. Use the Save Button to Accept the changes");
     }

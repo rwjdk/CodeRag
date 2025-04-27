@@ -7,12 +7,13 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
 using Shared;
 using Shared.Ai;
+using Shared.Ai.Queries;
 using Shared.EntityFramework.DbModels;
 using Website.Dialogs;
 
 namespace Website.Pages.Home.Components;
 
-public partial class HomePublicView(AiQuery aiQuery, IDialogService dialogService)
+public partial class HomePublicView(AiChatQuery aiChatQuery)
 {
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }
@@ -43,7 +44,7 @@ public partial class HomePublicView(AiQuery aiQuery, IDialogService dialogServic
 
     protected override void OnInitialized()
     {
-        _chatModel = aiQuery.GetChatModels().FirstOrDefault();
+        _chatModel = aiChatQuery.GetChatModels().FirstOrDefault();
     }
 
     protected override bool ShouldRender()
@@ -61,7 +62,7 @@ public partial class HomePublicView(AiQuery aiQuery, IDialogService dialogServic
             {
                 await _chatInput.Clear();
 
-                ChatMessageContent? output = await aiQuery.GetAnswer(
+                ChatMessageContent? output = await aiChatQuery.GetAnswer(
                     _chatModel,
                     _conversation,
                     messageToSend,

@@ -4,7 +4,6 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Octokit;
 using Shared.Chunking.CSharp;
-using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 using Shared.GitHub;
 using Shared.VectorStore;
@@ -12,7 +11,7 @@ using Shared.VectorStore;
 namespace Shared.Ingestion;
 
 [UsedImplicitly]
-public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand vectorStoreCommand, VectorStoreQuery vectorStoreQuery, GitHubQuery gitHubQuery, SqlServerCommand sqlServerCommand) : IngestionCommand(vectorStoreCommand), IScopedService
+public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand vectorStoreCommand, VectorStoreQuery vectorStoreQuery, GitHubQuery gitHubQuery) : IngestionCommand(vectorStoreCommand), IScopedService
 {
     public override async Task IngestAsync(ProjectEntity project, ProjectSourceEntity source)
     {
@@ -131,7 +130,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         List<CSharpChunk> codeEntities = [];
         if (string.IsNullOrWhiteSpace(source.Path))
         {
-            return codeEntities; //todo - exception instead?
+            throw new IngestionException("Path is not defined");
         }
 
         string[] sourceCodeFiles = Directory.GetFiles(source.Path, "*.cs", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
@@ -173,7 +172,12 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         List<CSharpChunk> codeEntities = [];
         if (string.IsNullOrWhiteSpace(source.Path))
         {
-            return codeEntities; //todo - exception instead?
+            throw new IngestionException("Path is not defined");
+        }
+
+        if (string.IsNullOrWhiteSpace(project.GitHubOwner) || string.IsNullOrWhiteSpace(project.GitHubRepo))
+        {
+            throw new IngestionException("GitHub Owner and Repo is not defined");
         }
 
         var gitHubClient = gitHubQuery.GetGitHubClient();
@@ -189,7 +193,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
         List<string> ignoredFiles = [];
         int counter = 0;
-        foreach (string sourceCodeFilePath in sourceCodeFiles.Select(x => x.Path)) //todo - should download of all files not happen upfront, but on the fly to reduce rate limiting and allow partial imports
+        foreach (string sourceCodeFilePath in sourceCodeFiles.Select(x => x.Path))
         {
             counter++;
             if (IgnoreFile(source, sourceCodeFilePath))
@@ -224,9 +228,9 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         return codeEntities;
     }
 
-    private bool IgnoreFile(ProjectSourceEntity source, string path)
+    private static bool IgnoreFile(ProjectSourceEntity source, string path)
     {
         //todo - this have not tested: Should be done so a bunch
-        return (source.FileIgnorePatterns ?? []).Any(x => !string.IsNullOrWhiteSpace(x) && Regex.IsMatch(path, x, RegexOptions.IgnoreCase));
+        return (source.FileIgnorePatterns).Any(x => !string.IsNullOrWhiteSpace(x) && Regex.IsMatch(path, x, RegexOptions.IgnoreCase));
     }
 }

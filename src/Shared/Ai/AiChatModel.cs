@@ -1,5 +1,8 @@
-﻿namespace Shared.Ai;
+﻿using JetBrains.Annotations;
 
+namespace Shared.Ai;
+
+[UsedImplicitly]
 public class AiChatModel
 {
     public required string DeploymentName { get; init; }

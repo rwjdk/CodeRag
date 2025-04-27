@@ -27,7 +27,7 @@
         }
     </MudItem>
     <MudItem>
-        <RSelect T="AiChatModel" Label="AI-Model to use" Items="aiQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
+        <RSelect T="AiChatModel" Label="AI-Model to use" Items="aiXmlSummaryQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
     </MudItem>
 </MudGrid>
 
@@ -44,7 +44,7 @@
                 <MudTreeView T="Item" Items="_tree.Children" Dense @ref="_treeView" FilterFunc="MatchesName" SelectedValue="_selectedItem" SelectedValueChanged="x=> SwitchSelected(x)" SelectionMode="SelectionMode.SingleSelection">
                     <ItemTemplate>
                         <MudTreeViewItem T="Item"
-                                         Text="@context.Value!.GetText(context.Children)"
+                                         Text="@context.Value!.Info.Name"
                                          TextTypo="Typo.caption"
                                          EndText="@context.Value.GetTotalRelatedEntities(context.Children).ToString()"
                                          EndTextTypo="Typo.caption"
@@ -77,7 +77,6 @@
                 {
                     @foreach (var chunk in _selectedItem.CodeChunks.Where(x => x.Name == _selectedChunk.Name))
                     {
-                        @* todo: use vector-entities to check diff from real file *@
                         <MudGrid Spacing="0">
                             <MudItem xs="12">
                                 <MudGrid Class="align-items-center" Spacing="1">

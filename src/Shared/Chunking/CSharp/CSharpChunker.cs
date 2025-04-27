@@ -9,7 +9,7 @@ namespace Shared.Chunking.CSharp
     [UsedImplicitly]
     public class CSharpChunker : IScopedService
     {
-        public List<CSharpChunk> GetCodeEntities(string code) //todo allow the passing of settings
+        public List<CSharpChunk> GetCodeEntities(string code)
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText(code);
             var root = tree.GetRoot();
@@ -33,7 +33,7 @@ namespace Shared.Chunking.CSharp
                 .ToArray();
             foreach (InterfaceDeclarationSyntax node in nodes)
             {
-                if (!IsPublic(node.Modifiers)) //todo - support non-public content
+                if (!IsPublic(node.Modifiers))
                 {
                     continue;
                 }
@@ -57,7 +57,7 @@ namespace Shared.Chunking.CSharp
 
             foreach (DelegateDeclarationSyntax node in nodes)
             {
-                if (!IsPublic(node.Modifiers)) //todo - support non-public content
+                if (!IsPublic(node.Modifiers))
                 {
                     continue;
                 }
@@ -78,7 +78,7 @@ namespace Shared.Chunking.CSharp
             EnumDeclarationSyntax[] nodes = root.DescendantNodes().OfType<EnumDeclarationSyntax>().ToArray();
             foreach (EnumDeclarationSyntax node in nodes)
             {
-                if (!IsPublic(node.Modifiers)) //todo - support non-public content
+                if (!IsPublic(node.Modifiers))
                 {
                     continue;
                 }
@@ -101,7 +101,7 @@ namespace Shared.Chunking.CSharp
                 .ToArray();
             foreach (T node in nodes)
             {
-                if (!IsPublic(node.Modifiers)) //todo - support non-public content
+                if (!IsPublic(node.Modifiers))
                 {
                     continue;
                 }
@@ -172,7 +172,7 @@ namespace Shared.Chunking.CSharp
                     {
                         string xmlSummary = GetXmlSummary(property);
                         sb.Append(xmlSummary);
-                        string value = RemoveAttributes(RemoveExpressionBody(property)).ToString(); //Todo - Make this configurable (remove attributes or not)
+                        string value = RemoveAttributes(RemoveExpressionBody(property)).ToString();
                         sb.AppendLine(value);
                         sb.AppendLine();
                         TypeSyntax type = property.Type;

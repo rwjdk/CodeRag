@@ -13,7 +13,7 @@
         </MudItem>
     }
     <MudItem>
-        <RSelect Disabled="BlazorUtils.IsWorking" T="AiChatModel" Label="AI-Model to use" Items="aiQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
+        <RSelect Disabled="BlazorUtils.IsWorking" T="AiChatModel" Label="AI-Model to use" Items="aiPullRequestReviewQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
     </MudItem>
 </MudGrid>
 

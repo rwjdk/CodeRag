@@ -26,7 +26,7 @@ if (configuration != null)
 {
     builder.AutoRegisterServicesViaReflection(typeof(Program));
     builder.AutoRegisterServicesViaReflection(typeof(ProjectEntity));
-    builder.Services.AddSingleton(new Ai(configuration.Endpoint, configuration.Key, configuration.EmbeddingDeploymentName, configuration.ChatModels));
+    builder.Services.AddSingleton(new AiConfiguration(configuration.Endpoint, configuration.Key, configuration.EmbeddingDeploymentName, configuration.ChatModels));
     builder.Services.AddDbContextFactory<SqlDbContext>(options => { options.UseSqlServer(configuration.SqlServerConnectionString); });
     builder.Services.AddScoped<IVectorStore, SqlServerVectorStore>(_ => new SqlServerVectorStore(configuration.SqlServerConnectionString));
     builder.Services.AddSingleton(new GitHubConnection(configuration.GitHubToken));

@@ -34,7 +34,7 @@ public static class ServiceRegistrations
         }
 
         var chatModels = builder.Configuration.GetSection(modelDeploymentsVariable).Get<List<AiChatModel>>();
-        if (chatModels == null)
+        if (chatModels == null || chatModels.Count == 0)
         {
             missingConfigurations.Add(new MissingConfiguration(modelDeploymentsVariable, false, "Normally defined in appsettings.json", readMeUrl));
         }
