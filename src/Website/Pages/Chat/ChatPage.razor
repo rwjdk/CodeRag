@@ -48,7 +48,7 @@
 
                 <MudGrid Class="align-items-center" Spacing="1">
                     <MudItem xs="3">
-                        <RButton StartIcon="@Icons.Material.Filled.DriveFileRenameOutline" IconColor="Color.Inherit" OnClick="NewChat">New Chat</RButton>
+                        <RButton Disabled="_currentMessageIsProcessing" StartIcon="@Icons.Material.Filled.DriveFileRenameOutline" IconColor="Color.Inherit" OnClick="NewChat">New Chat</RButton>
                     </MudItem>
                     <MudItem xs="9" Style="text-align: end">
                         <h2>Settings and Parameters</h2>
@@ -56,19 +56,19 @@
                 </MudGrid>
                 <br/>
                 <div class="font-size-10">Model</div>
-                    <RSelect T="AiChatModel" Items="aiQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
+                    <RSelect Disabled="_currentMessageIsProcessing" T="AiChatModel" Items="aiQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
                     <hr />
                 <div class="font-size-10">Source Code Search</div>
                 <MudGrid>
                     <MudItem>
-                        <RCheckBox @bind-Value="_useSourceCodeSearch" Label="Use" />
+                        <RCheckBox Disabled="_currentMessageIsProcessing" @bind-Value="_useSourceCodeSearch" Label="Use" />
                     </MudItem>
                     <MudItem>
-                        <MudSlider Min="1" Max="100" @bind-Value="_maxNumberOfAnswersBackFromSourceCodeSearch">Max Records (@_maxNumberOfAnswersBackFromSourceCodeSearch)</MudSlider>
+                        <MudSlider Disabled="_currentMessageIsProcessing" Min="1" Max="100" @bind-Value="_maxNumberOfAnswersBackFromSourceCodeSearch">Max Records (@_maxNumberOfAnswersBackFromSourceCodeSearch)</MudSlider>
                     </MudItem>
                     <MudItem>
                         <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
-                            <MudSlider Min="0" Max="1" Step="0.1" @bind-Value="_scoreShouldBeLowerThanThisInSourceCodeSearch">Max Score (@_scoreShouldBeLowerThanThisInSourceCodeSearch)</MudSlider>
+                            <MudSlider Disabled="_currentMessageIsProcessing" Min="0" Max="1" Step="0.1" @bind-Value="_scoreShouldBeLowerThanThisInSourceCodeSearch">Max Score (@_scoreShouldBeLowerThanThisInSourceCodeSearch)</MudSlider>
                         </MudTooltip>
                     </MudItem>
                 </MudGrid>
@@ -76,14 +76,14 @@
                 <div class="font-size-10">Documentation Search</div>
                 <MudGrid>
                     <MudItem>
-                        <RCheckBox @bind-Value="_useDocumentationSearch" Label="Use" />
+                        <RCheckBox Disabled="_currentMessageIsProcessing" @bind-Value="_useDocumentationSearch" Label="Use" />
                     </MudItem>
                     <MudItem>
-                        <MudSlider Min="1" Max="100" @bind-Value="_maxNumberOfAnswersBackFromDocumentationSearch">Max Records (@_maxNumberOfAnswersBackFromDocumentationSearch)</MudSlider>
+                        <MudSlider Disabled="_currentMessageIsProcessing" Min="1" Max="100" @bind-Value="_maxNumberOfAnswersBackFromDocumentationSearch">Max Records (@_maxNumberOfAnswersBackFromDocumentationSearch)</MudSlider>
                     </MudItem>
                     <MudItem>
                         <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
-                            <MudSlider Min="0" Max="1" Step="0.1" @bind-Value="_scoreShouldBeLowerThanThisInDocumentSearch">Max Score (@_scoreShouldBeLowerThanThisInDocumentSearch)</MudSlider>
+                            <MudSlider Disabled="_currentMessageIsProcessing" Min="0" Max="1" Step="0.1" @bind-Value="_scoreShouldBeLowerThanThisInDocumentSearch">Max Score (@_scoreShouldBeLowerThanThisInDocumentSearch)</MudSlider>
                         </MudTooltip>
                     </MudItem>
                 </MudGrid>

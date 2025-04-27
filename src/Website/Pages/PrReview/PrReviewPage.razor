@@ -9,7 +9,7 @@
     @if (!string.IsNullOrWhiteSpace(Project.GitHubOwner) && !string.IsNullOrWhiteSpace(Project.GitHubRepo) && _pullRequests != null)
     {
         <MudItem>
-            <RSelect Disabled="BlazorUtils.IsWorking" T="PullRequest" Items="_pullRequests" Label="Pull Request to Review" @bind-Value="_selectedPullRequest" ToStringFunc="@(x=> x?.Title ?? "???")" />
+            <RSelect Disabled="BlazorUtils.IsWorking" T="PullRequest" Items="_pullRequests" Label="Pull Request to Review" @bind-Value="_selectedPullRequest" ToStringFunc="@(x=> $"#{x!.Number} - {x.Title}")" Style="width: 500px" />
         </MudItem>
     }
     <MudItem>

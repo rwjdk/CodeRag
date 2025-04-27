@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace BlazorUtilities.Extensions;
 
-public static class IServiceCollectionExtensions
+public static class ServiceCollectionExtensions
 {
     public static void AddBlazorShared(this IServiceCollection services)
     {
@@ -12,6 +12,4 @@ public static class IServiceCollectionExtensions
         services.AddScoped<DownloadFileHelper>();
         services.AddScoped<BlazorUtils>();
     }
-
-    //todo - move js Download Excel stuff here (Assume it is possible)
 }
