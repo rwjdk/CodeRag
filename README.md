@@ -10,7 +10,7 @@ An AI Expert for your C# Codebase
 
 # What if we made AI help with filling the above boxes? 😎
 
-CodeRag is an AI Solution that parses your C# Code Repo + existing documentation you may have; add it to a VectorStore (RAG) and offer you (and users/colleagues) an AI solution to help better understand the code, help with documentation, and even Code Reviews
+CodeRag is an AI Solution that parses your C# Code Repo + existing documentation you may have; add it to a VectorStore (RAG) and offer you (and you users/colleagues) an AI solution to help better understand the code, help with documentation, and even do Code Reviews
 
 ## Public or Private
 ``PUBLIC`` CodeRag offers any GitHub public repos to be indexed, with the Owner getting access to tweak settings.
