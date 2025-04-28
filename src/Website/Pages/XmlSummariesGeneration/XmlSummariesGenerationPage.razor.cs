@@ -31,7 +31,6 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     private string? _searchPhrase;
     private SummaryStatus _summaryStatus = SummaryStatus.MissingSummary;
     private CSharpKind _kind = CSharpKind.Method;
-    private VectorEntity[]? _existingVectorEntities;
     private Item? _selectedItem;
     private RProgressBar? _progressBar;
     private AiChatModel? _chatModel;
@@ -62,33 +61,38 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         _chatModel = aiXmlSummaryQuery.GetChatModels().FirstOrDefault();
         _sources = Project.Sources.Where(x => x.Kind == ProjectSourceKind.CSharpCode).ToArray();
         _selectedSource = _sources.FirstOrDefault();
-        _existingVectorEntities = await vectorStoreQuery.GetExistingAsync(Project.Id, _selectedSource.Id);
         await Refresh();
     }
 
-    private TreeItemData<Item> BuildTree(string rootPath, VectorEntity[] existing)
+    private TreeItemData<Item> BuildTree(string rootPath)
     {
         var rootInfo = new DirectoryInfo(rootPath);
         var rootNode = new TreeItemData<Item> { Value = new Item(rootInfo, []) };
-        BuildChildren(rootNode, rootInfo, existing);
+        BuildChildren(rootNode, rootInfo);
         return rootNode;
     }
 
-    private void BuildChildren(TreeItemData<Item> parentNode, DirectoryInfo dirInfo, VectorEntity[] existing)
+    private void BuildChildren(TreeItemData<Item> parentNode, DirectoryInfo dirInfo)
     {
         parentNode.Children ??= [];
         foreach (var dir in dirInfo.GetDirectories())
         {
             var dirNode = new TreeItemData<Item> { Value = new Item(dir, []) };
-            BuildChildren(dirNode, dir, existing);
+            BuildChildren(dirNode, dir);
             if (dirNode.Children is { Count: > 0 })
             {
                 parentNode.Children.Add(dirNode);
             }
         }
 
+        ;
         foreach (var file in dirInfo.GetFiles("*.cs"))
         {
+            if (_selectedSource.IgnoreFile(file.FullName))
+            {
+                continue;
+            }
+
             List<CSharpChunk> entities = cSharpChunker.GetCodeEntities(File.ReadAllText(file.FullName)).Where(x => x.Kind == _kind).ToList();
             var matches = entities.Where(x => x.Kind == _kind);
             switch (_summaryStatus)
@@ -149,18 +153,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     {
         if (_selectedSource != null)
         {
-            var existing = _existingVectorEntities.Where(x => x.Kind == _kind.ToString());
-            switch (_summaryStatus)
-            {
-                case SummaryStatus.MissingSummary:
-                    existing = existing.Where(x => string.IsNullOrWhiteSpace(x.Summary));
-                    break;
-                case SummaryStatus.HasSummary:
-                    existing = existing.Where(x => !string.IsNullOrWhiteSpace(x.Summary));
-                    break;
-            }
-
-            _tree = BuildTree(_selectedSource.Path, existing.ToArray());
+            _tree = BuildTree(_selectedSource.Path);
         }
     }
 
@@ -175,12 +168,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         _selectedSource = source;
         if (_selectedSource != null)
         {
-            _existingVectorEntities = await vectorStoreQuery.GetExistingAsync(Project.Id, _selectedSource.Id);
             await Refresh();
-        }
-        else
-        {
-            _existingVectorEntities = null;
         }
     }
 

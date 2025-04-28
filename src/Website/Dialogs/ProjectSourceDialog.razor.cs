@@ -1,12 +1,17 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using BlazorUtilities;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
+using Website.Models;
 
 namespace Website.Dialogs;
 
 public partial class ProjectSourceDialog(ProjectCommand projectCommand)
 {
+    [CascadingParameter]
+    public required BlazorUtils BlazorUtils { get; set; }
+
     [CascadingParameter]
     public required IMudDialogInstance Dialog { get; set; }
 
@@ -14,11 +19,28 @@ public partial class ProjectSourceDialog(ProjectCommand projectCommand)
     public required ProjectEntity Project { get; set; }
 
     [Parameter, EditorRequired]
-    public ProjectSourceEntity ProjectSource { get; set; }
+    public required ProjectSourceEntity ProjectSource { get; set; }
 
     private async Task Save()
     {
-        //todo - Validation
-        Dialog.Close();
+        List<string> missingValues = [];
+        if (string.IsNullOrWhiteSpace(ProjectSource.Name))
+        {
+            missingValues.Add("Name");
+        }
+
+        if (string.IsNullOrWhiteSpace(ProjectSource.Path))
+        {
+            missingValues.Add("Path");
+        }
+
+        if (missingValues.Any())
+        {
+            BlazorUtils.ShowError($"The following data is missing before you can save this Source: {string.Join(", ", missingValues)}");
+        }
+        else
+        {
+            Dialog.Close();
+        }
     }
 }

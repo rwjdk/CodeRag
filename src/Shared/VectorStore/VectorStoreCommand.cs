@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using CodeRag.Shared.Migrations;
+using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
@@ -12,7 +13,7 @@ public class VectorStoreCommand(Ai.AiConfiguration aiConfiguration, SqlServerCom
 {
     private readonly AzureOpenAITextEmbeddingGenerationService _embeddingGenerationService = new(aiConfiguration.EmbeddingModelDeploymentName, aiConfiguration.Endpoint, aiConfiguration.Key);
 
-    public async Task Upsert<T>(Guid projectId, ProjectSourceEntity source, IVectorStoreRecordCollection<Guid, T> collection, T entry) where T : VectorEntity
+    public async Task Upsert(Guid projectId, ProjectSourceEntity source, IVectorStoreRecordCollection<Guid, VectorEntity> collection, VectorEntity entry)
     {
         try
         {
@@ -39,11 +40,29 @@ public class VectorStoreCommand(Ai.AiConfiguration aiConfiguration, SqlServerCom
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Rate Limited. Sleeping 10 sec ({e.Message})");
-            await Task.Delay(10000);
-            ReadOnlyMemory<float> vector = await _embeddingGenerationService.GenerateEmbeddingAsync(entry.Content);
-            entry.VectorValue = vector;
-            await collection.UpsertAsync(entry);
+            if (e.Message.Contains("This model's maximum context length is"))
+            {
+                //Too big. Splitting in two recursive until content fit
+                int middle = entry.Content.Length / 2;
+                string? name = entry.Name;
+                string part1 = entry.Content.Substring(0, middle);
+                string part2 = entry.Content.Substring(middle);
+                entry.Content = part1;
+                entry.Name = name + $" ({Guid.NewGuid()})";
+                await Upsert(projectId, source, collection, entry);
+                entry.VectorId = Guid.NewGuid();
+                entry.Content = part2;
+                entry.Name = name + $" ({Guid.NewGuid()})";
+                await Upsert(projectId, source, collection, entry);
+            }
+            else
+            {
+                Console.WriteLine($"Rate Limited. Sleeping 10 sec ({e.Message})");
+                await Task.Delay(10000);
+                ReadOnlyMemory<float> vector = await _embeddingGenerationService.GenerateEmbeddingAsync(entry.Content);
+                entry.VectorValue = vector;
+                await collection.UpsertAsync(entry);
+            }
         }
     }
 

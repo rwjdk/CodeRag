@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
-using Shared.Chunking.CSharp;
 
 namespace Shared.EntityFramework.DbModels;
 
@@ -26,7 +25,7 @@ public class VectorEntity
 
     [VectorStoreRecordData(IsFilterable = true)]
     [MaxLength(4000)]
-    public string? Name { get; init; }
+    public string? Name { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
     [MaxLength(4000)]
@@ -46,7 +45,7 @@ public class VectorEntity
 
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     [VectorStoreRecordData]
-    public required string Content { get; init; }
+    public required string Content { get; set; }
 
     [VectorStoreRecordData(IsFilterable = true)]
     [MaxLength(4000)]
@@ -75,14 +74,6 @@ public class VectorEntity
         return contentCompareKey;
     }
 
-    public string? GetLocalFilePath(ProjectEntity project)
-    {
-        var source = project.Sources.FirstOrDefault(x => x.Id == SourceId);
-        if (source == null || string.IsNullOrWhiteSpace(source.Path)) return null;
-
-        return source.Path + SourcePath;
-    }
-
     public string? GetUrl(ProjectEntity project)
     {
         var source = project.Sources.FirstOrDefault(x => x.Id == SourceId);
@@ -99,11 +90,6 @@ public class VectorEntity
         if (!string.IsNullOrWhiteSpace(Id)) suffix = $"{suffix}#{Id}";
 
         return rootUrl + "/" + suffix;
-    }
-
-    public string GetTargetMarkdownFilename()
-    {
-        return Kind == nameof(CSharpKind.Method) ? $"{Namespace}-{Parent}.{Name}.md" : $"{Namespace}-{Name}.md";
     }
 
     public override string ToString()

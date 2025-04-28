@@ -83,8 +83,6 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
                 MarkdownChunk[] chunks = chunker.GetChunks(content,
                     source.MarkdownLevelsToChunk,
                     source.MarkdownChunkLineIgnorePatterns,
-                    source.MarkdownIgnoreCommentedOutContent,
-                    source.MarkdownIgnoreImages,
                     source.MarkdownChunkIgnoreIfLessThanThisAmountOfChars);
 
                 entries.AddRange(chunks.Select(x => new VectorEntity
@@ -115,7 +113,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
         foreach (var entry in entries)
         {
             counter++;
-            OnNotifyProgress("Step 2: Embedding Data", counter, entries.Count);
+            OnNotifyProgress("Step 2: Embedding Data if Content have changed", counter, entries.Count);
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
             if (existing == null)
             {
@@ -123,7 +121,6 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
             }
             else
             {
-                OnNotifyProgress("Skipped as data is up to date");
                 idsToKeep.Add(existing.VectorId);
             }
         }
@@ -142,6 +139,6 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
     private bool IgnoreFile(ProjectSourceEntity source, string path)
     {
         //todo - this have not tested: Should be done so a bunch
-        return (source.FileIgnorePatterns ?? []).Any(x => !string.IsNullOrWhiteSpace(x) && Regex.IsMatch(path, x, RegexOptions.IgnoreCase));
+        return (source.FileIgnorePatterns.Split() ?? []).Any(x => !string.IsNullOrWhiteSpace(x) && Regex.IsMatch(path, x, RegexOptions.IgnoreCase));
     }
 }

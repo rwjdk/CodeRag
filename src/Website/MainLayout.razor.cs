@@ -34,7 +34,7 @@ public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService lo
         {
             _drawerOpen = await localStorage.GetItemAsync<bool>(Constants.LocalStorageKeys.DrawerOpen);
             _darkMode = await localStorage.GetItemAsync<bool>(Constants.LocalStorageKeys.DarkMode);
-            if (Site.DebugMode)
+            if (Site.DemoMode)
             {
                 LoggedIn = await localStorage.GetItemAsync<bool>(Constants.LocalStorageKeys.IsLoggedIn);
             }

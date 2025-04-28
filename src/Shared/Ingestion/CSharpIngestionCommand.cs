@@ -64,7 +64,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         {
             counter++;
 
-            OnNotifyProgress("Step 2: Embedding Data", counter, codeEntities.Count);
+            OnNotifyProgress("Step 2: Embedding Data if Content have changed", counter, codeEntities.Count);
 
             StringBuilder content = new();
             content.AppendLine($"// Namespace: {codeEntity.Namespace}");
@@ -110,7 +110,6 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
             }
             else
             {
-                OnNotifyProgress("Skipped as data is up to date");
                 idsToKeep.Add(existing.VectorId);
             }
         }
@@ -139,7 +138,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         int counter = 0;
         foreach (string sourceCodeFilePath in sourceCodeFiles)
         {
-            if (IgnoreFile(source, sourceCodeFilePath))
+            if (source.IgnoreFile(sourceCodeFilePath))
             {
                 ignoredFiles.Add(sourceCodeFilePath);
                 continue;
@@ -163,7 +162,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
             OnNotifyProgress($"{ignoredFiles.Count} Files Ignored");
         }
 
-        OnNotifyProgress($"{sourceCodeFiles.Length - ignoredFiles.Count} Files was transformed into {codeEntities.Count} Code Entities for Vector Import");
+        OnNotifyProgress($"{sourceCodeFiles.Length - ignoredFiles.Count} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
         return codeEntities;
     }
 
@@ -196,7 +195,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         foreach (string sourceCodeFilePath in sourceCodeFiles.Select(x => x.Path))
         {
             counter++;
-            if (IgnoreFile(source, sourceCodeFilePath))
+            if (source.IgnoreFile(sourceCodeFilePath))
             {
                 ignoredFiles.Add(sourceCodeFilePath);
                 continue;
@@ -224,13 +223,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
             OnNotifyProgress($"{ignoredFiles.Count} Files Ignored");
         }
 
-        OnNotifyProgress($"{sourceCodeFiles.Length - ignoredFiles.Count} Files was transformed into {codeEntities.Count} Code Entities for Vector Import");
+        OnNotifyProgress($"{sourceCodeFiles.Length - ignoredFiles.Count} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
         return codeEntities;
-    }
-
-    private static bool IgnoreFile(ProjectSourceEntity source, string path)
-    {
-        //todo - this have not tested: Should be done so a bunch
-        return (source.FileIgnorePatterns).Any(x => !string.IsNullOrWhiteSpace(x) && Regex.IsMatch(path, x, RegexOptions.IgnoreCase));
     }
 }

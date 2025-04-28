@@ -1,15 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.RegularExpressions;
 
 namespace Shared.EntityFramework.DbModels;
 
 [Table("ProjectSources")]
 public class ProjectSourceEntity
 {
-    private const string IgnorePatternSplitter = "<||>";
-
-    //todo: Add setting to ignore files over x number of lines (SK Markdown and Octokit Interfaces have this issue)
-
     [Key]
     public Guid Id { get; private set; } = Guid.NewGuid();
 
@@ -34,36 +31,13 @@ public class ProjectSourceEntity
     [MaxLength(1000)]
     public string? RootUrl { get; set; }
 
-    [NotMapped]
-    public List<string> FileIgnorePatterns
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(FileIgnorePatternsRaw))
-            {
-                return [];
-            }
-
-            return FileIgnorePatternsRaw.Split(IgnorePatternSplitter, StringSplitOptions.RemoveEmptyEntries).ToList();
-        }
-        set
-        {
-            if (value.Count == 0)
-            {
-                FileIgnorePatternsRaw = string.Empty;
-            }
-
-            FileIgnorePatternsRaw = string.Join(IgnorePatternSplitter, value);
-        }
-    }
-
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public string? FileIgnorePatternsRaw { get; set; }
+    public required string FileIgnorePatterns { get; set; }
 
     #region Markdown Specific Settings
 
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public string? MarkdownChunkLineIgnorePatternsRaw { get; set; }
+    public required string MarkdownChunkLineIgnorePatterns { get; set; }
     public bool MarkdownIgnoreCommentedOutContent { get; set; }
     public bool MarkdownIgnoreImages { get; set; }
     public bool MarkdownIgnoreMicrosoftLearnNoneCsharpContent { get; set; }
@@ -75,27 +49,7 @@ public class ProjectSourceEntity
     #endregion
 
     [NotMapped]
-    public List<string> MarkdownChunkLineIgnorePatterns
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(MarkdownChunkLineIgnorePatternsRaw))
-            {
-                return [];
-            }
-
-            return MarkdownChunkLineIgnorePatternsRaw.Split(IgnorePatternSplitter, StringSplitOptions.RemoveEmptyEntries).ToList();
-        }
-        set
-        {
-            if (value.Count == 0)
-            {
-                MarkdownChunkLineIgnorePatternsRaw = string.Empty;
-            }
-
-            MarkdownChunkLineIgnorePatternsRaw = string.Join(IgnorePatternSplitter, value);
-        }
-    }
+    public bool AddMode { get; set; }
 
     public static ProjectSourceEntity Empty(ProjectEntity project, ProjectSourceKind kind)
     {
@@ -112,6 +66,28 @@ public class ProjectSourceEntity
             MarkdownIgnoreImages = true,
             MarkdownIgnoreCommentedOutContent = true,
             MarkdownOnlyChunkIfMoreThanThisNumberOfLines = 50,
+            FileIgnorePatterns = string.Empty,
+            MarkdownChunkLineIgnorePatterns = string.Empty,
+            AddMode = true
         };
+    }
+
+    public bool IgnoreFile(string path)
+    {
+        if (string.IsNullOrWhiteSpace(FileIgnorePatterns))
+        {
+            return false;
+        }
+
+        string[] patternsToIgnore = FileIgnorePatterns.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        foreach (string pattern in patternsToIgnore.Where(x => !string.IsNullOrWhiteSpace(x)))
+        {
+            if (Regex.IsMatch(path, pattern, RegexOptions.IgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

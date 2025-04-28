@@ -21,8 +21,7 @@
                                 }
                                 else
                                 {
-                                    @* todo: Do not allow use of this button in Add Mode (first after the project is added) *@
-                                    <RIconButton Icon="@Icons.Material.Filled.Sync" Disabled="@(BlazorUtils.IsWorking || AddMode)" ToolTip="Sync the Source with the Vector Store" OnClick="() => SyncSource(context.Item)" />
+                                    <RIconButton Icon="@Icons.Material.Filled.Sync" Disabled="@(BlazorUtils.IsWorking || Project.AddMode || context.Item.AddMode)" ToolTip="Sync the Source with the Vector Store" OnClick="() => SyncSource(context.Item)" />
                                     <span>Last sync: @GetLastSync(context.Item)</span>
                                 }
                             </CellTemplate>

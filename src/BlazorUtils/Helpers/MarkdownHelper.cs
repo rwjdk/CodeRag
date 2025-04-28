@@ -1,4 +1,5 @@
-﻿using Markdig;
+﻿using JetBrains.Annotations;
+using Markdig;
 using Markdig.Extensions.AutoLinks;
 using Microsoft.AspNetCore.Components;
 
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace BlazorUtilities.Helpers;
 
+[PublicAPI]
 public static class MarkdownHelper
 {
     public static MarkupString MarkDownToHtmlAsMarkupString(string? markdown, bool imageShouldFitContainer = true, bool removeParagraphs = false, bool colorLinks = true)

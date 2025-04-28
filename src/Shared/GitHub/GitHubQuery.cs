@@ -27,7 +27,7 @@ public class GitHubQuery(GitHubConnection connection) : IScopedService
     public async Task<TreeResponse> GetTreeAsync(GitHubClient client, string owner, string repo, bool recursive)
     {
         var repository = await client.Repository.Get(owner, repo);
-        string? defaultBranch = repository.DefaultBranch; //todo - support other branches
+        string? defaultBranch = repository.DefaultBranch; //todo - support other branches (https://github.com/rwjdk/CodeRag/issues/2)
 
         var reference = await client.Git.Reference.Get(owner, repo, $"heads/{defaultBranch}");
 

@@ -24,6 +24,22 @@ public class VectorStoreQuery(IVectorStore vectorStore, IDbContextFactory<SqlDbC
             query = query.Where(x => x.SourceId == sourceId);
         }
 
-        return await query.ToArrayAsync();
+        return await query.Select(x => new VectorEntity //NB: This is need to not include the actual vector (as it is a huge performance drain to retrieve)
+        {
+            VectorId = x.VectorId,
+            Content = x.Content,
+            Kind = x.Kind,
+            SourcePath = x.SourcePath,
+            Name = x.Name,
+            DataType = x.DataType,
+            Id = x.Id,
+            ProjectId = x.ProjectId,
+            SourceId = x.SourceId,
+            Namespace = x.Namespace,
+            Parent = x.Parent,
+            ParentKind = x.ParentKind,
+            Summary = x.Summary,
+            TimeOfIngestion = x.TimeOfIngestion,
+        }).ToArrayAsync();
     }
 }

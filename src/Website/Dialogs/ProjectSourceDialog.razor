@@ -4,13 +4,13 @@
         <RTextField Label="Name" @bind-Value="@ProjectSource.Name" />
         <RTextField Label="Path" @bind-Value="@ProjectSource.Path" />
         <RCheckBox Label="Recursive" @bind-Value="@ProjectSource.Recursive" />
+        <RTextField Label="Ignore Path Patterns" @bind-Value="ProjectSource.FileIgnorePatterns" />
         <RTextField Label="Root URL" @bind-Value="@ProjectSource.RootUrl" />
-
+        
         @switch (ProjectSource.Kind)
         {
             case ProjectSourceKind.CSharpCode:
                 <RSelectFromEnum Label="Location" T="ProjectSourceLocation" @bind-Value="@ProjectSource.Location" />
-                @* todo: add gui for ignore patterns *@
                 break;
             case ProjectSourceKind.Markdown:
                 <RCheckBox Label="Markdown: Ignore commented out Content" @bind-Value="@ProjectSource.MarkdownIgnoreCommentedOutContent" />
@@ -20,7 +20,7 @@
                 <RNumericField Label="Markdown: Levels to Chunk" @bind-Value="@ProjectSource.MarkdownLevelsToChunk" Min="1" Max="6" />
                 <RNumericField Label="Markdown: Ignore Chunk is less that this amount of chars" @bind-Value="@ProjectSource.MarkdownChunkIgnoreIfLessThanThisAmountOfChars" Min="0" Max="9999" />
                 <RNumericField Label="Markdown: Only Chunk if more than this number of lines" @bind-Value="@ProjectSource.MarkdownOnlyChunkIfMoreThanThisNumberOfLines" Min="1" Max="99999" />
-                @* todo: add gui for ignore patterns *@
+                <RTextField Label="Markdown: Ignore Line Patterns" @bind-Value="ProjectSource.MarkdownChunkLineIgnorePatterns" />
                 break;
         }
 

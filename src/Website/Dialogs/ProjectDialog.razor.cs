@@ -1,11 +1,8 @@
 ﻿using BlazorUtilities;
 using BlazorUtilities.Helpers;
-using CodeRag.Shared;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.VectorData;
 using MudBlazor;
 using Shared;
-using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 using Shared.Ingestion;
 using Shared.Projects;
@@ -32,9 +29,6 @@ public partial class ProjectDialog(ProjectCommand projectCommand, CSharpIngestio
     public required Site Site { get; set; }
 
     [Parameter, EditorRequired]
-    public required bool AddMode { get; set; }
-
-    [Parameter, EditorRequired]
     public required ProjectEntity Project { get; set; }
 
     protected override void OnInitialized()
@@ -59,26 +53,41 @@ public partial class ProjectDialog(ProjectCommand projectCommand, CSharpIngestio
             _current = obj.Current;
         }
 
-        StateHasChanged();
+        if (_current % 10 == 0 || _current == _total)
+        {
+            StateHasChanged();
+        }
     }
 
     private async Task Save()
     {
-        //todo - Validation
-        foreach (var sourceId in _sourceIdsPendingDeletion)
+        List<string> missingValues = [];
+        if (string.IsNullOrWhiteSpace(Project.Name))
         {
-            await vectorStoreCommand.DeleteSourceDataAsync(sourceId);
+            missingValues.Add("Name");
         }
 
-        _sourceIdsPendingDeletion.Clear();
-        await projectCommand.UpsertProjectAsync(Project);
-        Dialog.Close();
+        if (missingValues.Any())
+        {
+            BlazorUtils.ShowError($"The following data is missing before you can save this Project: {string.Join(", ", missingValues)}");
+        }
+        else
+        {
+            foreach (Guid sourceId in _sourceIdsPendingDeletion)
+            {
+                await vectorStoreCommand.DeleteSourceDataAsync(sourceId);
+            }
+
+            _sourceIdsPendingDeletion.Clear();
+            await projectCommand.UpsertProjectAsync(Project);
+            Dialog.Close();
+        }
     }
 
     private async Task CreateNewSource(ProjectSourceKind kind)
     {
-        var newSource = ProjectSourceEntity.Empty(Project, kind);
-        var result = await Site.ShowProjectSourceDialogAsync(Project, newSource, kind);
+        ProjectSourceEntity newSource = ProjectSourceEntity.Empty(Project, kind);
+        DialogResult result = await Site.ShowProjectSourceDialogAsync(Project, newSource, kind);
         if (result == DialogResult.Ok)
         {
             Project.Sources.Add(newSource);
@@ -135,27 +144,27 @@ public partial class ProjectDialog(ProjectCommand projectCommand, CSharpIngestio
 
     private MarkupString GetLastSync(ProjectSourceEntity source)
     {
-        if (source.LastSync.HasValue)
+        if (!source.LastSync.HasValue)
         {
-            var span = DateTime.UtcNow - source.LastSync.Value;
-            if (span.TotalDays > 1)
-            {
-                return new MarkupString(Plural.DaysMarkup(Convert.ToInt32(span.TotalDays)) + " ago");
-            }
-
-            if (span.TotalHours > 1)
-            {
-                return new MarkupString(Plural.HoursMarkup(Convert.ToInt32(span.TotalHours)) + " ago");
-            }
-
-            if (span.TotalMinutes > 1)
-            {
-                return new MarkupString(Plural.MinutesMarkup(Convert.ToInt32(span.TotalMinutes)) + " ago");
-            }
-
-            return new MarkupString("Less than a minute ago");
+            return new MarkupString("Never");
         }
 
-        return new MarkupString("Never");
+        TimeSpan span = DateTime.UtcNow - source.LastSync.Value;
+        if (span.TotalDays > 1)
+        {
+            return new MarkupString(Plural.DaysMarkup(Convert.ToInt32(span.TotalDays)) + " ago");
+        }
+
+        if (span.TotalHours > 1)
+        {
+            return new MarkupString(Plural.HoursMarkup(Convert.ToInt32(span.TotalHours)) + " ago");
+        }
+
+        if (span.TotalMinutes > 1)
+        {
+            return new MarkupString(Plural.MinutesMarkup(Convert.ToInt32(span.TotalMinutes)) + " ago");
+        }
+
+        return new MarkupString("Less than a minute ago");
     }
 }

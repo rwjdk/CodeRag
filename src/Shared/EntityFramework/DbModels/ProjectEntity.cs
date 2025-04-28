@@ -38,10 +38,14 @@ public class ProjectEntity
 
     #endregion
 
+    [NotMapped]
+    public bool AddMode { get; set; }
+
     public static ProjectEntity Empty()
     {
         return new ProjectEntity
         {
+            AddMode = true,
             Id = Guid.NewGuid(),
             Name = string.Empty,
             Sources = [],

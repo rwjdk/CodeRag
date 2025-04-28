@@ -8,18 +8,16 @@ namespace Website.Models;
 public class Site(IDialogService dialogService)
 {
 #if DEBUG
-    public bool DebugMode => true;
+    public bool DemoMode => true;
 #else
-    public bool DebugMode => false;
+    public bool DemoMode => false;
 #endif
-
 
     public async Task<DialogResult> ShowProjectDialogAsync(ProjectEntity? project, bool addMode)
     {
         var parameters = new DialogParameters<ProjectDialog>
         {
             { x => x.Project, project ?? ProjectEntity.Empty() },
-            { x => x.AddMode, addMode },
         };
 
         DialogOptions dialogOptions = new()
@@ -47,7 +45,7 @@ public class Site(IDialogService dialogService)
             BackdropClick = false,
             CloseButton = true,
         };
-        var reference = await dialogService.ShowAsync<ProjectSourceDialog>(projectSource?.Name ?? "New Source", parameters, dialogOptions);
+        var reference = await dialogService.ShowAsync<ProjectSourceDialog>(string.IsNullOrWhiteSpace(projectSource.Name) ? "New source" : projectSource.Name, parameters, dialogOptions);
         var result = await reference.Result;
         return result is { Canceled: false } ? DialogResult.Ok : DialogResult.Cancel;
     }
