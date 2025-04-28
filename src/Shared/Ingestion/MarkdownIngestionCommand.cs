@@ -42,7 +42,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
             counter++;
             var sourcePath = path.Replace(source.Path, string.Empty);
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
-            if (IgnoreFile(source, path))
+            if (source.IgnoreFile(path))
             {
                 continue;
             }
@@ -133,12 +133,5 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
         }
 
         OnNotifyProgress("Done");
-    }
-
-
-    private bool IgnoreFile(ProjectSourceEntity source, string path)
-    {
-        //todo - this have not tested: Should be done so a bunch
-        return (source.FileIgnorePatterns.Split() ?? []).Any(x => !string.IsNullOrWhiteSpace(x) && Regex.IsMatch(path, x, RegexOptions.IgnoreCase));
     }
 }

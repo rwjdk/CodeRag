@@ -35,7 +35,7 @@
     <br /><br />
     <MudGrid Justify="Justify.Center">
         <MudItem>
-            <div style="cursor: pointer" @onclick="()=> Site.ShowProjectDialogAsync(Project, false)">
+            <div style="cursor: pointer" @onclick="()=> Site.ShowProjectDialogAsync(Project)">
                 <MudPaper Elevation="5" Style="padding: 8px" Width="300px" Height="120px">
                     <MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Large" />
                     <h2>Edit Project Settings and Sync Sources</h2>
@@ -43,7 +43,7 @@
             </div>
         </MudItem>
         <MudItem>
-            <div style="cursor: pointer" @onclick="()=> Site.ShowProjectDialogAsync(null, true)">
+            <div style="cursor: pointer" @onclick="()=> Site.ShowProjectDialogAsync(ProjectEntity.Empty())">
                 <MudPaper Elevation="5" Style="padding: 8px" Width="300px" Height="120px">
                     <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Large" />
                     <h2>Create a brand<br /> New Project</h2>

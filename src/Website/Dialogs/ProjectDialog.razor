@@ -47,12 +47,99 @@
             </MudTabPanel>
             <MudTabPanel Text="Chat">
                 <RTextField Label="Instructions" @bind-Value="@Project.ChatInstructions" Lines="10" />
+                <div class="font-size-10">Code Search</div>
+                <MudGrid>
+                    <MudItem>
+                        <RCheckBox @bind-Value="Project.ChatUseSourceCodeSearch" Label="Use" />
+                    </MudItem>
+                    <MudItem>
+                        <MudSlider Min="1" Max="100" @bind-Value="Project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch">Max Records (@Project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch)</MudSlider>
+                    </MudItem>
+                    <MudItem>
+                        <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
+                            <MudSlider Min="0" Max="1" Step="0.1" @bind-Value="Project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch">Max Score (@Project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch)</MudSlider>
+                        </MudTooltip>
+                    </MudItem>
+                </MudGrid>
+                <hr />
+                <div class="font-size-10">Documentation Search</div>
+                <MudGrid>
+                    <MudItem>
+                        <RCheckBox @bind-Value="Project.ChatUseDocumentationSearch" Label="Use" />
+                    </MudItem>
+                    <MudItem>
+                        <MudSlider Min="1" Max="100" @bind-Value="Project.ChatMaxNumberOfAnswersBackFromDocumentationSearch">Max Records (@Project.ChatMaxNumberOfAnswersBackFromDocumentationSearch)</MudSlider>
+                    </MudItem>
+                    <MudItem>
+                        <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
+                            <MudSlider Min="0" Max="1" Step="0.1" @bind-Value="Project.ChatScoreShouldBeLowerThanThisInDocumentSearch">Max Score (@Project.ChatScoreShouldBeLowerThanThisInDocumentSearch)</MudSlider>
+                        </MudTooltip>
+                    </MudItem>
+                </MudGrid>
             </MudTabPanel>
             <MudTabPanel Text="XML Summaries">
                 <RTextField Label="Instructions" @bind-Value="@Project.CSharpXmlSummaryInstructions" Lines="10" />
+                <div class="font-size-10">Code Search</div>
+                <MudGrid>
+                    <MudItem>
+                        <RCheckBox @bind-Value="Project.XmlSummariesUseSourceCodeSearch" Label="Use" />
+                    </MudItem>
+                    <MudItem>
+                        <MudSlider Min="1" Max="100" @bind-Value="Project.XmlSummariesMaxNumberOfAnswersBackFromSourceCodeSearch">Max Records (@Project.XmlSummariesMaxNumberOfAnswersBackFromSourceCodeSearch)</MudSlider>
+                    </MudItem>
+                    <MudItem>
+                        <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
+                            <MudSlider Min="0" Max="1" Step="0.1" @bind-Value="Project.XmlSummariesScoreShouldBeLowerThanThisInSourceCodeSearch">Max Score (@Project.XmlSummariesScoreShouldBeLowerThanThisInSourceCodeSearch)</MudSlider>
+                        </MudTooltip>
+                    </MudItem>
+                </MudGrid>
+                <hr />
+                <div class="font-size-10">Documentation Search</div>
+                <MudGrid>
+                    <MudItem>
+                        <RCheckBox @bind-Value="Project.XmlSummariesUseDocumentationSearch" Label="Use" />
+                    </MudItem>
+                    <MudItem>
+                        <MudSlider Min="1" Max="100" @bind-Value="Project.XmlSummariesMaxNumberOfAnswersBackFromDocumentationSearch">Max Records (@Project.XmlSummariesMaxNumberOfAnswersBackFromDocumentationSearch)</MudSlider>
+                    </MudItem>
+                    <MudItem>
+                        <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
+                            <MudSlider Min="0" Max="1" Step="0.1" @bind-Value="Project.XmlSummariesScoreShouldBeLowerThanThisInDocumentSearch">Max Score (@Project.XmlSummariesScoreShouldBeLowerThanThisInDocumentSearch)</MudSlider>
+                        </MudTooltip>
+                    </MudItem>
+                </MudGrid>
             </MudTabPanel>
             <MudTabPanel Text="PR Review">
                 <RTextField Label="Instructions" @bind-Value="@Project.PullRequestReviewInstructions" Lines="10" />
+                <div class="font-size-10">Code Search</div>
+                <MudGrid>
+                    <MudItem>
+                        <RCheckBox @bind-Value="Project.PrReviewUseSourceCodeSearch" Label="Use" />
+                    </MudItem>
+                    <MudItem>
+                        <MudSlider Min="1" Max="100" @bind-Value="Project.PrReviewMaxNumberOfAnswersBackFromSourceCodeSearch">Max Records (@Project.PrReviewMaxNumberOfAnswersBackFromSourceCodeSearch)</MudSlider>
+                    </MudItem>
+                    <MudItem>
+                        <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
+                            <MudSlider Min="0" Max="1" Step="0.1" @bind-Value="Project.PrReviewScoreShouldBeLowerThanThisInSourceCodeSearch">Max Score (@Project.PrReviewScoreShouldBeLowerThanThisInSourceCodeSearch)</MudSlider>
+                        </MudTooltip>
+                    </MudItem>
+                </MudGrid>
+                <hr />
+                <div class="font-size-10">Documentation Search</div>
+                <MudGrid>
+                    <MudItem>
+                        <RCheckBox @bind-Value="Project.PrReviewUseDocumentationSearch" Label="Use" />
+                    </MudItem>
+                    <MudItem>
+                        <MudSlider Min="1" Max="100" @bind-Value="Project.PrReviewMaxNumberOfAnswersBackFromDocumentationSearch">Max Records (@Project.PrReviewMaxNumberOfAnswersBackFromDocumentationSearch)</MudSlider>
+                    </MudItem>
+                    <MudItem>
+                        <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
+                            <MudSlider Min="0" Max="1" Step="0.1" @bind-Value="Project.PrReviewScoreShouldBeLowerThanThisInDocumentSearch">Max Score (@Project.PrReviewScoreShouldBeLowerThanThisInDocumentSearch)</MudSlider>
+                        </MudTooltip>
+                    </MudItem>
+                </MudGrid>
             </MudTabPanel>
             <MudTabPanel Text="API & Automations">
                 <MudAlert Severity="Severity.Warning">Coming Soon you will be able to use all Feature as API/MCP for Automations in other systems for example periodically Ingestion Sync</MudAlert>

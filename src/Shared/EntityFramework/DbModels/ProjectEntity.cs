@@ -28,15 +28,47 @@ public class ProjectEntity
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public required string CSharpXmlSummaryInstructions { get; set; }
 
-    #region GitHub
+    public bool ChatUseSourceCodeSearch { get; set; }
+
+    public bool ChatUseDocumentationSearch { get; set; }
+
+    public int ChatMaxNumberOfAnswersBackFromSourceCodeSearch { get; set; }
+
+    public double ChatScoreShouldBeLowerThanThisInSourceCodeSearch { get; set; }
+
+    public int ChatMaxNumberOfAnswersBackFromDocumentationSearch { get; set; }
+
+    public double ChatScoreShouldBeLowerThanThisInDocumentSearch { get; set; }
+
+    public bool XmlSummariesUseSourceCodeSearch { get; set; }
+
+    public bool XmlSummariesUseDocumentationSearch { get; set; }
+
+    public int XmlSummariesMaxNumberOfAnswersBackFromSourceCodeSearch { get; set; }
+
+    public double XmlSummariesScoreShouldBeLowerThanThisInSourceCodeSearch { get; set; }
+
+    public int XmlSummariesMaxNumberOfAnswersBackFromDocumentationSearch { get; set; }
+
+    public double XmlSummariesScoreShouldBeLowerThanThisInDocumentSearch { get; set; }
+
+    public bool PrReviewUseSourceCodeSearch { get; set; }
+
+    public bool PrReviewUseDocumentationSearch { get; set; }
+
+    public int PrReviewMaxNumberOfAnswersBackFromSourceCodeSearch { get; set; }
+
+    public double PrReviewScoreShouldBeLowerThanThisInSourceCodeSearch { get; set; }
+
+    public int PrReviewMaxNumberOfAnswersBackFromDocumentationSearch { get; set; }
+
+    public double PrReviewScoreShouldBeLowerThanThisInDocumentSearch { get; set; }
 
     [MaxLength(100)]
     public string? GitHubOwner { get; set; }
 
     [MaxLength(500)]
     public string? GitHubRepo { get; set; }
-
-    #endregion
 
     [NotMapped]
     public bool AddMode { get; set; }
@@ -46,6 +78,7 @@ public class ProjectEntity
         return new ProjectEntity
         {
             AddMode = true,
+
             Id = Guid.NewGuid(),
             Name = string.Empty,
             Sources = [],
@@ -58,6 +91,12 @@ public class ProjectEntity
                 .AddStep("Based on previous step prepare your final answer")
                 .AddStep("The answer and code-examples should ALWAYS be Markdown format!")
                 .ToString(),
+            ChatUseSourceCodeSearch = true,
+            ChatUseDocumentationSearch = true,
+            ChatMaxNumberOfAnswersBackFromSourceCodeSearch = 20,
+            ChatScoreShouldBeLowerThanThisInSourceCodeSearch = 0.7,
+            ChatMaxNumberOfAnswersBackFromDocumentationSearch = 20,
+            ChatScoreShouldBeLowerThanThisInDocumentSearch = 0.7,
             CSharpXmlSummaryInstructions = Prompt.Create("You are an C# Expert that can generate XML Summaries.")
                 .AddRule($"Always use all tools available ('{Constants.Tools.CSharp}' and '{Constants.Tools.Markdown}') before you provide your answer")
                 .AddRule("Always report back in C# XML Summary Format and describe all parameters and the return type")
@@ -68,6 +107,12 @@ public class ProjectEntity
                 .AddRule("Don't use wording 'with the specified options' and similar. Be short and on point")
                 .AddRule("Don't end the sentences with '.'")
                 .ToString(),
+            XmlSummariesUseSourceCodeSearch = true,
+            XmlSummariesUseDocumentationSearch = true,
+            XmlSummariesMaxNumberOfAnswersBackFromSourceCodeSearch = 20,
+            XmlSummariesScoreShouldBeLowerThanThisInSourceCodeSearch = 0.7,
+            XmlSummariesMaxNumberOfAnswersBackFromDocumentationSearch = 20,
+            XmlSummariesScoreShouldBeLowerThanThisInDocumentSearch = 0.7,
             PullRequestReviewInstructions = Prompt.Create("You are a highly experienced and extremely thorough C# code reviewer. Your task is to review the provided GitHub PR diff.")
                 .AddStep("You will particularly pay attention to logical and performance bugs and regressions, and generally be very meticulous in determining what this PR introduces in terms of new and/or changed features and/or behaviors.")
                 .AddStep("Next, you will perform a very thorough review, but not output your results yet.")
@@ -78,6 +123,12 @@ public class ProjectEntity
                 .AddRule("Always keep your answers short and concise but sufficient for me to complete the task of understanding your concerns/findings, and for me to implement your suggested changes. ")
                 .AddRule("Assume that all code can compile and use the latest C# Syntax Rules (Please note that in the latest C# you can use [] for list initializers so do not report this back as a bug)")
                 .AddRule("Don't comment on 'missing newline at the end of the file'").ToString(),
+            PrReviewUseSourceCodeSearch = true,
+            PrReviewUseDocumentationSearch = false,
+            PrReviewMaxNumberOfAnswersBackFromSourceCodeSearch = 20,
+            PrReviewScoreShouldBeLowerThanThisInSourceCodeSearch = 0.7,
+            PrReviewMaxNumberOfAnswersBackFromDocumentationSearch = 20,
+            PrReviewScoreShouldBeLowerThanThisInDocumentSearch = 0.7,
         };
     }
 

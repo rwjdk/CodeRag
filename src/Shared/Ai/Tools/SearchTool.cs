@@ -37,7 +37,7 @@ public class SearchTool(VectorStoreDataType dataType, ProjectEntity project, ITe
             searchResults.Add(sb.ToString());
         }
 
-        ProgressNotification notification = new(DateTimeOffset.UtcNow, $"{dataType} Search Called ({results.Count} Results)")
+        ProgressNotification notification = new(DateTimeOffset.UtcNow, $"{dataType} Search Called with Query '{searchQuery}' ({results.Count} Results)")
         {
             SearchResults = results
         };

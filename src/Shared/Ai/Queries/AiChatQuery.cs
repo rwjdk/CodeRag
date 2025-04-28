@@ -1,28 +1,27 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Text;
-using System.Text.Json;
+﻿using System.Diagnostics;
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
-using OpenAI.Chat;
-using Shared.Ai.StructuredOutputModels;
 using Shared.Ai.Tools;
-using Shared.Chunking.CSharp;
 using Shared.EntityFramework.DbModels;
-using Shared.Models;
-using Shared.Prompting;
-using Shared.VectorStore;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Shared.Ai.Queries;
 
 [UsedImplicitly]
-public class AiChatQuery(AiGenericQuery aiGenericQuery) : ProgressNotificationBase, IScopedService
+public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
 {
+    private readonly AiGenericQuery _aiGenericQuery;
+
+    public AiChatQuery(AiGenericQuery aiGenericQuery)
+    {
+        _aiGenericQuery = aiGenericQuery;
+        aiGenericQuery.NotifyProgress += OnNotifyProgress;
+    }
+
+
     public async Task<ChatMessageContent?> GetAnswer(
         AiChatModel chatModel,
         List<ChatMessageContent> previousConversation,
@@ -36,29 +35,32 @@ public class AiChatQuery(AiGenericQuery aiGenericQuery) : ProgressNotificationBa
         ProjectEntity project)
     {
         long timestamp = Stopwatch.GetTimestamp();
-        Kernel kernel = aiGenericQuery.GetKernel(chatModel);
+        Kernel kernel = _aiGenericQuery.GetKernel(chatModel);
+
+
+        Intent intent = await _aiGenericQuery.GetStructuredOutputResponse<Intent>(project, chatModel, "You are an Agent that analyze the users message to find out if it is just pleasantries or a question", messageToSend, false, false, 0, 0, 0, 0);
 
         List<ChatMessageContent> input = previousConversation.Select(x => new ChatMessageContent(x.Role, x.Content)).ToList();
 
-        ITextEmbeddingGenerationService embeddingGenerationService = aiGenericQuery.GetTextEmbeddingGenerationService(kernel);
+        ITextEmbeddingGenerationService embeddingGenerationService = _aiGenericQuery.GetTextEmbeddingGenerationService(kernel);
 
         ChatMessageContent messageContent = new(AuthorRole.User, messageToSend);
         previousConversation.Add(messageContent);
         input.Add(messageContent);
 
-        if (useSourceCodeSearch)
+        if (useSourceCodeSearch && !intent.IsMessageJustPleasantries)
         {
-            var codeSearchTool = aiGenericQuery.ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, embeddingGenerationService, kernel);
+            var codeSearchTool = _aiGenericQuery.ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, embeddingGenerationService, kernel);
             input.Add(new ChatMessageContent(AuthorRole.User, "Relevant Code: " + await codeSearchTool.Search(messageToSend)));
         }
 
-        if (useDocumentationSearch)
+        if (useDocumentationSearch && !intent.IsMessageJustPleasantries)
         {
-            SearchTool docsSearch = aiGenericQuery.ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
+            SearchTool docsSearch = _aiGenericQuery.ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
             input.Add(new ChatMessageContent(AuthorRole.User, "Relevant Documentation: " + await docsSearch.Search(messageToSend)));
         }
 
-        ChatCompletionAgent answerAgent = aiGenericQuery.GetAgent(chatModel, project.GetFormattedDeveloperInstructions(), kernel);
+        ChatCompletionAgent answerAgent = _aiGenericQuery.GetAgent(chatModel, project.GetFormattedDeveloperInstructions(), kernel);
 
         input.Add(messageContent);
 
@@ -77,6 +79,16 @@ public class AiChatQuery(AiGenericQuery aiGenericQuery) : ProgressNotificationBa
 
     public List<AiChatModel> GetChatModels()
     {
-        return aiGenericQuery.GetChatModels();
+        return _aiGenericQuery.GetChatModels();
+    }
+
+    private class Intent
+    {
+        public bool IsMessageJustPleasantries { get; set; }
+    }
+
+    public void Dispose()
+    {
+        _aiGenericQuery.NotifyProgress -= OnNotifyProgress;
     }
 }

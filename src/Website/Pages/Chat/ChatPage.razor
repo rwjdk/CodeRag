@@ -19,7 +19,7 @@
                     @foreach (var message in _conversation)
                     {
                         <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == AuthorRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
-                            <MudChatBubble>
+                            <MudChatBubble Style="text-align: left">
                                 @message.Content?.ToMarkdown()
                             </MudChatBubble>
                         </MudChat>
@@ -27,7 +27,7 @@
                     @if (_currentMessageIsProcessing)
                     {
                         <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="ChatBubblePosition.Start">
-                            <MudChatBubble>
+                            <MudChatBubble Style="text-align: left">
                                 @if (!string.IsNullOrWhiteSpace(_chatModel.ReasoningEffortLevel))
                                 {
                                     <span>Reasoning... (can be quite slow 🐢💤)</span>

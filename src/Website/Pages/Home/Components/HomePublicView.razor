@@ -18,11 +18,11 @@
             </MudItem>
         </MudGrid>
 
-        <div style="height: calc(100vh - 230px); overflow-y: scroll; padding-left: 100px; padding-right: 100px; margin-top: 10px">
+        <div style="height: calc(100vh - 250px); overflow-y: scroll; padding-left: 100px; padding-right: 100px; margin-top: 10px">
             @foreach (var message in _conversation)
             {
                 <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == AuthorRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
-                    <MudChatBubble>
+                    <MudChatBubble Style="text-align: left">
                         @message.Content?.ToMarkdown()
                     </MudChatBubble>
                 </MudChat>

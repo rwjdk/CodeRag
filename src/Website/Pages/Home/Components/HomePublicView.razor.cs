@@ -3,13 +3,10 @@ using BlazorUtilities.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
-using Shared;
 using Shared.Ai;
 using Shared.Ai.Queries;
 using Shared.EntityFramework.DbModels;
-using Website.Dialogs;
 
 namespace Website.Pages.Home.Components;
 
@@ -21,18 +18,40 @@ public partial class HomePublicView(AiChatQuery aiChatQuery)
     [CascadingParameter]
     public required ProjectEntity Project { get; set; }
 
+    private ProjectEntity? _previousProject;
+
     private RTextField? _chatInput;
     private string? _chatInputMessage;
     private bool _currentMessageIsProcessing;
     private bool _shouldRender = true;
-    private readonly List<ChatMessageContent> _conversation = [];
+    private List<ChatMessageContent> _conversation = [];
     private AiChatModel? _chatModel;
-    private readonly bool _useSourceCodeSearch = true; //todo - configure in project
-    private readonly bool _useDocumentationSearch = true; //todo - configure in project
-    private readonly int _maxNumberOfAnswersBackFromSourceCodeSearch = 50; //todo - configure in project
-    private readonly double _scoreShouldBeLowerThanThisInSourceCodeSearch = 0.7; //todo - configure in project
-    private readonly int _maxNumberOfAnswersBackFromDocumentationSearch = 50; //todo - configure in project
-    private readonly double _scoreShouldBeLowerThanThisInDocumentSearch = 0.7; //todo - configure in project
+    private bool _useSourceCodeSearch = true;
+    private bool _useDocumentationSearch = true;
+    private int _maxNumberOfAnswersBackFromSourceCodeSearch;
+    private double _scoreShouldBeLowerThanThisInSourceCodeSearch;
+    private int _maxNumberOfAnswersBackFromDocumentationSearch;
+    private double _scoreShouldBeLowerThanThisInDocumentSearch;
+
+    protected override void OnParametersSet()
+    {
+        if (!EqualityComparer<ProjectEntity>.Default.Equals(Project, _previousProject))
+        {
+            _previousProject = Project;
+            _conversation = [];
+            SetChatSettings();
+        }
+    }
+
+    private void SetChatSettings()
+    {
+        _useSourceCodeSearch = Project.ChatUseSourceCodeSearch;
+        _useDocumentationSearch = Project.ChatUseDocumentationSearch;
+        _maxNumberOfAnswersBackFromSourceCodeSearch = Project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch;
+        _scoreShouldBeLowerThanThisInSourceCodeSearch = Project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch;
+        _maxNumberOfAnswersBackFromDocumentationSearch = Project.ChatMaxNumberOfAnswersBackFromDocumentationSearch;
+        _scoreShouldBeLowerThanThisInDocumentSearch = Project.ChatScoreShouldBeLowerThanThisInDocumentSearch;
+    }
 
     private async Task SubmitIfEnter(KeyboardEventArgs args, string? messageToSend)
     {

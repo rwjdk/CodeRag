@@ -8,33 +8,44 @@ using MudBlazor;
 using Shared.Ai;
 using Shared.Chunking.CSharp;
 using Shared.EntityFramework.DbModels;
-using Shared.VectorStore;
 using Website.Models;
 using Shared.Ai.Queries;
 
 namespace Website.Pages.XmlSummariesGeneration;
 
-public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuery, CSharpChunker cSharpChunker, AiXmlSummaryQuery aiXmlSummaryQuery)
+public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiXmlSummaryQuery aiXmlSummaryQuery)
 {
-    private ProjectSourceEntity[]? _sources;
-    private ProjectSourceEntity? _selectedSource;
-
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }
 
     [CascadingParameter]
     public required ProjectEntity Project { get; set; }
 
-    private TreeItemData<Item>? _tree;
-    private MudTreeView<Item>? _treeView;
-
+    private ProjectEntity? _previousProject { get; set; }
+    private ProjectSourceEntity[]? _sources;
+    private ProjectSourceEntity? _selectedSource;
+    private TreeItemData<File>? _tree;
+    private MudTreeView<File>? _treeView;
     private string? _searchPhrase;
     private SummaryStatus _summaryStatus = SummaryStatus.MissingSummary;
     private CSharpKind _kind = CSharpKind.Method;
-    private Item? _selectedItem;
+    private File? _selectedItem;
     private RProgressBar? _progressBar;
     private AiChatModel? _chatModel;
     private CSharpChunk? _selectedChunk;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!EqualityComparer<ProjectEntity>.Default.Equals(Project, _previousProject))
+        {
+            _previousProject = Project;
+            _sources = null;
+            _selectedSource = null;
+            _chatModel = null;
+            _tree = null;
+            await OnInitializedAsync();
+        }
+    }
 
     private async Task OnSearchTextChanged(string searchPhrase)
     {
@@ -45,7 +56,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         }
     }
 
-    private Task<bool> MatchesName(TreeItemData<Item> item)
+    private Task<bool> Search(TreeItemData<File> item)
     {
         if (string.IsNullOrEmpty(item.Value!.Info.Name))
         {
@@ -57,43 +68,51 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
 
     protected override async Task OnInitializedAsync()
     {
-        //todo - this page throw exception is source location is GitHub
-        _chatModel = aiXmlSummaryQuery.GetChatModels().FirstOrDefault();
-        _sources = Project.Sources.Where(x => x.Kind == ProjectSourceKind.CSharpCode).ToArray();
-        _selectedSource = _sources.FirstOrDefault();
-        await Refresh();
+        try
+        {
+            _chatModel = aiXmlSummaryQuery.GetChatModels().FirstOrDefault();
+            _sources = Project.Sources.Where(x => x.Kind == ProjectSourceKind.CSharpCode).ToArray();
+            _selectedSource = _sources.FirstOrDefault();
+            if (_selectedSource is { Location: ProjectSourceLocation.Local }) //todo: Support GitHubLocation in XmlSummaries (https://github.com/rwjdk/CodeRag/issues/3)
+            {
+                await Refresh();
+            }
+        }
+        catch (Exception exception)
+        {
+            BlazorUtils.ShowErrorWithDetails("Error loading page", exception);
+        }
     }
 
-    private TreeItemData<Item> BuildTree(string rootPath)
+    private TreeItemData<File> BuildFileTree(string rootPath)
     {
         var rootInfo = new DirectoryInfo(rootPath);
-        var rootNode = new TreeItemData<Item> { Value = new Item(rootInfo, []) };
-        BuildChildren(rootNode, rootInfo);
+        var rootNode = new TreeItemData<File> { Value = new File(rootInfo, []) };
+        BuildFileTreeChildren(rootNode, rootInfo);
         return rootNode;
     }
 
-    private void BuildChildren(TreeItemData<Item> parentNode, DirectoryInfo dirInfo)
+    private void BuildFileTreeChildren(TreeItemData<File> parentNode, DirectoryInfo dirInfo)
     {
         parentNode.Children ??= [];
         foreach (var dir in dirInfo.GetDirectories())
         {
-            var dirNode = new TreeItemData<Item> { Value = new Item(dir, []) };
-            BuildChildren(dirNode, dir);
+            var dirNode = new TreeItemData<File> { Value = new File(dir, []) };
+            BuildFileTreeChildren(dirNode, dir);
             if (dirNode.Children is { Count: > 0 })
             {
                 parentNode.Children.Add(dirNode);
             }
         }
 
-        ;
         foreach (var file in dirInfo.GetFiles("*.cs"))
         {
-            if (_selectedSource.IgnoreFile(file.FullName))
+            if (_selectedSource!.IgnoreFile(file.FullName))
             {
                 continue;
             }
 
-            List<CSharpChunk> entities = cSharpChunker.GetCodeEntities(File.ReadAllText(file.FullName)).Where(x => x.Kind == _kind).ToList();
+            List<CSharpChunk> entities = cSharpChunker.GetCodeEntities(System.IO.File.ReadAllText(file.FullName)).Where(x => x.Kind == _kind).ToList();
             var matches = entities.Where(x => x.Kind == _kind);
             switch (_summaryStatus)
             {
@@ -109,37 +128,8 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
 
             if (entities.Count > 0)
             {
-                parentNode.Children.Add(new TreeItemData<Item> { Value = new Item(file, entities) });
+                parentNode.Children.Add(new TreeItemData<File> { Value = new File(file, entities) });
             }
-        }
-    }
-
-    private class Item(FileSystemInfo info, List<CSharpChunk> codeChunks)
-    {
-        public FileSystemInfo Info { get; } = info;
-        public List<CSharpChunk> CodeChunks { get; } = codeChunks;
-
-        public int GetTotalRelatedEntities(List<TreeItemData<Item>>? children)
-        {
-            if (children == null) return CodeChunks.Count;
-            int sum = 0;
-            foreach (var child in children)
-            {
-                sum += child.Value.CodeChunks.Count;
-                sum += GetTotalRelatedEntities(child.Children);
-            }
-
-            return sum;
-        }
-
-        public string? GetIcon()
-        {
-            if (Info.Attributes.HasFlag(FileAttributes.Directory))
-            {
-                return Icons.Material.Filled.Folder;
-            }
-
-            return null;
         }
     }
 
@@ -153,7 +143,19 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     {
         if (_selectedSource != null)
         {
-            _tree = BuildTree(_selectedSource.Path);
+            await Task.Run(() =>
+            {
+                try
+                {
+                    _selectedChunk = null;
+                    _selectedItem = null;
+                    _tree = BuildFileTree(_selectedSource.Path);
+                }
+                catch (Exception e)
+                {
+                    BlazorUtils.ShowErrorWithDetails("Error building File Tree", e);
+                }
+            });
         }
     }
 
@@ -163,7 +165,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         await Refresh();
     }
 
-    private async Task SwitchSource(ProjectSourceEntity source)
+    private async Task SwitchSource(ProjectSourceEntity? source)
     {
         _selectedSource = source;
         if (_selectedSource != null)
@@ -172,7 +174,7 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
         }
     }
 
-    private void SwitchSelected(Item? selectedItem)
+    private void SwitchSelected(File? selectedItem)
     {
         _selectedItem = selectedItem;
         _selectedChunk = null;
@@ -181,32 +183,33 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
     private async Task Generate(CSharpChunk chunk)
     {
         using WorkingProgress workingProgress = BlazorUtils.StartWorking();
-        var xmlSummary = await aiXmlSummaryQuery.GenerateCSharpXmlSummary(Project, chunk.Content, _chatModel);
+        var xmlSummary = await aiXmlSummaryQuery.GenerateCSharpXmlSummary(Project, chunk.Content, _chatModel!);
         chunk.XmlSummary = xmlSummary;
         workingProgress.ShowSuccess("New XML Summary generated. Use the Save Button to Accept the changes");
     }
 
     private async Task Save(string path, CSharpChunk chunk)
     {
-        SyntaxTree tree = CSharpSyntaxTree.ParseText(await File.ReadAllTextAsync(path));
+        SyntaxTree tree = CSharpSyntaxTree.ParseText(await System.IO.File.ReadAllTextAsync(path));
         var root = await tree.GetRootAsync();
 
         var oldNode = root.DescendantNodes().FirstOrDefault(x => x.ToString() == chunk.Node.ToString());
+        if (oldNode != null)
+        {
+            var xmlSummaryText = chunk.XmlSummary;
+            var parsedTrivia = SyntaxFactory.ParseLeadingTrivia(xmlSummaryText + Environment.NewLine);
+            var newMethod = oldNode.WithLeadingTrivia(parsedTrivia);
+            var newRoot = root.ReplaceNode(oldNode, newMethod);
+            newRoot = Formatter.Format(newRoot, new AdhocWorkspace());
+            await System.IO.File.WriteAllTextAsync(path, newRoot.ToFullString().Replace("\r\n", "\n").Replace("\n", "\r\n"));
+        }
 
-        var xmlSummaryText = chunk.XmlSummary;
-        var parsedTrivia = SyntaxFactory.ParseLeadingTrivia(xmlSummaryText + Environment.NewLine);
-        var newMethod = oldNode.WithLeadingTrivia(parsedTrivia);
-
-        var newRoot = root.ReplaceNode(oldNode, newMethod);
-        newRoot = Formatter.Format(newRoot, new AdhocWorkspace());
-        await File.WriteAllTextAsync(path, newRoot.ToFullString().Replace("\r\n", "\n").Replace("\n", "\r\n"));
         BlazorUtils.ShowSuccess($"Saved new XML Summary for {chunk.Name}");
     }
 
-
     private async Task GenerateAll()
     {
-        var workingProgress = BlazorUtils.StartWorking(_progressBar, _selectedItem.CodeChunks.Count, hideOnCompletion: true);
+        var workingProgress = BlazorUtils.StartWorking(_progressBar, _selectedItem!.CodeChunks.Count, hideOnCompletion: true);
         foreach (var chunk in _selectedItem.CodeChunks)
         {
             await Generate(chunk);
@@ -214,6 +217,31 @@ public partial class XmlSummariesGenerationPage(VectorStoreQuery vectorStoreQuer
             workingProgress.ReportProgress();
         }
 
+        await Refresh();
         BlazorUtils.ShowSuccess("Done. Please check your GIT Changes for the repo");
+    }
+
+    private class File(FileSystemInfo info, List<CSharpChunk> codeChunks)
+    {
+        public FileSystemInfo Info { get; } = info;
+        public List<CSharpChunk> CodeChunks { get; } = codeChunks;
+
+        public int GetTotalRelatedEntities(List<TreeItemData<File>>? children)
+        {
+            if (children == null) return CodeChunks.Count;
+            int sum = 0;
+            foreach (var child in children)
+            {
+                sum += child.Value!.CodeChunks.Count;
+                sum += GetTotalRelatedEntities(child.Children);
+            }
+
+            return sum;
+        }
+
+        public string? GetIcon()
+        {
+            return Info.Attributes.HasFlag(FileAttributes.Directory) ? Icons.Material.Filled.Folder : null;
+        }
     }
 }

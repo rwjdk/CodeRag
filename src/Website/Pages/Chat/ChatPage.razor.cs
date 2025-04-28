@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
+using Octokit;
 using Shared;
 using Shared.Ai;
 using Shared.Ai.Queries;
@@ -22,20 +23,31 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
     [CascadingParameter]
     public required ProjectEntity Project { get; set; }
 
+    private ProjectEntity? _previousProject;
+
     private RTextField? _chatInput;
     private string? _chatInputMessage;
     private bool _currentMessageIsProcessing;
     private bool _shouldRender = true;
-
-    private readonly List<ChatMessageContent> _conversation = [];
+    private List<ChatMessageContent> _conversation = [];
     private AiChatModel? _chatModel;
-    private bool _useSourceCodeSearch = true;
-    private bool _useDocumentationSearch = true;
-    private int _maxNumberOfAnswersBackFromSourceCodeSearch = 50;
-    private double _scoreShouldBeLowerThanThisInSourceCodeSearch = 0.7;
-    private int _maxNumberOfAnswersBackFromDocumentationSearch = 50;
-    private double _scoreShouldBeLowerThanThisInDocumentSearch = 0.7;
+    private bool _useSourceCodeSearch;
+    private bool _useDocumentationSearch;
+    private int _maxNumberOfAnswersBackFromSourceCodeSearch;
+    private double _scoreShouldBeLowerThanThisInSourceCodeSearch;
+    private int _maxNumberOfAnswersBackFromDocumentationSearch;
+    private double _scoreShouldBeLowerThanThisInDocumentSearch;
     private readonly List<ProgressNotification> _log = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!EqualityComparer<ProjectEntity>.Default.Equals(Project, _previousProject))
+        {
+            _previousProject = Project;
+            _conversation = [];
+            SetChatSettings();
+        }
+    }
 
     private async Task SubmitIfEnter(KeyboardEventArgs args, string? messageToSend)
     {
@@ -47,8 +59,19 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
 
     protected override void OnInitialized()
     {
+        SetChatSettings();
         _chatModel = aiChatQuery.GetChatModels().FirstOrDefault();
         aiChatQuery.NotifyProgress += SemanticKernelQueryNotifyProgress;
+    }
+
+    private void SetChatSettings()
+    {
+        _useSourceCodeSearch = Project.ChatUseSourceCodeSearch;
+        _useDocumentationSearch = Project.ChatUseDocumentationSearch;
+        _maxNumberOfAnswersBackFromSourceCodeSearch = Project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch;
+        _scoreShouldBeLowerThanThisInSourceCodeSearch = Project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch;
+        _maxNumberOfAnswersBackFromDocumentationSearch = Project.ChatMaxNumberOfAnswersBackFromDocumentationSearch;
+        _scoreShouldBeLowerThanThisInDocumentSearch = Project.ChatScoreShouldBeLowerThanThisInDocumentSearch;
     }
 
     private void SemanticKernelQueryNotifyProgress(ProgressNotification obj)

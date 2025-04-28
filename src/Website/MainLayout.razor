@@ -115,7 +115,7 @@
                                         <MudNavMenu>
                                             @if (IsProjectSelected)
                                             {
-                                                <SidebarMenuItem Icon="@Icons.Material.Filled.Settings" OnClick="() => ShowProjectSettings(Project, false)" Caption="Project Settings" DrawerOpen="_drawerOpen" />
+                                                <SidebarMenuItem Icon="@Icons.Material.Filled.Settings" OnClick="() => ShowProjectSettings(Project)" Caption="Project Settings" DrawerOpen="_drawerOpen" />
                                             }
                                             <SidebarMenuItem Icon="@Icons.Material.Filled.ChromeReaderMode" OnClick="DrawerToggle" Caption="Collapse Menu" AlternativeCaptionForTooltip="Expand Menu" DrawerOpen="_drawerOpen" />
                                         </MudNavMenu>

@@ -95,9 +95,7 @@ namespace Shared.Chunking.CSharp
         private List<CSharpChunk> ProcessTypeDeclaration<T>(SyntaxNode root, CSharpKind kind) where T : TypeDeclarationSyntax
         {
             List<CSharpChunk> result = [];
-            T[] nodes = root.DescendantNodes()
-                .OfType<T>()
-                .ToArray();
+            var nodes = root.DescendantNodes().OfType<T>().ToArray();
             foreach (T node in nodes)
             {
                 if (!IsPublic(node.Modifiers))
@@ -284,7 +282,7 @@ namespace Shared.Chunking.CSharp
 
         private static List<string> GetMethodDependencies(MethodDeclarationSyntax method)
         {
-            List<string> result = new List<string>();
+            List<string> result = [];
             result.AddRange(method.ParameterList.Parameters.Select(p => p.Type?.ToString() ?? "unknown"));
             return result;
         }

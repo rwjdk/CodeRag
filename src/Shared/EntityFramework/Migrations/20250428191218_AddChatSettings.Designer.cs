@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shared.EntityFramework;
 
@@ -11,9 +12,11 @@ using Shared.EntityFramework;
 namespace CodeRag.Shared.Migrations
 {
     [DbContext(typeof(SqlDbContext))]
-    partial class SqlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250428191218_AddChatSettings")]
+    partial class AddChatSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,45 +73,9 @@ namespace CodeRag.Shared.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("PrReviewMaxNumberOfAnswersBackFromDocumentationSearch")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PrReviewMaxNumberOfAnswersBackFromSourceCodeSearch")
-                        .HasColumnType("int");
-
-                    b.Property<double>("PrReviewScoreShouldBeLowerThanThisInDocumentSearch")
-                        .HasColumnType("float");
-
-                    b.Property<double>("PrReviewScoreShouldBeLowerThanThisInSourceCodeSearch")
-                        .HasColumnType("float");
-
-                    b.Property<bool>("PrReviewUseDocumentationSearch")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("PrReviewUseSourceCodeSearch")
-                        .HasColumnType("bit");
-
                     b.Property<string>("PullRequestReviewInstructions")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("XmlSummariesMaxNumberOfAnswersBackFromDocumentationSearch")
-                        .HasColumnType("int");
-
-                    b.Property<int>("XmlSummariesMaxNumberOfAnswersBackFromSourceCodeSearch")
-                        .HasColumnType("int");
-
-                    b.Property<double>("XmlSummariesScoreShouldBeLowerThanThisInDocumentSearch")
-                        .HasColumnType("float");
-
-                    b.Property<double>("XmlSummariesScoreShouldBeLowerThanThisInSourceCodeSearch")
-                        .HasColumnType("float");
-
-                    b.Property<bool>("XmlSummariesUseDocumentationSearch")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("XmlSummariesUseSourceCodeSearch")
-                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 

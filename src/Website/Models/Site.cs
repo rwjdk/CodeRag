@@ -13,11 +13,11 @@ public class Site(IDialogService dialogService)
     public bool DemoMode => false;
 #endif
 
-    public async Task<DialogResult> ShowProjectDialogAsync(ProjectEntity? project, bool addMode)
+    public async Task<DialogResult> ShowProjectDialogAsync(ProjectEntity project)
     {
         var parameters = new DialogParameters<ProjectDialog>
         {
-            { x => x.Project, project ?? ProjectEntity.Empty() },
+            { x => x.Project, project },
         };
 
         DialogOptions dialogOptions = new()

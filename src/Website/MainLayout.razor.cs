@@ -1,10 +1,10 @@
 ﻿using Blazored.LocalStorage;
 using BlazorUtilities;
-using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
 using Website.Models;
+using DialogResult = Website.Dialogs.DialogResult;
 
 namespace Website;
 
@@ -20,7 +20,6 @@ public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService lo
     private ProjectQuery? _projectQuery;
     private bool _initialized;
     private bool LoggedIn { get; set; }
-
 
     protected override void OnInitialized()
     {
@@ -76,13 +75,11 @@ public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService lo
         }
 
         StateHasChanged();
-
-        //todo - make pages update on project change
     }
 
     internal async Task NewProject()
     {
-        await ShowProjectSettings(null, true);
+        await ShowProjectSettings(ProjectEntity.Empty());
     }
 
     private async Task SwitchMode()
@@ -91,11 +88,18 @@ public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService lo
         await localStorage.SetItemAsync(Constants.LocalStorageKeys.DarkMode, _darkMode);
     }
 
-    private async Task ShowProjectSettings(ProjectEntity? project, bool addMode)
+    private async Task ShowProjectSettings(ProjectEntity project)
     {
-        await Site.ShowProjectDialogAsync(project, addMode);
-        await RefreshProjects();
-        //todo - if new project select it
+        DialogResult result = await Site.ShowProjectDialogAsync(project);
+        if (result == DialogResult.Ok)
+        {
+            await RefreshProjects();
+            if (project.AddMode)
+            {
+                project.AddMode = false;
+                await SelectProject(project);
+            }
+        }
     }
 
     private async Task Login()

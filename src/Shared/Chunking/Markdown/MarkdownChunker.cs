@@ -22,13 +22,9 @@ namespace Shared.Chunking.Markdown
                 }
 
                 if (IgnoreMarkdownLine(linesToIgnorePatterns, line))
-
-
-                    if ((linesToIgnorePatterns?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? []).Any(x => !string.IsNullOrWhiteSpace(x) && Regex.IsMatch(line, x, RegexOptions.IgnoreCase)))
-                    {
-                        //todo - this have not been tested in a great deal
-                        continue;
-                    }
+                {
+                    continue;
+                }
 
                 switch (level)
                 {

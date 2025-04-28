@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using System.Text.Json;
 using JetBrains.Annotations;
+using Microsoft.SemanticKernel;
+using Shared.EntityFramework.DbModels;
 using Shared.Models;
 
 namespace Shared.Ai.Queries;
@@ -8,9 +10,20 @@ namespace Shared.Ai.Queries;
 [UsedImplicitly]
 public class AiPullRequestReviewQuery(AiGenericQuery aiGenericQuery) : IScopedService
 {
-    public async Task<Review> GetGithubPullRequestReview(AiChatModel chatModel, string prDiffContent, string instructions)
+    public async Task<Review> GetGithubPullRequestReview(ProjectEntity project, AiChatModel chatModel, string prDiffContent, string instructions)
     {
-        var agent = aiGenericQuery.GetAgent<Review>(chatModel, instructions, aiGenericQuery.GetKernel(chatModel));
+        Kernel kernel = aiGenericQuery.GetKernel(chatModel);
+        if (project.ChatUseSourceCodeSearch)
+        {
+            aiGenericQuery.ImportCodeSearchPlugin(project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch, project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch, project, aiGenericQuery.GetTextEmbeddingGenerationService(kernel), kernel);
+        }
+
+        if (project.ChatUseDocumentationSearch)
+        {
+            aiGenericQuery.ImportDocumentationSearchPlugin(project.ChatMaxNumberOfAnswersBackFromDocumentationSearch, project.ChatScoreShouldBeLowerThanThisInDocumentSearch, project, aiGenericQuery.GetTextEmbeddingGenerationService(kernel), kernel);
+        }
+
+        var agent = aiGenericQuery.GetAgent<Review>(chatModel, instructions, kernel);
 
         StringBuilder message = new();
         message.AppendLine("Please make a Code Review with the following information <pr_diff>");

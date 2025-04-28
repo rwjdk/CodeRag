@@ -123,19 +123,19 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery ve
         return kernel;
     }
 
-    public async Task<T> GetStructuredOutputResponse<T>(ProjectEntity project, AiChatModel chatModel, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch)
+    public async Task<T> GetStructuredOutputResponse<T>(ProjectEntity project, AiChatModel chatModel, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch, int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch)
     {
         Kernel kernel = GetKernel(chatModel);
         ITextEmbeddingGenerationService textEmbeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
 
         if (useSourceCodeSearch)
         {
-            ImportCodeSearchPlugin(25, 0.7, project, textEmbeddingGenerationService, kernel);
+            ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, textEmbeddingGenerationService, kernel);
         }
 
         if (useDocumentationSearch)
         {
-            ImportDocumentationSearchPlugin(25, 0.5, project, textEmbeddingGenerationService, kernel);
+            ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, textEmbeddingGenerationService, kernel);
         }
 
         ChatCompletionAgent agent = GetAgent<T>(chatModel, instructions, kernel);
