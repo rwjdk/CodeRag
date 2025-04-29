@@ -1,11 +1,22 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 
 namespace Shared.Chunking.Markdown
 {
+    /// <summary>
+    /// Chunker of Markdown
+    /// </summary>
     [UsedImplicitly]
     public class MarkdownChunker : IScopedService
     {
+        /// <summary>
+        /// Splits the content into markdown chunks based on the specified level
+        /// </summary>
+        /// <param name="content">The markdown content to split</param>
+        /// <param name="level">The heading level to use for chunking</param>
+        /// <param name="linesToIgnorePatterns">Patterns of lines to ignore during chunking</param>
+        /// <param name="ignoreIfLessThanThisAmountOfChars">Minimum character count to include a chunk</param>
+        /// <returns>An array of markdown chunks</returns>
         public MarkdownChunk[] GetChunks(string content, int level = 3, string? linesToIgnorePatterns = null, int? ignoreIfLessThanThisAmountOfChars = null)
         {
             List<MarkdownChunk> chunks = [];

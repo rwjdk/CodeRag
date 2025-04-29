@@ -80,6 +80,12 @@ public partial class ProjectDialog(ProjectCommand projectCommand, CSharpIngestio
 
             _sourceIdsPendingDeletion.Clear();
             await projectCommand.UpsertProjectAsync(Project);
+            Project.AddMode = false;
+            foreach (ProjectSourceEntity source in Project.Sources)
+            {
+                source.AddMode = false;
+            }
+
             Dialog.Close();
         }
     }

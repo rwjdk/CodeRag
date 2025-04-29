@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -11,11 +11,18 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Shared.Ai.Queries;
 
+/// <summary>
+/// Represents a query for AI chat operations
+/// </summary>
 [UsedImplicitly]
 public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
 {
     private readonly AiGenericQuery _aiGenericQuery;
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="aiGenericQuery">The Generic AI Query</param>
     public AiChatQuery(AiGenericQuery aiGenericQuery)
     {
         _aiGenericQuery = aiGenericQuery;
@@ -62,7 +69,7 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
 
         if (useSourceCodeSearch && !intent.IsMessageJustPleasantries)
         {
-            var codeSearchTool = _aiGenericQuery.ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, embeddingGenerationService, kernel);
+            SearchTool codeSearchTool = _aiGenericQuery.ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, embeddingGenerationService, kernel);
             input.Add(new ChatMessageContent(AuthorRole.User, "Relevant Code: " + await codeSearchTool.Search(messageToSend)));
         }
 
@@ -89,11 +96,18 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
         return response;
     }
 
+    /// <summary>
+    /// Retrieve a list of available AI chat models
+    /// </summary>
+    /// <returns>A list of AI chat models</returns>
     public List<AiChatModel> GetChatModels()
     {
         return _aiGenericQuery.GetChatModels();
     }
 
+    /// <summary>
+    /// Releases resources used by the object
+    /// </summary>
     public void Dispose()
     {
         _aiGenericQuery.NotifyProgress -= OnNotifyProgress;

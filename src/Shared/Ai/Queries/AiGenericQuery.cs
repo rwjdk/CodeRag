@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -13,6 +13,11 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Shared.Ai.Queries;
 
+/// <summary>
+/// Contains the basic operations interacting with the AI
+/// </summary>
+/// <param name="aiConfiguration">The AI Configuration holding the connection info</param>
+/// <param name="vectorStoreQuery">The VectorStoreQuery used to get the vector-store collection</param>
 [UsedImplicitly]
 public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService
 {
@@ -123,7 +128,7 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery ve
         return kernel;
     }
 
-    public async Task<T> GetStructuredOutputResponse<T>(ProjectEntity project, AiChatModel chatModel, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch, int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch)
+    internal async Task<T> GetStructuredOutputResponse<T>(ProjectEntity project, AiChatModel chatModel, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch, int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch)
     {
         Kernel kernel = GetKernel(chatModel);
         ITextEmbeddingGenerationService textEmbeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
@@ -149,7 +154,7 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery ve
         return JsonSerializer.Deserialize<T>(json)!;
     }
 
-    public List<AiChatModel> GetChatModels()
+    internal List<AiChatModel> GetChatModels()
     {
         return aiConfiguration.Models;
     }

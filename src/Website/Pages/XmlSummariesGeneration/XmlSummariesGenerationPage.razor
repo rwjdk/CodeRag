@@ -101,7 +101,7 @@
                                                 <RProgressIndicator />
                                             }
                                         </MudItem>
-                                        @if (!string.IsNullOrWhiteSpace(_selectedChunk.XmlSummary))
+                                        @if (_selectedChunk != null && !string.IsNullOrWhiteSpace(_selectedChunk.XmlSummary))
                                         {
                                             <MudItem Style="max-width: 30px">
                                                 <RIconButton Icon="@Icons.Material.Filled.Save" Color="Color.Primary" OnClick="() => Save(_selectedItem.Info.FullName, chunk)" />

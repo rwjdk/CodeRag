@@ -1,4 +1,4 @@
-﻿using JetBrains.Annotations;
+using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
@@ -7,11 +7,29 @@ using Shared.EntityFramework.DbModels;
 
 namespace Shared.VectorStore;
 
+/// <summary>
+/// Command for working with SQL Server as VectorStore
+/// </summary>
+/// <param name="aiConfiguration">The AI Configuration (For Embeddings)</param>
+/// <param name="sqlServerCommand">The General Command for SQL Server</param>
 [UsedImplicitly]
 public class VectorStoreCommand(Ai.AiConfiguration aiConfiguration, SqlServerCommand sqlServerCommand) : IScopedService
 {
     private readonly AzureOpenAITextEmbeddingGenerationService _embeddingGenerationService = new(aiConfiguration.EmbeddingModelDeploymentName, aiConfiguration.Endpoint, aiConfiguration.Key);
 
+    /// <summary>
+    /// Inserts or updates a vector entry in the collection for the given project and source
+    /// </summary>
+    /// <param name="projectId">Identifier of the project
+    /// </param>
+    /// <param name="source">Source entity of the project
+    /// </param>
+    /// <param name="collection">Collection of vector records
+    /// </param>
+    /// <param name="entry">Vector entry to upsert
+    /// </param>
+    /// <returns>Task representing the asynchronous operation
+    /// </returns>
     public async Task Upsert(Guid projectId, ProjectSourceEntity source, IVectorStoreRecordCollection<Guid, VectorEntity> collection, VectorEntity entry)
     {
         try
@@ -65,6 +83,7 @@ public class VectorStoreCommand(Ai.AiConfiguration aiConfiguration, SqlServerCom
         }
     }
 
+    /// <summary>Deletes source data identified by the source identifier</summary>\n/// <param name="sourceId">The unique identifier of the source to delete</param>\n/// <returns>A task representing the asynchronous delete operation</returns>
     public async Task DeleteSourceDataAsync(Guid sourceId)
     {
         var context = await sqlServerCommand.CreateDbContextAsync();
@@ -72,6 +91,11 @@ public class VectorStoreCommand(Ai.AiConfiguration aiConfiguration, SqlServerCom
         await context.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Deletes data associated with the specified project identifier
+    /// </summary>
+    /// <param name="projectId">The unique identifier of the project to delete data for</param>
+    /// <returns>A task representing the asynchronous operation</returns>
     public async Task DeleteProjectData(Guid projectId)
     {
         var context = await sqlServerCommand.CreateDbContextAsync();

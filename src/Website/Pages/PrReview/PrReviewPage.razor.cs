@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Components;
 using Octokit;
 using Shared.Ai;
 using Shared.Ai.Queries;
+using Shared.Ai.StructuredOutputModels;
 using Shared.EntityFramework.DbModels;
 using Shared.GitHub;
-using Shared.Models;
 
 namespace Website.Pages.PrReview;
 

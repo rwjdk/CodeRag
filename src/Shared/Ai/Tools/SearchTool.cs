@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -8,8 +8,13 @@ using Shared.VectorStore;
 
 namespace Shared.Ai.Tools;
 
-public class SearchTool(VectorStoreDataType dataType, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, VectorEntity> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
+internal class SearchTool(VectorStoreDataType dataType, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, VectorEntity> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
+    /// <summary>
+    /// Performs a search using the given query string
+    /// </summary>
+    /// <param name="searchQuery">The query string to search for</param>
+    /// <returns>An array of search result strings</returns>
     [UsedImplicitly]
     [KernelFunction]
     public async Task<string[]> Search(string searchQuery)

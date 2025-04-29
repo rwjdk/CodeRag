@@ -6,6 +6,15 @@
 		<Nullable>enable</Nullable>
 		<NoWarn>SKEXP0001,SKEXP0050,SKEXP0010,SKEXP0020,SKEXP0110,SKEXP0070,SKEXP0110</NoWarn>
 		<NoError>SKEXP0001,SKEXP0050,SKEXP0010,SKEXP0020,SKEXP0110,SKEXP0070,SKEXP0110</NoError>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -23,6 +32,10 @@
 		<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.47.0" />
 
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.4" />		<PackageReference Include="Octokit" Version="14.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Models\" />
 	</ItemGroup>
 
 </Project>

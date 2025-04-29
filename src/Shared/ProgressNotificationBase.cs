@@ -1,25 +1,32 @@
-﻿using Microsoft.Extensions.VectorData;
-using Shared.EntityFramework.DbModels;
-
 namespace Shared;
 
+/// <summary>
+/// Notification System
+/// </summary>
 public class ProgressNotificationBase
 {
+    /// <summary>
+    /// Notify Progress
+    /// </summary>
     public event Action<ProgressNotification>? NotifyProgress;
 
+    /// <summary>
+    /// Invoke of Notify Progress
+    /// </summary>
+    /// <param name="message">Message</param>
+    /// <param name="current">Current Count of Progress</param>
+    /// <param name="total">Total count of progress</param>
     protected void OnNotifyProgress(string message, int current = 0, int total = 0)
     {
         NotifyProgress?.Invoke(new ProgressNotification(DateTimeOffset.UtcNow, message, current, total));
     }
 
+    /// <summary>
+    /// Handles progress notifications
+    /// </summary>
+    /// <param name="notification">The progress notification data</param>
     public void OnNotifyProgress(ProgressNotification notification)
     {
         NotifyProgress?.Invoke(notification);
     }
-}
-
-public record ProgressNotification(DateTimeOffset Timestamp, string Message, int Current = 0, int Total = 0)
-{
-    public List<VectorSearchResult<VectorEntity>>? SearchResults { get; init; }
-    public bool HasNoDetails => SearchResults?.Count is null or 0;
 }

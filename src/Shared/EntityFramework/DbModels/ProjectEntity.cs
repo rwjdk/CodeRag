@@ -1,78 +1,166 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using Shared.Prompting;
 
 namespace Shared.EntityFramework.DbModels;
 
+/// <summary>
+/// Represents a project with its configuration and instructions for chat, pull request review, and XML summaries
+/// </summary>
 [Table("Projects")]
 public class ProjectEntity
 {
+    /// <summary>
+    /// ID of the Project
+    /// </summary>
     [Key]
     public Guid Id { get; private set; } = Guid.NewGuid();
 
+    /// <summary>
+    /// Name of the Project
+    /// </summary>
     [MaxLength(100)]
     public string? Name { get; set; }
 
+    /// <summary>
+    /// Description of the Project
+    /// </summary>
     [MaxLength(4000)]
     public string? Description { get; set; }
 
+    /// <summary>
+    /// The sources of the Project
+    /// </summary>
     public required ICollection<ProjectSourceEntity> Sources { get; init; }
 
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
+    /// <summary>
+    /// The Chat-instructions for the AI
+    /// </summary>
     public required string ChatInstructions { get; set; }
 
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
+    /// <summary>
+    /// The Pull-Request-instructions for the AI
+    /// </summary>
     public required string PullRequestReviewInstructions { get; set; }
 
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
+    /// <summary>
+    /// The XML Summary Instructions of the AI
+    /// </summary>
     public required string CSharpXmlSummaryInstructions { get; set; }
 
+    /// <summary>
+    /// If chat should use the Code Search Tool
+    /// </summary>
     public bool ChatUseSourceCodeSearch { get; set; }
 
+    /// <summary>
+    /// If chat should use the Documentation Search Tool
+    /// </summary>
     public bool ChatUseDocumentationSearch { get; set; }
 
+    /// <summary>
+    /// How many max results from Code should be used during Chat
+    /// </summary>
     public int ChatMaxNumberOfAnswersBackFromSourceCodeSearch { get; set; }
 
+    /// <summary>
+    /// How low (lower = more exact) should results from Code be to be included (0 to 1) during chat
+    /// </summary>
     public double ChatScoreShouldBeLowerThanThisInSourceCodeSearch { get; set; }
 
+    /// <summary>
+    /// How many max results from Documentation should be used during Chat
+    /// </summary>
     public int ChatMaxNumberOfAnswersBackFromDocumentationSearch { get; set; }
 
+    /// <summary>
+    /// How low (lower = more exact) should results from Documentation be to be included (0 to 1) during chat
+    /// </summary>
     public double ChatScoreShouldBeLowerThanThisInDocumentSearch { get; set; }
 
+    /// <summary>
+    /// If XML Summary Generation should use the Code Search Tool
+    /// </summary>
     public bool XmlSummariesUseSourceCodeSearch { get; set; }
 
+    /// <summary>
+    /// If XML Summary Generation should use the Documentation Search Tool
+    /// </summary>
     public bool XmlSummariesUseDocumentationSearch { get; set; }
 
+    /// <summary>
+    /// How many max results from Code should be used during XML Summary Generation
+    /// </summary>
     public int XmlSummariesMaxNumberOfAnswersBackFromSourceCodeSearch { get; set; }
 
+    /// <summary>
+    /// How low (lower = more exact) should results from Code be to be included (0 to 1) during XML Summary Generation
+    /// </summary>
     public double XmlSummariesScoreShouldBeLowerThanThisInSourceCodeSearch { get; set; }
 
+    /// <summary>
+    /// How many max results from Documentation should be used during XML Summary Generation
+    /// </summary>
     public int XmlSummariesMaxNumberOfAnswersBackFromDocumentationSearch { get; set; }
 
+    /// <summary>
+    /// How low (lower = more exact) should results from Documentation be to be included (0 to 1) during XML Summary Generation
+    /// </summary>
     public double XmlSummariesScoreShouldBeLowerThanThisInDocumentSearch { get; set; }
 
+    /// <summary>
+    /// If PR Review should use the Code Search Tool
+    /// </summary>
     public bool PrReviewUseSourceCodeSearch { get; set; }
 
+    /// <summary>
+    /// If PR Review should use the Documentation Search Tool
+    /// </summary>
     public bool PrReviewUseDocumentationSearch { get; set; }
 
+    /// <summary>
+    /// How many max results from Code should be used during PR Review
+    /// </summary>
     public int PrReviewMaxNumberOfAnswersBackFromSourceCodeSearch { get; set; }
 
+    /// <summary>
+    /// How low (lower = more exact) should results from Code be to be included (0 to 1) during PR Review
+    /// </summary>
     public double PrReviewScoreShouldBeLowerThanThisInSourceCodeSearch { get; set; }
 
+    /// <summary>
+    /// How many max results from Documentation should be used during PR Review
+    /// </summary>
     public int PrReviewMaxNumberOfAnswersBackFromDocumentationSearch { get; set; }
 
+    /// <summary>
+    /// How low (lower = more exact) should results from Documentation be to be included (0 to 1) during PR Review
+    /// </summary>
     public double PrReviewScoreShouldBeLowerThanThisInDocumentSearch { get; set; }
 
+    /// <summary>
+    /// The GitHub name of the Owner of the Repo
+    /// </summary>
     [MaxLength(100)]
     public string? GitHubOwner { get; set; }
 
+    /// <summary>
+    /// The GitHub RepoName
+    /// </summary>
     [MaxLength(500)]
     public string? GitHubRepo { get; set; }
 
+    /// <summary>
+    /// If this Project is in add-mode (= not yet added)
+    /// </summary>
     [NotMapped]
     public bool AddMode { get; set; }
 
+    /// <summary>Creates an empty instance of ProjectEntity</summary>
     public static ProjectEntity Empty()
     {
         return new ProjectEntity
@@ -132,6 +220,10 @@ public class ProjectEntity
         };
     }
 
+    /// <summary>
+    /// Returns developer instructions formatted as a string
+    /// </summary>
+    /// <returns>A string containing formatted developer instructions</returns>
     public string GetFormattedDeveloperInstructions()
     {
         return ChatInstructions
