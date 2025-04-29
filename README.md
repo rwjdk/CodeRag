@@ -50,14 +50,14 @@ git clone https://github.com/rwjdk/CodeRag.git
 ### Configuration Variables
 Based on the above Resources you need the following configuration variables
 
-| Configuration Key | Sensitive Information |
-| --- | --- |
-| AiEndpoint | No |
-| AiKey | Yes |
-| AiEmbeddingDeploymentName | No |
-| AiModelDeployments | No |
-| SqlServerConnectionString | Yes |
-| GitHubToken (Optional) | Yes |
+| Configuration Key | Description | Sensitive Information |
+| --- | --- | --- |
+| AiEndpoint | Your Azure OpenAI Endpoint | No |
+| AiKey | Your Azure OpenAI Service Key | Yes |
+| AiEmbeddingDeploymentName | Your name of you EmbeddingModel deployed in Azure OpenAI | No |
+| AiModelDeployments | One or more ChatModelDeployments (see below) | No |
+| SqlServerConnectionString | Your Azure SQL ConnectionString | Yes |
+| GitHubToken (Optional) | Your optional GitHub Token that allow interaction with the GitHub Repo | Yes |
 
 > Note: I tend to locally keep both sensitive and not sensitive in secrets.json to have them in single place, but feel free to move none-sensitive variables to appsettings.json instead
 
