@@ -23,6 +23,7 @@
                                     <MudGrid Style="align-items: center">
                                         <MudItem>
                                             <MudText Typo="Typo.h5">
+                                                <a href="/" style="color: var(--PrimaryContrastText)">
                                                 @if (LoggedIn)
                                                 {
                                                     @($"{Shared.Constants.AppName} Admin")
@@ -31,7 +32,7 @@
                                                 {
                                                     @($"Welcome to {Shared.Constants.AppName} - Your AI Expert for C# Code")
                                                 }
-                                                
+                                                </a>
                                             </MudText>
                                         </MudItem>
                                         <MudSpacer />
