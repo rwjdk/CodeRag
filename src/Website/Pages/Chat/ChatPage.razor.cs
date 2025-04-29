@@ -39,7 +39,7 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
     private double _scoreShouldBeLowerThanThisInDocumentSearch;
     private readonly List<ProgressNotification> _log = [];
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
         if (!EqualityComparer<ProjectEntity>.Default.Equals(Project, _previousProject))
         {
@@ -95,7 +95,7 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
             try
             {
                 await _chatInput.Clear();
-
+                _conversation.Add(new ChatMessageContent(AuthorRole.User, messageToSend));
                 ChatMessageContent? output = await aiChatQuery.GetAnswer(
                     _chatModel,
                     _conversation,

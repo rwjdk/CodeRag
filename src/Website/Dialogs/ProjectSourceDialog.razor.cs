@@ -2,12 +2,10 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Shared.EntityFramework.DbModels;
-using Shared.Projects;
-using Website.Models;
 
 namespace Website.Dialogs;
 
-public partial class ProjectSourceDialog(ProjectCommand projectCommand)
+public partial class ProjectSourceDialog()
 {
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }
@@ -21,7 +19,7 @@ public partial class ProjectSourceDialog(ProjectCommand projectCommand)
     [Parameter, EditorRequired]
     public required ProjectSourceEntity ProjectSource { get; set; }
 
-    private async Task Save()
+    private void Save()
     {
         List<string> missingValues = [];
         if (string.IsNullOrWhiteSpace(ProjectSource.Name))

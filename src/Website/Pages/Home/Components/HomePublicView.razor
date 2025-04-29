@@ -18,7 +18,7 @@
             </MudItem>
         </MudGrid>
 
-        <div style="height: calc(100vh - 250px); overflow-y: scroll; padding-left: 100px; padding-right: 100px; margin-top: 10px">
+        <div style="height: calc(100vh - 250px); overflow-y: scroll; padding-left: 300px; padding-right: 300px; margin-top: 10px">
             @foreach (var message in _conversation)
             {
                 <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == AuthorRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
@@ -46,7 +46,7 @@
                 </MudChat>
             }
         </div>
-        <div style="position: fixed; width: 100%; bottom: 20px; padding-left: 150px; padding-right: 150px">
+        <div style="position: fixed; width: 100%; bottom: 20px; padding-left: 300px; padding-right: 300px">
             <RTextField @ref="_chatInput"
                         @bind-Value="@_chatInputMessage"
                         AdornmentIcon="@Icons.Material.Filled.ArrowCircleUp"

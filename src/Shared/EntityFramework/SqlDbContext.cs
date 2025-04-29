@@ -6,14 +6,6 @@ namespace Shared.EntityFramework;
 
 public class SqlDbContext(DbContextOptions<SqlDbContext> options) : DbContext(options)
 {
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-#if DEBUG
-        optionsBuilder.EnableSensitiveDataLogging();
-        optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
-#endif
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<VectorEntity>()

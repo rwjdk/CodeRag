@@ -45,7 +45,6 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
         ITextEmbeddingGenerationService embeddingGenerationService = _aiGenericQuery.GetTextEmbeddingGenerationService(kernel);
 
         ChatMessageContent messageContent = new(AuthorRole.User, messageToSend);
-        previousConversation.Add(messageContent);
         input.Add(messageContent);
 
         if (useSourceCodeSearch && !intent.IsMessageJustPleasantries)

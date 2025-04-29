@@ -3,6 +3,7 @@ using BlazorUtilities.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
 using Shared.Ai;
 using Shared.Ai.Queries;
@@ -80,7 +81,7 @@ public partial class HomePublicView(AiChatQuery aiChatQuery)
             try
             {
                 await _chatInput.Clear();
-
+                _conversation.Add(new ChatMessageContent(AuthorRole.User, messageToSend));
                 ChatMessageContent? output = await aiChatQuery.GetAnswer(
                     _chatModel,
                     _conversation,

@@ -43,6 +43,21 @@ In order to clone and run this repo locally you will need the following Azure Re
 - An Azure SQL Database (for VectorStore)
 - An GitHub Account with a configured Fine Grained Token
 
+### Clone and Run Code
+
+1. Clone the Repo (in folder of your choice)
+```
+git clone https://github.com/rwjdk/CodeRag.git
+```
+
+2. Navigate to the repo
+```
+cd CodeRag
+```
+
+3. 
+
+
 ### Configuration Variables
 Based on the 3 above Resources you need the following configuration variables
 

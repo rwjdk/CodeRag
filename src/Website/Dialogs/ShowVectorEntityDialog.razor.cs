@@ -8,7 +8,7 @@ namespace Website.Dialogs;
 public partial class ShowVectorEntityDialog()
 {
     [CascadingParameter]
-    private BlazorUtils BlazorUtils { get; set; }
+    public required BlazorUtils BlazorUtils { get; set; }
 
     [CascadingParameter]
     private IMudDialogInstance? MudDialog { get; set; }

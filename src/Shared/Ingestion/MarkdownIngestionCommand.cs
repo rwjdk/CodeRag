@@ -3,14 +3,13 @@ using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Shared.Chunking.Markdown;
-using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 using Shared.VectorStore;
 
 namespace Shared.Ingestion;
 
 [UsedImplicitly]
-public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery vectorStoreQuery, VectorStoreCommand vectorStoreCommand, SqlServerCommand sqlServerCommand) : IngestionCommand(vectorStoreCommand), IScopedService
+public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery vectorStoreQuery, VectorStoreCommand vectorStoreCommand) : IngestionCommand(vectorStoreCommand), IScopedService
 {
     public override async Task IngestAsync(ProjectEntity project, ProjectSourceEntity source)
     {

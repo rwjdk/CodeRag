@@ -1,20 +1,25 @@
 ﻿using Blazored.LocalStorage;
 using BlazorUtilities;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
+using System.Diagnostics.CodeAnalysis;
 using Website.Models;
 using DialogResult = Website.Dialogs.DialogResult;
 
 namespace Website;
 
-public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService localStorage, IDialogService dialogService, IServiceProvider serviceProvider)
+public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService localStorage, IDialogService dialogService, IServiceProvider serviceProvider, NavigationManager navigationManager)
 {
     public BlazorUtils BlazorUtils { get; } = blazorUtils;
     private bool _drawerOpen;
     private bool _darkMode = true;
     private ProjectEntity? Project { get; set; }
+
+    [MemberNotNullWhen(true, nameof(Project))]
     private bool IsProjectSelected => Project != null;
+
     private Site Site { get; } = new(dialogService);
     private ProjectEntity[]? _projects;
     private ProjectQuery? _projectQuery;
@@ -114,6 +119,7 @@ public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService lo
         //NB: Logout is simulated in order to make it easier to demo
         await localStorage.SetItemAsync(Constants.LocalStorageKeys.IsLoggedIn, false);
         LoggedIn = false;
+        navigationManager.NavigateTo("/");
     }
 
     private async Task AdminExperience()

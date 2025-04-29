@@ -106,7 +106,7 @@
                                             <MudItem Style="max-width: 30px">
                                                 <RIconButton Icon="@Icons.Material.Filled.Save" Color="Color.Primary" OnClick="() => Save(_selectedItem.Info.FullName, chunk)" />
                                                 <br />
-                                                <RIconButton Icon="@Icons.Material.Filled.Clear" OnClick="() => _selectedChunk.XmlSummary = null" />
+                                                <RIconButton Icon="@Icons.Material.Filled.Clear" OnClick="() => _selectedChunk.XmlSummary = string.Empty" />
                                             </MudItem>
                                         }
                                     </MudGrid>
