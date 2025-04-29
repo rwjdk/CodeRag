@@ -94,7 +94,7 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
             {
                 await _chatInput.Clear();
                 _conversation.Add(new ChatMessageContent(AuthorRole.User, messageToSend));
-                ChatMessageContent? output = await aiChatQuery.GetAnswer(
+                ChatMessageContent? output = await aiChatQuery.GetAnswerAsync(
                     _chatModel,
                     _conversation,
                     messageToSend,

@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Embeddings;
+using Shared.Ai.StructuredOutputModels;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
@@ -21,8 +22,21 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
         aiGenericQuery.NotifyProgress += OnNotifyProgress;
     }
 
-
-    public async Task<ChatMessageContent?> GetAnswer(
+    /// <summary>
+    /// Get an Answer from the AI using upfront Code and Documentation Search if configured and allowing Function Calling
+    /// </summary>
+    /// <param name="chatModel">The Chat-model to use</param>
+    /// <param name="previousConversation">The previous conversation</param>
+    /// <param name="messageToSend">The new message to send</param>
+    /// <param name="useSourceCodeSearch">If Code Search is allowed</param>
+    /// <param name="useDocumentationSearch">If Documentation Search is allowed</param>
+    /// <param name="maxNumberOfAnswersBackFromSourceCodeSearch">Max number of answer back from Code Search Allowed</param>
+    /// <param name="scoreShouldBeLowerThanThisInSourceCodeSearch">How low (more accurate) the search-score should be before code result is included</param>
+    /// <param name="maxNumberOfAnswersBackFromDocumentationSearch">Max number of answer back from Documentation Search Allowed</param>
+    /// <param name="scoreShouldBeLowerThanThisInDocumentSearch">How low (more accurate) the search-score should be before documentation result is included</param>
+    /// <param name="project">The Project to answer questions for</param>
+    /// <returns>The new Answer</returns>
+    public async Task<ChatMessageContent?> GetAnswerAsync(
         AiChatModel chatModel,
         List<ChatMessageContent> previousConversation,
         string messageToSend,
@@ -36,7 +50,6 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
     {
         long timestamp = Stopwatch.GetTimestamp();
         Kernel kernel = _aiGenericQuery.GetKernel(chatModel);
-
 
         Intent intent = await _aiGenericQuery.GetStructuredOutputResponse<Intent>(project, chatModel, "You are an Agent that analyze the users message to find out if it is just pleasantries or a question", messageToSend, false, false, 0, 0, 0, 0);
 
@@ -84,11 +97,5 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
     public void Dispose()
     {
         _aiGenericQuery.NotifyProgress -= OnNotifyProgress;
-    }
-
-    [UsedImplicitly]
-    private class Intent
-    {
-        public bool IsMessageJustPleasantries { get; set; }
     }
 }
