@@ -4,7 +4,7 @@ namespace Shared.Prompting
 {
     public class Prompt
     {
-        internal string Instructions { get; }
+        private string Instructions { get; }
 
         public static Prompt Create(string instructions)
         {
@@ -16,9 +16,9 @@ namespace Shared.Prompting
             Instructions = instructions;
         }
 
-        internal List<PromptRule> Rules { get; set; } = new List<PromptRule>();
-        internal List<PromptExample> Examples { get; set; } = new List<PromptExample>();
-        internal List<PromptStep> Steps { get; set; } = new List<PromptStep>();
+        internal List<PromptRule> Rules { get; } = [];
+        internal List<PromptExample> Examples { get; } = [];
+        internal List<PromptStep> Steps { get; } = [];
 
         public override string ToString()
         {
@@ -63,34 +63,19 @@ namespace Shared.Prompting
         }
     }
 
-    internal class PromptRule
+    internal class PromptRule(string value)
     {
-        public string Value { get; }
-
-        public PromptRule(string value)
-        {
-            Value = value;
-        }
+        public string Value { get; } = value;
     }
 
-    internal class PromptStep
+    internal class PromptStep(string value)
     {
-        public string Value { get; }
-
-        public PromptStep(string value)
-        {
-            Value = value;
-        }
+        public string Value { get; } = value;
     }
 
-    internal class PromptExample
+    internal class PromptExample(string value)
     {
-        public string Value { get; }
-
-        public PromptExample(string value)
-        {
-            Value = value;
-        }
+        public string Value { get; } = value;
     }
 
     public static class PromptExtensions
@@ -106,14 +91,6 @@ namespace Shared.Prompting
             prompt.Steps.Add(new PromptStep(rule));
             return prompt;
         }
-
-        public static Prompt AddRuleThatIfYouDontKnowThenDontAnswer(this Prompt prompt, string? rule = null)
-        {
-            prompt.Rules.Add(!string.IsNullOrWhiteSpace(rule) ? new PromptRule(rule) : new PromptRule("Do not answer or make stuff up if your confidence is low or you do not have knowledge. Instead answer 'Sorry, I don't know this'"));
-
-            return prompt;
-        }
-
 
         public static Prompt AddExample(this Prompt prompt, string example)
         {

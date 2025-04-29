@@ -38,13 +38,20 @@ public partial class PrReviewPage(GitHubQuery gitHubQuery, GitHubCommand gitHubC
 
     protected override async Task OnInitializedAsync()
     {
-        if (string.IsNullOrWhiteSpace(Project.GitHubOwner) || string.IsNullOrWhiteSpace(Project.GitHubRepo))
+        try
         {
-            return;
-        }
+            if (!gitHubQuery.IsGitHubTokenProvided || string.IsNullOrWhiteSpace(Project.GitHubOwner) || string.IsNullOrWhiteSpace(Project.GitHubRepo))
+            {
+                return;
+            }
 
-        _gitHubClient = gitHubQuery.GetGitHubClient();
-        _pullRequests = await gitHubQuery.GetOpenPullRequestAsync(_gitHubClient, Project.GitHubOwner, Project.GitHubRepo);
+            _gitHubClient = gitHubQuery.GetGitHubClient();
+            _pullRequests = await gitHubQuery.GetOpenPullRequestAsync(_gitHubClient, Project.GitHubOwner, Project.GitHubRepo);
+        }
+        catch (Exception e)
+        {
+            BlazorUtils.ShowErrorWithDetails("Error loading Pull Request Review Page", e);
+        }
     }
 
     private async Task DoAiReview()

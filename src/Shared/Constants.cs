@@ -2,7 +2,6 @@
 
 public static class Constants
 {
-    public const string CompanyName = "Sensum365";
     public const string AppName = "CodeRag";
 
     public static class Tools
@@ -15,7 +14,7 @@ public static class Constants
     {
         public const string VectorSources = "vector_sources";
 
-        public class VectorColumns
+        public static class VectorColumns
         {
             public const string Vector = "Vector";
         }

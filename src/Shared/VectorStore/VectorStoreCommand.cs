@@ -1,5 +1,4 @@
-﻿using CodeRag.Shared.Migrations;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
@@ -66,14 +65,14 @@ public class VectorStoreCommand(Ai.AiConfiguration aiConfiguration, SqlServerCom
         }
     }
 
-    public async Task DeleteSourceDataAsync(Guid sourceId) //todo - test
+    public async Task DeleteSourceDataAsync(Guid sourceId)
     {
         var context = await sqlServerCommand.CreateDbContextAsync();
         context.Vectors.RemoveRange(context.Vectors.Where(x => x.SourceId == sourceId));
         await context.SaveChangesAsync();
     }
 
-    public async Task DeleteProjectData(Guid projectId) //todo - use
+    public async Task DeleteProjectData(Guid projectId)
     {
         var context = await sqlServerCommand.CreateDbContextAsync();
         context.Vectors.RemoveRange(context.Vectors.Where(x => x.ProjectId == projectId));

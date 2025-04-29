@@ -1,5 +1,4 @@
-﻿using System.Runtime.Serialization;
-using System.Text;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
 using Formatter = Microsoft.CodeAnalysis.Formatting.Formatter;
 

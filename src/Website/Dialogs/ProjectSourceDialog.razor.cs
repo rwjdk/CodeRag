@@ -5,7 +5,7 @@ using Shared.EntityFramework.DbModels;
 
 namespace Website.Dialogs;
 
-public partial class ProjectSourceDialog()
+public partial class ProjectSourceDialog
 {
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }

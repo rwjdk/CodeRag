@@ -17,7 +17,7 @@ public class ProjectEntity
     [MaxLength(4000)]
     public string? Description { get; set; }
 
-    public required ICollection<ProjectSourceEntity> Sources { get; set; }
+    public required ICollection<ProjectSourceEntity> Sources { get; init; }
 
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public required string ChatInstructions { get; set; }

@@ -87,7 +87,7 @@ public partial class ProjectDialog(ProjectCommand projectCommand, CSharpIngestio
     private async Task CreateNewSource(ProjectSourceKind kind)
     {
         ProjectSourceEntity newSource = ProjectSourceEntity.Empty(Project, kind);
-        DialogResult result = await Site.ShowProjectSourceDialogAsync(Project, newSource, kind);
+        DialogResult result = await Site.ShowProjectSourceDialogAsync(Project, newSource);
         if (result == DialogResult.Ok)
         {
             Project.Sources.Add(newSource);
@@ -166,5 +166,15 @@ public partial class ProjectDialog(ProjectCommand projectCommand, CSharpIngestio
         }
 
         return new MarkupString("Less than a minute ago");
+    }
+
+    private async Task Delete()
+    {
+        await BlazorUtils.PromptYesNoQuestion("Are you sure you wish to delete this project (THERE IS NO GOING BACK)?", async () =>
+        {
+            await vectorStoreCommand.DeleteProjectData(Project.Id);
+            await projectCommand.DeleteProjectAsync(Project);
+            Dialog.Close();
+        });
     }
 }

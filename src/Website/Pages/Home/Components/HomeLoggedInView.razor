@@ -1,5 +1,4 @@
 ﻿@using Shared.EntityFramework.DbModels
-@using Website.Models
 <div style="text-align: center">
     <h1>Admin for Project: @Project.Name</h1>
     <br />
@@ -35,7 +34,7 @@
     <br /><br />
     <MudGrid Justify="Justify.Center">
         <MudItem>
-            <div style="cursor: pointer" @onclick="()=> Site.ShowProjectDialogAsync(Project)">
+            <div style="cursor: pointer" @onclick="()=> ShowProjectDialogAsync(Project)">
                 <MudPaper Elevation="5" Style="padding: 8px" Width="300px" Height="120px">
                     <MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Large" />
                     <h2>Edit Project Settings and Sync Sources</h2>
@@ -43,7 +42,7 @@
             </div>
         </MudItem>
         <MudItem>
-            <div style="cursor: pointer" @onclick="()=> Site.ShowProjectDialogAsync(ProjectEntity.Empty())">
+            <div style="cursor: pointer" @onclick="()=> ShowProjectDialogAsync(ProjectEntity.Empty())">
                 <MudPaper Elevation="5" Style="padding: 8px" Width="300px" Height="120px">
                     <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Large" />
                     <h2>Create a brand<br /> New Project</h2>
@@ -53,11 +52,3 @@
     </MudGrid>
 
 </div>
-
-@code {
-    [CascadingParameter]
-    public required ProjectEntity Project { get; set; }
-
-    [CascadingParameter]
-    public required Site Site { get; set; }
-}

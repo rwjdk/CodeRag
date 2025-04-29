@@ -1,12 +1,10 @@
 ﻿using BlazorUtilities;
 using BlazorUtilities.Components;
-using CodeRag.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
-using Octokit;
 using Shared;
 using Shared.Ai;
 using Shared.Ai.Queries;

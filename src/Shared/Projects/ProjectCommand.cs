@@ -64,4 +64,9 @@ public class ProjectCommand(SqlServerCommand sqlServerCommand) : IScopedService
 
         await context.SaveChangesAsync();
     }
+
+    public async Task DeleteProjectAsync(ProjectEntity entity)
+    {
+        await sqlServerCommand.RemoveAsync(entity);
+    }
 }

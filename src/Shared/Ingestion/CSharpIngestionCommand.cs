@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Octokit;

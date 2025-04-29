@@ -21,7 +21,7 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
     [CascadingParameter]
     public required ProjectEntity Project { get; set; }
 
-    private ProjectEntity? _previousProject { get; set; }
+    private ProjectEntity? _previousProject;
     private ProjectSourceEntity[]? _sources;
     private ProjectSourceEntity? _selectedSource;
     private TreeItemData<File>? _tree;

@@ -26,12 +26,12 @@ public class Site(IDialogService dialogService)
             BackdropClick = false,
             CloseButton = true,
         };
-        var reference = await dialogService.ShowAsync<ProjectDialog>(project?.Name ?? "New Project", parameters, dialogOptions);
+        var reference = await dialogService.ShowAsync<ProjectDialog>(string.IsNullOrWhiteSpace(project.Name) ? "New Project" : project.Name, parameters, dialogOptions);
         var result = await reference.Result;
         return result is { Canceled: false } ? DialogResult.Ok : DialogResult.Cancel;
     }
 
-    public async Task<DialogResult> ShowProjectSourceDialogAsync(ProjectEntity project, ProjectSourceEntity projectSource, ProjectSourceKind newKind = ProjectSourceKind.CSharpCode)
+    public async Task<DialogResult> ShowProjectSourceDialogAsync(ProjectEntity project, ProjectSourceEntity projectSource)
     {
         var parameters = new DialogParameters<ProjectSourceDialog>
         {

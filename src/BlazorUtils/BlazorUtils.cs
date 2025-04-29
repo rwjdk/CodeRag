@@ -81,7 +81,11 @@ public class BlazorUtils(ISnackbar snackbar, IDialogService dialogService, CopyT
         {
             { "Message", message },
             { "Exception", e }
-        }, Severity.Error, options => { options.RequireInteraction = requireInteraction; });
+        }, Severity.Error, options =>
+        {
+            options.RequireInteraction = requireInteraction;
+            options.DuplicatesBehavior = SnackbarDuplicatesBehavior.Prevent;
+        });
     }
 
     public void ClearPopupMessages()

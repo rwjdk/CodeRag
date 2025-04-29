@@ -81,13 +81,14 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
         return _aiGenericQuery.GetChatModels();
     }
 
-    private class Intent
-    {
-        public bool IsMessageJustPleasantries { get; set; }
-    }
-
     public void Dispose()
     {
         _aiGenericQuery.NotifyProgress -= OnNotifyProgress;
+    }
+
+    [UsedImplicitly]
+    private class Intent
+    {
+        public bool IsMessageJustPleasantries { get; set; }
     }
 }

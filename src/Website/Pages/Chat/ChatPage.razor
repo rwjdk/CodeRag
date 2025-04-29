@@ -111,7 +111,7 @@
                                             </CellTemplate>
                                         </TemplateColumn>
                                         <PropertyColumn Property="x => Math.Round(Convert.ToDecimal(x.Score), 2).ToString(CultureInfo.InvariantCulture)"/>
-                                        <TemplateColumn Context="row">
+                                        <TemplateColumn Context="row" Title="">
                                             <CellTemplate>
                                                 <RIconButton Href="@row.Item.Record.GetUrl(Project)" Target="_blank" Icon="@Icons.Material.Filled.Launch" />
                                             </CellTemplate>

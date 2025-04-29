@@ -5,7 +5,7 @@ using Website.Models;
 
 namespace Website.Pages.Home;
 
-public partial class HomePage()
+public partial class HomePage
 {
     [CascadingParameter]
     public required bool LoggedIn { get; set; } //Simulated Login for demo-purpose

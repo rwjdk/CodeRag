@@ -5,7 +5,7 @@ using Shared.EntityFramework.DbModels;
 
 namespace Website.Dialogs;
 
-public partial class ShowVectorEntityDialog()
+public partial class ShowVectorEntityDialog
 {
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }

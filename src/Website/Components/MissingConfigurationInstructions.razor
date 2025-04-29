@@ -21,35 +21,25 @@
                     }
                 </CellTemplate>
             </TemplateColumn>
-            <TemplateColumn Title="Instructions">
-                <CellTemplate>
-                    @context.Item.Instructions
-                </CellTemplate>
-            </TemplateColumn>
-            <TemplateColumn>
-                <CellTemplate>
-                    <a href="@context.Item!.MoreInfoUrl" target="_blank">More Info</a>
-                </CellTemplate>
-            </TemplateColumn>
         </Columns>
     </MudDataGrid>
+    <br/>
+    <h2>Notes</h2>
+    <ul>
+        <li>Note: I tend to locally keep both sensitive and not sensitive in secrets.json to have them in single place, but feel free to move none-sensitive variables to appsettings.json instead</li>
+        <li>New to .NET User-secrets? Then see https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets</li>
+    </ul>
 
-    <h2>Sample appSettings.json</h2>
+    <h2>Sample secrets.json</h2>
 <pre>
 {
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "AllowedHosts": "*",
   "AiEndpoint": "https://myService.openai.azure.com/", //Your Azure OpenAI Endpoint
+  "AiKey": "1234567890abcdefg", //Your Azure OpenAI Service Key
   "AiEmbeddingDeploymentName": "text-embedding-3-small", //Your name of you EmbeddingModel deployed in Azure OpenAI
   "AiModelDeployments": [ //One or more ChatModelDeployments
     {
       "DeploymentName": "gpt-4.1-mini", //Name of Deployment
-      "Temperature": 0 //Temp to use (0 - 2; lower value is recommended)
+      "Temperature": 0 //Temp to use (Between 0 and 2; lower value is recommended)
     },
     {
       "DeploymentName": "gpt-4.1",
@@ -60,17 +50,10 @@
       "ReasoningEffortLevel": "high", //For Reasoning Models you can define low/medium/high for reasoning effort
       "TimeoutInSeconds": 300 //As reasoning models tend to 'think' longer a higher timeout is normally needed
     }
-  ]
-}
-</pre>
+  ],
 
-
-    <h2>Sample secrets.json</h2>
-<pre>
-{
-  "AiKey": "1234567890abcdefg", //Your Azure OpenAI Service Key
   "SqlServerConnectionString": "Server=tcp:myserver.database.windows.net,1433;Initial Catalog=myDb;Persist Security Info=False;User ID=myuser;Password=myPW;", //Your SQL Server ConnectionString
-  "GitHubToken": "github_pat_1234567890abcdefg" //Your GitHubToken
+  "GitHubToken": "github_pat_1234567890abcdefg" //Your GitHubToken  
 }
 </pre>
 </div>

@@ -1,8 +1,10 @@
-﻿using Octokit;
+﻿using JetBrains.Annotations;
+using Octokit;
 
 namespace Shared.GitHub;
 
-public class GitHubCommand() : IScopedService
+[UsedImplicitly]
+public class GitHubCommand : IScopedService
 {
     public async Task AddPullRequestCommentAsync(GitHubClient client, string owner, string repo, int pullRequestNumber, string commentAsMarkdown)
     {

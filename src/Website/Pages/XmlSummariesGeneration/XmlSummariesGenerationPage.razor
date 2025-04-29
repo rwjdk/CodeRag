@@ -21,7 +21,7 @@
     @if (_sources is { Length: > 1 })
     {
         <MudItem>
-            <RSelect T="ProjectSourceEntity" Label="Source" Items="_sources" Value="_selectedSource" ValueChanged="x => SwitchSource(x)" ToStringFunc="@(x => x!.Name ?? "???")" />
+            <RSelect T="ProjectSourceEntity" Label="Source" Items="_sources" Value="_selectedSource" ValueChanged="x => SwitchSource(x)" ToStringFunc="@(x => x!.Name)" />
         </MudItem>
     }
     <MudItem>

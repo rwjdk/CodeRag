@@ -7,8 +7,15 @@ namespace Shared.GitHub;
 [UsedImplicitly]
 public class GitHubQuery(GitHubConnection connection) : IScopedService
 {
+    public bool IsGitHubTokenProvided => !string.IsNullOrWhiteSpace(connection.GitHubToken);
+
     public GitHubClient GetGitHubClient()
     {
+        if (string.IsNullOrWhiteSpace(connection.GitHubToken))
+        {
+            throw new GithubIntegrationException("The optional GitHubToken configuration variable is not set so can't interact with GitHubApi");
+        }
+
         return new GitHubClient(new ProductHeaderValue(Constants.AppName))
         {
             Credentials = new Credentials(connection.GitHubToken)

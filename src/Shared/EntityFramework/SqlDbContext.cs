@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Shared.EntityFramework.DbModels;
 
 namespace Shared.EntityFramework;

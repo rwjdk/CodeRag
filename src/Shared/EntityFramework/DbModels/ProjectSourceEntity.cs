@@ -10,16 +10,16 @@ public class ProjectSourceEntity
     [Key]
     public Guid Id { get; private set; } = Guid.NewGuid();
 
-    public required Guid ProjectEntityId { get; set; }
+    public required Guid ProjectEntityId { get; init; }
 
-    public required ProjectEntity Project { get; set; }
+    public required ProjectEntity Project { get; init; }
 
     public DateTime? LastSync { get; set; }
 
     [MaxLength(100)]
     public required string Name { get; set; }
 
-    public required ProjectSourceKind Kind { get; set; }
+    public required ProjectSourceKind Kind { get; init; }
 
     public required ProjectSourceLocation Location { get; set; }
 
@@ -49,7 +49,7 @@ public class ProjectSourceEntity
     #endregion
 
     [NotMapped]
-    public bool AddMode { get; set; }
+    public bool AddMode { get; init; }
 
     public static ProjectSourceEntity Empty(ProjectEntity project, ProjectSourceKind kind)
     {

@@ -202,14 +202,14 @@ namespace Shared.Chunking.CSharp
             var enumTrivia = enumDecl.GetLeadingTrivia();
 
             enumDecl = enumDecl
-                .WithAttributeLists(new SyntaxList<AttributeListSyntax>())
+                .WithAttributeLists([])
                 .WithLeadingTrivia(enumTrivia);
 
             var newMembers = SyntaxFactory.SeparatedList(
                 enumDecl.Members.Select(m =>
                 {
                     var memberTrivia = m.GetLeadingTrivia();
-                    return m.WithAttributeLists(new SyntaxList<AttributeListSyntax>())
+                    return m.WithAttributeLists([])
                         .WithLeadingTrivia(memberTrivia);
                 })
             );

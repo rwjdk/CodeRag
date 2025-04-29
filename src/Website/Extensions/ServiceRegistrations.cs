@@ -14,46 +14,41 @@ public static class ServiceRegistrations
         const string embeddingDeploymentNameVariable = Constants.ConfigurationVariables.AiEmbeddingDeploymentName;
         const string modelDeploymentsVariable = Constants.ConfigurationVariables.AiModelDeployments;
 
-        string readMeUrl = "https://github.com/rwjdk/CodeRag/blob/main/README.md";
         string? endpoint = builder.Configuration[endpointVariable];
         if (string.IsNullOrWhiteSpace(endpoint))
         {
-            missingConfigurations.Add(new MissingConfiguration(endpointVariable, false, "Normally defined in appsettings.json", readMeUrl));
+            missingConfigurations.Add(new MissingConfiguration(endpointVariable, false));
         }
 
         string? key = builder.Configuration[keyVariable];
         if (string.IsNullOrWhiteSpace(key))
         {
-            missingConfigurations.Add(new MissingConfiguration(keyVariable, true, "Defined in secrets.json", readMeUrl));
+            missingConfigurations.Add(new MissingConfiguration(keyVariable, true));
         }
 
         string? embeddingDeploymentName = builder.Configuration[embeddingDeploymentNameVariable];
         if (string.IsNullOrWhiteSpace(embeddingDeploymentName))
         {
-            missingConfigurations.Add(new MissingConfiguration(embeddingDeploymentNameVariable, false, "Normally defined in appsettings.json", readMeUrl));
+            missingConfigurations.Add(new MissingConfiguration(embeddingDeploymentNameVariable, false));
         }
 
         var chatModels = builder.Configuration.GetSection(modelDeploymentsVariable).Get<List<AiChatModel>>();
         if (chatModels == null || chatModels.Count == 0)
         {
-            missingConfigurations.Add(new MissingConfiguration(modelDeploymentsVariable, false, "Normally defined in appsettings.json", readMeUrl));
+            missingConfigurations.Add(new MissingConfiguration(modelDeploymentsVariable, false));
         }
 
         string sqlServerConnectionStringVariable = Constants.ConfigurationVariables.SqlServerConnectionString;
         string? sqlServerConnectionString = builder.Configuration[sqlServerConnectionStringVariable];
         if (string.IsNullOrWhiteSpace(sqlServerConnectionString))
         {
-            missingConfigurations.Add(new MissingConfiguration(sqlServerConnectionStringVariable, true, "Defined in secrets.json", readMeUrl));
+            missingConfigurations.Add(new MissingConfiguration(sqlServerConnectionStringVariable, true));
         }
 
         string gitHubTokenVariable = Constants.ConfigurationVariables.GitHubToken;
         string? gitHubToken = builder.Configuration[gitHubTokenVariable];
-        if (string.IsNullOrWhiteSpace(gitHubToken))
-        {
-            missingConfigurations.Add(new MissingConfiguration(gitHubTokenVariable, true, "Defined in secrets.json", readMeUrl));
-        }
 
-        return missingConfigurations.Count > 0 ? null : new Configuration(endpoint!, key!, embeddingDeploymentName!, sqlServerConnectionString!, gitHubToken!, chatModels!);
+        return missingConfigurations.Count > 0 ? null : new Configuration(endpoint!, key!, embeddingDeploymentName!, sqlServerConnectionString!, gitHubToken ?? "", chatModels!);
     }
 
 
