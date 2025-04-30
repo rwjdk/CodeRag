@@ -58,25 +58,27 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
         long timestamp = Stopwatch.GetTimestamp();
         Kernel kernel = _aiGenericQuery.GetKernel(chatModel);
 
-        Intent intent = await _aiGenericQuery.GetStructuredOutputResponse<Intent>(project, chatModel, "You are an Agent that analyze the users message to find out if it is just pleasantries or a question", messageToSend, false, false, 0, 0, 0, 0);
+        Intent intent = await _aiGenericQuery.GetStructuredOutputResponse<Intent>(project, chatModel, $"You are an expert in the Code Repo '{project.Name}' that analyze the users message to find out if it is just pleasantries or a question and elaborate on it", messageToSend, false, false, 0, 0, 0, 0);
 
         List<ChatMessageContent> input = previousConversation.Select(x => new ChatMessageContent(x.Role, x.Content)).ToList();
 
+        input.Add(new ChatMessageContent(AuthorRole.Assistant, intent.ElaboratedMessage));
         ITextEmbeddingGenerationService embeddingGenerationService = _aiGenericQuery.GetTextEmbeddingGenerationService(kernel);
 
         ChatMessageContent messageContent = new(AuthorRole.User, messageToSend);
-        input.Add(messageContent);
 
         if (useSourceCodeSearch && !intent.IsMessageJustPleasantries)
         {
             SearchTool codeSearchTool = _aiGenericQuery.ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, embeddingGenerationService, kernel);
-            input.Add(new ChatMessageContent(AuthorRole.User, "Relevant Code: " + await codeSearchTool.Search(messageToSend)));
+            string[] result = await codeSearchTool.Search(intent.ElaboratedMessage);
+            input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Code: " + string.Join(", ", result)));
         }
 
         if (useDocumentationSearch && !intent.IsMessageJustPleasantries)
         {
             SearchTool docsSearch = _aiGenericQuery.ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
-            input.Add(new ChatMessageContent(AuthorRole.User, "Relevant Documentation: " + await docsSearch.Search(messageToSend)));
+            string[] result = await docsSearch.Search(intent.ElaboratedMessage);
+            input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Documentation: " + string.Join(",", result)));
         }
 
         ChatCompletionAgent answerAgent = _aiGenericQuery.GetAgent(chatModel, project.GetFormattedDeveloperInstructions(), kernel);

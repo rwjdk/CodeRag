@@ -67,7 +67,8 @@ pre {
         padding: 5px;
         border-bottom: 1px solid dimgray;
         border-left: 1px solid dimgray;
-        background-color: #2a2a2a;
+        background-color: var(--mud-palette-dark);
+        color: var(--mud-palette-dark-text)
     }
 
 .mud-chat-bubble table td {
@@ -80,8 +81,8 @@ pre {
         font-weight: bold;
     }
 
-.mud-chat-bubble table tr:nth-child(even) {
-        background-color: #2a2a2a;
+    .mud-chat-bubble table tr:nth-child(even) {
+        background-color: var(--mud-palette-table-striped);
     }
 
 
