@@ -9,12 +9,32 @@
     else
     {
         <MudGrid Spacing="1" Class="align-items-center">
+            <MudItem>
+                &nbsp;
+            </MudItem>
+            <MudSpacer />
+            <MudItem>
+                <h2 style="text-align: center">
+                    Currently asking questions about '@Project.Name'<br />
+                    <MudMenu>
+                        <ActivatorContent>
+                            <div style="font-size: 14px">Click here to switch to another Repo</div>
+                        </ActivatorContent>
+                        <ChildContent>
+                            @foreach (var project in _projects)
+                            {
+                                <MudMenuItem OnClick="()=> SelectProject(project)">@project.Name</MudMenuItem>
+                            }
+                        </ChildContent>
+                    </MudMenu>
+                </h2>
+            </MudItem>
             <MudSpacer />
             <MudItem>
                 <RButton StartIcon="@Icons.Material.Filled.DriveFileRenameOutline" IconColor="Color.Inherit" OnClick="NewChat">New Chat</RButton>
             </MudItem>
             <MudItem>
-                <RSelect T="AiChatModel" Items="aiChatQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px"/>
+                <RSelect T="AiChatModel" Items="aiChatQuery.GetChatModels()" @bind-Value="_chatModel" ToStringFunc="@(x => x?.DeploymentName ?? "???")" Style="width: 200px" />
             </MudItem>
         </MudGrid>
 

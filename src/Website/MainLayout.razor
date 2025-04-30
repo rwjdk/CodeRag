@@ -37,7 +37,7 @@
                                         </MudItem>
                                         <MudSpacer />
                                         <MudItem>
-                                            @if (_projects != null && Project != null)
+                                            @if (_projects != null && Project != null && LoggedIn)
                                             {
                                                 <MudGrid Justify="Justify.FlexEnd" Style="align-items: center" Spacing="1">
                                                     <MudItem>

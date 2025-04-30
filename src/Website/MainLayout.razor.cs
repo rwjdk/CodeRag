@@ -124,6 +124,6 @@ public partial class MainLayout(BlazorUtils blazorUtils, ILocalStorageService lo
 
     private async Task AdminExperience()
     {
-        await BlazorUtils.PromptYesNoQuestion("The Admin Experience for CodeRag is disabled in this online demo, but you can try it by cloning the Repo. Go to to GitHub Repo?", async () => { await BlazorUtils.OpenUrlInNewTab("https://www.github.com/rwjdk/CodeRag"); });
+        await BlazorUtils.PromptYesNoQuestion("The Admin Experience for CodeRag is disabled in this online demo, but you can try it by cloning the Repo. Go to the GitHub Repo?", async () => { await BlazorUtils.OpenUrlInNewTab("https://www.github.com/rwjdk/CodeRag"); });
     }
 }

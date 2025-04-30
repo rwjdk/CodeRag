@@ -1,4 +1,5 @@
-﻿using BlazorUtilities;
+﻿using Blazored.LocalStorage;
+using BlazorUtilities;
 using BlazorUtilities.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -8,10 +9,11 @@ using MudBlazor;
 using Shared.Ai;
 using Shared.Ai.Queries;
 using Shared.EntityFramework.DbModels;
+using Shared.Projects;
 
 namespace Website.Pages.Home.Components;
 
-public partial class HomePublicView(AiChatQuery aiChatQuery)
+public partial class HomePublicView(AiChatQuery aiChatQuery, ProjectQuery projectQuery, ILocalStorageService localStorage)
 {
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }
@@ -33,6 +35,7 @@ public partial class HomePublicView(AiChatQuery aiChatQuery)
     private double _scoreShouldBeLowerThanThisInSourceCodeSearch;
     private int _maxNumberOfAnswersBackFromDocumentationSearch;
     private double _scoreShouldBeLowerThanThisInDocumentSearch;
+    private ProjectEntity[] _projects;
 
     protected override void OnParametersSet()
     {
@@ -62,9 +65,17 @@ public partial class HomePublicView(AiChatQuery aiChatQuery)
         }
     }
 
-    protected override void OnInitialized()
+    private async Task SelectProject(ProjectEntity project)
+    {
+        Project = project;
+        await localStorage.SetItemAsync(Constants.LocalStorageKeys.Project, Project.Id);
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
     {
         _chatModel = aiChatQuery.GetChatModels().FirstOrDefault();
+        _projects = await projectQuery.GetProjectsAsync();
     }
 
     protected override bool ShouldRender()
