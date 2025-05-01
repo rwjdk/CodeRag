@@ -10,24 +10,25 @@
     {
         <MudGrid Spacing="1" Class="align-items-center">
             <MudItem>
-                &nbsp;
-            </MudItem>
-            <MudSpacer />
-            <MudItem>
-                <h2 style="text-align: center">
-                    Currently asking questions about '@Project.Name'<br />
-                    <MudMenu>
-                        <ActivatorContent>
-                            <div style="font-size: 14px">Click here to switch to another Repo</div>
-                        </ActivatorContent>
-                        <ChildContent>
-                            @foreach (var project in _projects)
-                            {
-                                <MudMenuItem OnClick="()=> SelectProject(project)">@project.Name</MudMenuItem>
-                            }
-                        </ChildContent>
-                    </MudMenu>
+                <h2 style="line-height: 20px">
+                    Currently asking questions about '@Project.Name'
+                    <div>
+                        <MudMenu>
+                            <ActivatorContent>
+                                <div style="font-size: 14px">[Click here to switch to another Repo]</div>
+                            </ActivatorContent>
+                            <ChildContent>
+                                @foreach (var project in _projects)
+                                {
+                                    <MudMenuItem OnClick="()=> SelectProject(project)">@project.Name</MudMenuItem>
+                                }
+                            </ChildContent>
+                        </MudMenu>
+                    </div>
                 </h2>
+            </MudItem>
+            <MudItem>
+
             </MudItem>
             <MudSpacer />
             <MudItem>
