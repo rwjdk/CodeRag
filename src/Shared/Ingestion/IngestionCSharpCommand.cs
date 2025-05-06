@@ -5,6 +5,8 @@ using Octokit;
 using Shared.Chunking.CSharp;
 using Shared.EntityFramework.DbModels;
 using Shared.GitHub;
+using Shared.RawFiles;
+using Shared.RawFiles.Models;
 using Shared.VectorStore;
 
 namespace Shared.Ingestion;
@@ -17,7 +19,12 @@ namespace Shared.Ingestion;
 /// <param name="vectorStoreQuery">The Query for looking up existing VectorStore Entries</param>
 /// <param name="gitHubQuery">GitHubQuery for when Project Source Location is GitHub and not local paths</param>
 [UsedImplicitly]
-public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand vectorStoreCommand, VectorStoreQuery vectorStoreQuery, GitHubQuery gitHubQuery) : IngestionCommand(vectorStoreCommand), IScopedService
+public class IngestionCSharpCommand(
+    CSharpChunker chunker,
+    VectorStoreCommand vectorStoreCommand,
+    VectorStoreQuery vectorStoreQuery,
+    RawFileGitHubQuery rawFileGitHubQuery,
+    RawFileLocalQuery rawFileLocalQuery) : IngestionCommand(vectorStoreCommand), IScopedService
 {
     /// <summary>
     /// Processes ingestion for the given project and source
@@ -32,24 +39,41 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
             throw new IngestionException($"Invalid Kind. Expected '{nameof(ProjectSourceKind.CSharpCode)}' but received {source.Kind}");
         }
 
-        List<CSharpChunk> codeEntities;
-
         if (string.IsNullOrWhiteSpace(source.Path))
         {
             throw new IngestionException("Source Path is not defined");
         }
 
+        RawFileQuery rawFileContentQuery;
         switch (source.Location)
         {
             case ProjectSourceLocation.GitHub:
-                codeEntities = await GetCodeEntitiesFromPublicGithubRepo(project, source);
+                rawFileContentQuery = rawFileGitHubQuery;
                 break;
             case ProjectSourceLocation.Local:
-                codeEntities = await GetCodeEntitiesFromLocalSourceCode(source);
+                rawFileContentQuery = rawFileLocalQuery;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(source.Location));
         }
+
+        rawFileContentQuery.NotifyProgress += OnNotifyProgress;
+
+        RawFile[] rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(project, source, "cs");
+        List<CSharpChunk> codeEntities = [];
+
+        foreach (RawFile rawFile in rawFiles)
+        {
+            List<CSharpChunk> entitiesForFile = chunker.GetCodeEntities(rawFile.Content);
+            foreach (CSharpChunk codeEntity in entitiesForFile)
+            {
+                codeEntity.LocalSourcePath = rawFile.PathWithoutRoot;
+            }
+
+            codeEntities.AddRange(entitiesForFile);
+        }
+
+        OnNotifyProgress($"{rawFiles.Length} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
 
         IVectorStoreRecordCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection();
 
@@ -76,7 +100,7 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         {
             counter++;
 
-            OnNotifyProgress("Step 2: Embedding Data if Content have changed", counter, codeEntities.Count);
+            OnNotifyProgress("Embedding Data", counter, codeEntities.Count);
 
             StringBuilder content = new();
             content.AppendLine($"// Namespace: {codeEntity.Namespace}");
@@ -134,108 +158,5 @@ public class CSharpIngestionCommand(CSharpChunker chunker, VectorStoreCommand ve
         }
 
         OnNotifyProgress("Done");
-    }
-
-    private async Task<List<CSharpChunk>> GetCodeEntitiesFromLocalSourceCode(ProjectSourceEntity source)
-    {
-        List<CSharpChunk> codeEntities = [];
-        if (string.IsNullOrWhiteSpace(source.Path))
-        {
-            throw new IngestionException("Path is not defined");
-        }
-
-        string[] sourceCodeFiles = Directory.GetFiles(source.Path, "*.cs", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-        OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
-        List<string> ignoredFiles = [];
-        int counter = 0;
-        foreach (string sourceCodeFilePath in sourceCodeFiles)
-        {
-            if (source.IgnoreFile(sourceCodeFilePath))
-            {
-                ignoredFiles.Add(sourceCodeFilePath);
-                continue;
-            }
-
-            counter++;
-            OnNotifyProgress("Step 1: Parsing Local files from Disk", counter, sourceCodeFiles.Length);
-            var sourcePath = sourceCodeFilePath.Replace(source.Path, string.Empty);
-            string code = await File.ReadAllTextAsync(sourceCodeFilePath);
-            List<CSharpChunk> entitiesForFile = chunker.GetCodeEntities(code);
-            foreach (CSharpChunk codeEntity in entitiesForFile)
-            {
-                codeEntity.LocalSourcePath = sourcePath;
-            }
-
-            codeEntities.AddRange(entitiesForFile);
-        }
-
-        if (ignoredFiles.Count > 0)
-        {
-            OnNotifyProgress($"{ignoredFiles.Count} Files Ignored");
-        }
-
-        OnNotifyProgress($"{sourceCodeFiles.Length - ignoredFiles.Count} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
-        return codeEntities;
-    }
-
-    private async Task<List<CSharpChunk>> GetCodeEntitiesFromPublicGithubRepo(ProjectEntity project, ProjectSourceEntity source)
-    {
-        List<CSharpChunk> codeEntities = [];
-        if (string.IsNullOrWhiteSpace(source.Path))
-        {
-            throw new IngestionException("Path is not defined");
-        }
-
-        if (string.IsNullOrWhiteSpace(project.GitHubOwner) || string.IsNullOrWhiteSpace(project.GitHubRepo))
-        {
-            throw new IngestionException("GitHub Owner and Repo is not defined");
-        }
-
-        var gitHubClient = gitHubQuery.GetGitHubClient();
-        var treeResponse = await gitHubQuery.GetTreeAsync(gitHubClient, project.GitHubOwner, project.GitHubRepo, source.Recursive);
-
-        string prefix = source.Path;
-        if (!prefix.EndsWith("/"))
-        {
-            prefix += "/";
-        }
-
-        var sourceCodeFiles = treeResponse.Tree.Where(x => x.Type == TreeType.Blob && x.Path.StartsWith(prefix) && x.Path.EndsWith(".cs")).ToArray();
-        OnNotifyProgress($"Found {sourceCodeFiles.Length} files");
-        List<string> ignoredFiles = [];
-        int counter = 0;
-        foreach (string sourceCodeFilePath in sourceCodeFiles.Select(x => x.Path))
-        {
-            counter++;
-            if (source.IgnoreFile(sourceCodeFilePath))
-            {
-                ignoredFiles.Add(sourceCodeFilePath);
-                continue;
-            }
-
-            OnNotifyProgress("Step 1: Downloading files from GitHub", counter, sourceCodeFiles.Length);
-            var sourcePath = sourceCodeFilePath.Replace(source.Path, string.Empty);
-            var code = await gitHubQuery.GetFileContentAsync(gitHubClient, project.GitHubOwner, project.GitHubRepo, sourceCodeFilePath);
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                continue;
-            }
-
-            List<CSharpChunk> entitiesForFile = chunker.GetCodeEntities(code);
-            foreach (CSharpChunk codeEntity in entitiesForFile)
-            {
-                codeEntity.LocalSourcePath = sourcePath;
-            }
-
-            codeEntities.AddRange(entitiesForFile);
-        }
-
-        if (ignoredFiles.Count > 0)
-        {
-            OnNotifyProgress($"{ignoredFiles.Count} Files Ignored");
-        }
-
-        OnNotifyProgress($"{sourceCodeFiles.Length - ignoredFiles.Count} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
-        return codeEntities;
     }
 }

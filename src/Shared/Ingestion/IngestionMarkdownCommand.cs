@@ -4,6 +4,8 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Shared.Chunking.Markdown;
 using Shared.EntityFramework.DbModels;
+using Shared.RawFiles;
+using Shared.RawFiles.Models;
 using Shared.VectorStore;
 
 namespace Shared.Ingestion;
@@ -15,15 +17,18 @@ namespace Shared.Ingestion;
 /// <param name="vectorStoreCommand">The Command for adding data to the Vector Store</param>
 /// <param name="vectorStoreQuery">The Query for looking up existing VectorStore Entries</param>
 [UsedImplicitly]
-public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery vectorStoreQuery, VectorStoreCommand vectorStoreCommand) : IngestionCommand(vectorStoreCommand), IScopedService
+public class IngestionMarkdownCommand(
+    MarkdownChunker chunker,
+    VectorStoreQuery vectorStoreQuery,
+    VectorStoreCommand vectorStoreCommand,
+    RawFileGitHubQuery gitHubRawFileContentQuery,
+    RawFileLocalQuery rawFileLocalQuery) : IngestionCommand(vectorStoreCommand), IScopedService
 {
     /// <summary>
     /// Processes ingestion for a project and its source
     /// </summary>
-    /// <param name="project">The project to ingest
-    /// </param>
-    /// <param name="source">The source of the project to ingest
-    /// </param>
+    /// <param name="project">The project to ingest</param>
+    /// <param name="source">The source of the project to ingest</param>
     public override async Task IngestAsync(ProjectEntity project, ProjectSourceEntity source)
     {
         if (source.Kind != ProjectSourceKind.Markdown)
@@ -31,38 +36,35 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
             throw new IngestionException($"Invalid Kind. Expected '{nameof(ProjectSourceKind.Markdown)}' but received {source.Kind}");
         }
 
-        if (string.IsNullOrWhiteSpace(source.Path))
+        RawFileQuery rawFileContentQuery;
+        switch (source.Location)
         {
-            throw new IngestionException("Source Path is not defined");
+            case ProjectSourceLocation.GitHub:
+                rawFileContentQuery = gitHubRawFileContentQuery;
+                break;
+            case ProjectSourceLocation.Local:
+                rawFileContentQuery = rawFileLocalQuery;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(source.Location));
         }
 
-        if (source.Location == ProjectSourceLocation.GitHub)
-        {
-            throw new NotSupportedException("Location 'GitHub' not yet supported for Markdown Ingestion");
-        }
+        rawFileContentQuery.NotifyProgress += OnNotifyProgress;
+
+        RawFile[] rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(project, source, "md");
 
         IVectorStoreRecordCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection();
 
         await collection.CreateCollectionIfNotExistsAsync();
 
-        string[] paths = Directory.GetFiles(source.Path, "*.md", source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         List<VectorEntity> entries = [];
 
         int counter = 0;
-        foreach (string path in paths)
+        foreach (var rawFile in rawFiles)
         {
             counter++;
-            var sourcePath = path.Replace(source.Path, string.Empty);
-            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
-            if (source.IgnoreFile(path))
-            {
-                continue;
-            }
-
-
-            OnNotifyProgress("Step 1: Parsing Local files from Disk", counter, paths.Length);
-            string content = await File.ReadAllTextAsync(path, Encoding.UTF8);
-
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(rawFile.Path);
+            var content = rawFile.Content;
             if (source.MarkdownIgnoreCommentedOutContent)
             {
                 //Remove Any Commented out parts
@@ -101,7 +103,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
                 {
                     Kind = "Markdown",
                     Content = $"{fileNameWithoutExtension} - {x.Name}{newLine}---{newLine}{x.Content}",
-                    SourcePath = sourcePath,
+                    SourcePath = rawFile.PathWithoutRoot,
                     Id = x.ChunkId,
                     Name = x.Name,
                 }));
@@ -112,7 +114,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
                 {
                     Kind = "Markdown",
                     Content = $"{fileNameWithoutExtension}{newLine}---{newLine}{content}",
-                    SourcePath = sourcePath,
+                    SourcePath = rawFile.PathWithoutRoot,
                     Name = fileNameWithoutExtension,
                 });
             }
@@ -125,7 +127,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
         foreach (var entry in entries)
         {
             counter++;
-            OnNotifyProgress("Step 2: Embedding Data if Content have changed", counter, entries.Count);
+            OnNotifyProgress("Embedding Data", counter, entries.Count);
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
             if (existing == null)
             {

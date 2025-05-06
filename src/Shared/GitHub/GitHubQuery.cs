@@ -1,6 +1,8 @@
 using System.Text;
 using JetBrains.Annotations;
+using Microsoft.CodeAnalysis;
 using Octokit;
+using Shared.EntityFramework.DbModels;
 
 namespace Shared.GitHub;
 
@@ -94,7 +96,7 @@ public class GitHubQuery(GitHubConnection connection) : IScopedService
     /// <param name="repo">The name of the repository</param>
     /// <param name="pullRequestNumber">The number of the pull request</param>
     /// <returns>The diff content of the pull request as a string</returns>
-    public async Task<string> GetPrDiff(GitHubClient client, string owner, string repo, int pullRequestNumber)
+    public async Task<string> GetPrDiffAsync(GitHubClient client, string owner, string repo, int pullRequestNumber)
     {
         var apiUrl = $"https://api.github.com/repos/{owner}/{repo}/pulls/{pullRequestNumber}";
         var diffUrl = $"{apiUrl}";

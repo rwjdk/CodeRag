@@ -4,14 +4,12 @@
         <RTextField Label="Name" @bind-Value="@ProjectSource.Name" />
         <RTextField Label="Path" @bind-Value="@ProjectSource.Path" />
         <RCheckBox Label="Recursive" @bind-Value="@ProjectSource.Recursive" />
+        <RSelectFromEnum Label="Location" T="ProjectSourceLocation" @bind-Value="@ProjectSource.Location" />
         <RTextField Label="Ignore Path Patterns" @bind-Value="ProjectSource.FileIgnorePatterns" />
         <RTextField Label="Root URL" @bind-Value="@ProjectSource.RootUrl" />
         
         @switch (ProjectSource.Kind)
         {
-            case ProjectSourceKind.CSharpCode:
-                <RSelectFromEnum Label="Location" T="ProjectSourceLocation" @bind-Value="@ProjectSource.Location" />
-                break;
             case ProjectSourceKind.Markdown:
                 <RCheckBox Label="Markdown: Ignore commented out Content" @bind-Value="@ProjectSource.MarkdownIgnoreCommentedOutContent" />
                 <RCheckBox Label="Markdown: Ignore images" @bind-Value="@ProjectSource.MarkdownIgnoreImages" />

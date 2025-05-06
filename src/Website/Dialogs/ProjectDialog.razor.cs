@@ -11,7 +11,7 @@ using Website.Models;
 
 namespace Website.Dialogs;
 
-public partial class ProjectDialog(ProjectCommand projectCommand, CSharpIngestionCommand cSharpIngestionCommand, MarkdownIngestionCommand markdownIngestionCommand, VectorStoreCommand vectorStoreCommand) : IDisposable
+public partial class ProjectDialog(ProjectCommand projectCommand, IngestionCSharpCommand ingestionCSharpCommand, IngestionMarkdownCommand ingestionMarkdownCommand, VectorStoreCommand vectorStoreCommand) : IDisposable
 {
     private int _current;
     private string? _lastMessage;
@@ -33,14 +33,14 @@ public partial class ProjectDialog(ProjectCommand projectCommand, CSharpIngestio
 
     protected override void OnInitialized()
     {
-        cSharpIngestionCommand.NotifyProgress += NotifyProgress;
-        markdownIngestionCommand.NotifyProgress += NotifyProgress;
+        ingestionCSharpCommand.NotifyProgress += NotifyProgress;
+        ingestionMarkdownCommand.NotifyProgress += NotifyProgress;
     }
 
     public void Dispose()
     {
-        cSharpIngestionCommand.NotifyProgress -= NotifyProgress;
-        markdownIngestionCommand.NotifyProgress -= NotifyProgress;
+        ingestionCSharpCommand.NotifyProgress -= NotifyProgress;
+        ingestionMarkdownCommand.NotifyProgress -= NotifyProgress;
     }
 
     private void NotifyProgress(ProgressNotification obj)
@@ -80,7 +80,6 @@ public partial class ProjectDialog(ProjectCommand projectCommand, CSharpIngestio
 
             _sourceIdsPendingDeletion.Clear();
             await projectCommand.UpsertProjectAsync(Project);
-            Project.AddMode = false;
             foreach (ProjectSourceEntity source in Project.Sources)
             {
                 source.AddMode = false;
@@ -133,10 +132,10 @@ public partial class ProjectDialog(ProjectCommand projectCommand, CSharpIngestio
             switch (source.Kind)
             {
                 case ProjectSourceKind.CSharpCode:
-                    await cSharpIngestionCommand.IngestAsync(Project, source);
+                    await ingestionCSharpCommand.IngestAsync(Project, source);
                     break;
                 case ProjectSourceKind.Markdown:
-                    await markdownIngestionCommand.IngestAsync(Project, source);
+                    await ingestionMarkdownCommand.IngestAsync(Project, source);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
