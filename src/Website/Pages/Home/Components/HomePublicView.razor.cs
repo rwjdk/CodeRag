@@ -3,6 +3,7 @@ using BlazorUtilities;
 using BlazorUtilities.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
@@ -13,7 +14,7 @@ using Shared.Projects;
 
 namespace Website.Pages.Home.Components;
 
-public partial class HomePublicView(AiChatQuery aiChatQuery, ProjectQuery projectQuery, ILocalStorageService localStorage)
+public partial class HomePublicView(AiChatQuery aiChatQuery, ProjectQuery projectQuery, ILocalStorageService localStorage, IJSRuntime jsRuntime)
 {
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }
@@ -93,6 +94,8 @@ public partial class HomePublicView(AiChatQuery aiChatQuery, ProjectQuery projec
             {
                 await _chatInput.Clear();
                 _conversation.Add(new ChatMessageContent(AuthorRole.User, messageToSend));
+                StateHasChanged();
+                await jsRuntime.InvokeVoidAsync("scrollToElementWhenReady", "bottom");
                 ChatMessageContent? output = await aiChatQuery.GetAnswerAsync(
                     _chatModel,
                     _conversation,

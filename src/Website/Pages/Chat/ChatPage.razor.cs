@@ -2,6 +2,7 @@
 using BlazorUtilities.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
@@ -13,7 +14,7 @@ using Website.Dialogs;
 
 namespace Website.Pages.Chat;
 
-public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogService) : IDisposable
+public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogService, IJSRuntime jsRuntime) : IDisposable
 {
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }
@@ -94,6 +95,8 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
             {
                 await _chatInput.Clear();
                 _conversation.Add(new ChatMessageContent(AuthorRole.User, messageToSend));
+                StateHasChanged();
+                await jsRuntime.InvokeVoidAsync("scrollToElementWhenReady", "bottom");
                 ChatMessageContent? output = await aiChatQuery.GetAnswerAsync(
                     _chatModel,
                     _conversation,
@@ -124,7 +127,6 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
     private void NewChat()
     {
         _conversation.Clear();
-        BlazorUtils.ShowSuccess("New Chat initiated", 3, Defaults.Classes.Position.TopCenter);
     }
 
     public void Dispose()
