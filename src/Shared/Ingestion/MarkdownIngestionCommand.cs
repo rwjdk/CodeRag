@@ -141,7 +141,7 @@ public class MarkdownIngestionCommand(MarkdownChunker chunker, VectorStoreQuery 
         if (idsToDelete.Count != 0)
         {
             OnNotifyProgress("Removing entities that are no longer in source");
-            await collection.DeleteBatchAsync(idsToDelete);
+            await collection.DeleteAsync(idsToDelete);
         }
 
         OnNotifyProgress("Done");

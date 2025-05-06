@@ -28,12 +28,12 @@ public class AiPullRequestReviewQuery(AiGenericQuery aiGenericQuery) : IScopedSe
         Kernel kernel = aiGenericQuery.GetKernel(chatModel);
         if (project.ChatUseSourceCodeSearch)
         {
-            aiGenericQuery.ImportCodeSearchPlugin(project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch, project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch, project, aiGenericQuery.GetTextEmbeddingGenerationService(kernel), kernel);
+            aiGenericQuery.ImportCodeSearchPlugin(project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch, project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch, project, kernel);
         }
 
         if (project.ChatUseDocumentationSearch)
         {
-            aiGenericQuery.ImportDocumentationSearchPlugin(project.ChatMaxNumberOfAnswersBackFromDocumentationSearch, project.ChatScoreShouldBeLowerThanThisInDocumentSearch, project, aiGenericQuery.GetTextEmbeddingGenerationService(kernel), kernel);
+            aiGenericQuery.ImportDocumentationSearchPlugin(project.ChatMaxNumberOfAnswersBackFromDocumentationSearch, project.ChatScoreShouldBeLowerThanThisInDocumentSearch, project, kernel);
         }
 
         ChatCompletionAgent agent = aiGenericQuery.GetAgent<Review>(chatModel, instructions, kernel);

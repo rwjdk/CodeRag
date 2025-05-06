@@ -10,13 +10,10 @@ namespace Shared.VectorStore;
 /// <summary>
 /// Command for working with SQL Server as VectorStore
 /// </summary>
-/// <param name="aiConfiguration">The AI Configuration (For Embeddings)</param>
 /// <param name="sqlServerCommand">The General Command for SQL Server</param>
 [UsedImplicitly]
-public class VectorStoreCommand(Ai.AiConfiguration aiConfiguration, SqlServerCommand sqlServerCommand) : IScopedService
+public class VectorStoreCommand(SqlServerCommand sqlServerCommand) : IScopedService
 {
-    private readonly AzureOpenAITextEmbeddingGenerationService _embeddingGenerationService = new(aiConfiguration.EmbeddingModelDeploymentName, aiConfiguration.Endpoint, aiConfiguration.Key);
-
     /// <summary>
     /// Inserts or updates a vector entry in the collection for the given project and source
     /// </summary>
@@ -50,8 +47,6 @@ public class VectorStoreCommand(Ai.AiConfiguration aiConfiguration, SqlServerCom
                     throw new ArgumentOutOfRangeException();
             }
 
-            ReadOnlyMemory<float> vector = await _embeddingGenerationService.GenerateEmbeddingAsync(entry.Content);
-            entry.VectorValue = vector.ToArray();
             entry.TimeOfIngestion = DateTime.UtcNow;
             await collection.UpsertAsync(entry);
         }
@@ -76,8 +71,6 @@ public class VectorStoreCommand(Ai.AiConfiguration aiConfiguration, SqlServerCom
             {
                 Console.WriteLine($"Rate Limited. Sleeping 10 sec ({e.Message})");
                 await Task.Delay(10000);
-                ReadOnlyMemory<float> vector = await _embeddingGenerationService.GenerateEmbeddingAsync(entry.Content);
-                entry.VectorValue = vector;
                 await collection.UpsertAsync(entry);
             }
         }

@@ -63,20 +63,19 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
         List<ChatMessageContent> input = previousConversation.Select(x => new ChatMessageContent(x.Role, x.Content)).ToList();
 
         input.Add(new ChatMessageContent(AuthorRole.Assistant, intent.ElaboratedMessage));
-        ITextEmbeddingGenerationService embeddingGenerationService = _aiGenericQuery.GetTextEmbeddingGenerationService(kernel);
 
         ChatMessageContent messageContent = new(AuthorRole.User, messageToSend);
 
         if (useSourceCodeSearch && !intent.IsMessageJustPleasantries)
         {
-            SearchTool codeSearchTool = _aiGenericQuery.ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, embeddingGenerationService, kernel);
+            SearchTool codeSearchTool = _aiGenericQuery.ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, kernel);
             string[] result = await codeSearchTool.Search(intent.ElaboratedMessage);
             input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Code: " + string.Join(", ", result)));
         }
 
         if (useDocumentationSearch && !intent.IsMessageJustPleasantries)
         {
-            SearchTool docsSearch = _aiGenericQuery.ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, embeddingGenerationService, kernel);
+            SearchTool docsSearch = _aiGenericQuery.ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, kernel);
             string[] result = await docsSearch.Search(intent.ElaboratedMessage);
             input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Documentation: " + string.Join(",", result)));
         }

@@ -4,7 +4,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Embeddings;
 using OpenAI.Chat;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
@@ -21,23 +20,18 @@ namespace Shared.Ai.Queries;
 [UsedImplicitly]
 public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService
 {
-    internal ITextEmbeddingGenerationService GetTextEmbeddingGenerationService(Kernel kernel)
-    {
-        return kernel.GetRequiredService<ITextEmbeddingGenerationService>();
-    }
-
-    internal SearchTool ImportDocumentationSearchPlugin(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
+    internal SearchTool ImportDocumentationSearchPlugin(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, Kernel kernel)
     {
         var collection = vectorStoreQuery.GetCollection();
-        var docsTool = new SearchTool(VectorStoreDataType.Documentation, project, embeddingGenerationService, collection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
+        var docsTool = new SearchTool(VectorStoreDataType.Documentation, project, collection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
         kernel.ImportPluginFromObject(docsTool, Constants.Tools.Markdown);
         return docsTool;
     }
 
-    internal SearchTool ImportCodeSearchPlugin(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, Kernel kernel)
+    internal SearchTool ImportCodeSearchPlugin(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, Kernel kernel)
     {
         var collection = vectorStoreQuery.GetCollection();
-        var codePlugin = new SearchTool(VectorStoreDataType.Code, project, embeddingGenerationService, collection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
+        var codePlugin = new SearchTool(VectorStoreDataType.Code, project, collection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
         kernel.ImportPluginFromObject(codePlugin, Constants.Tools.CSharp);
         return codePlugin;
     }
@@ -123,7 +117,6 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery ve
         {
             Timeout = TimeSpan.FromMinutes(chatModel.TimeoutInSeconds)
         });
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(aiConfiguration.EmbeddingModelDeploymentName, aiConfiguration.Endpoint, aiConfiguration.Key);
         Kernel kernel = kernelBuilder.Build();
         return kernel;
     }
@@ -131,16 +124,14 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery ve
     internal async Task<T> GetStructuredOutputResponse<T>(ProjectEntity project, AiChatModel chatModel, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch, int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch)
     {
         Kernel kernel = GetKernel(chatModel);
-        ITextEmbeddingGenerationService textEmbeddingGenerationService = GetTextEmbeddingGenerationService(kernel);
-
         if (useSourceCodeSearch)
         {
-            ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, textEmbeddingGenerationService, kernel);
+            ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, kernel);
         }
 
         if (useDocumentationSearch)
         {
-            ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, textEmbeddingGenerationService, kernel);
+            ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, kernel);
         }
 
         ChatCompletionAgent agent = GetAgent<T>(chatModel, instructions, kernel);

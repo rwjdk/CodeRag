@@ -2,13 +2,12 @@ using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Embeddings;
 using Shared.EntityFramework.DbModels;
 using Shared.VectorStore;
 
 namespace Shared.Ai.Tools;
 
-internal class SearchTool(VectorStoreDataType dataType, ProjectEntity project, ITextEmbeddingGenerationService embeddingGenerationService, IVectorStoreRecordCollection<Guid, VectorEntity> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
+internal class SearchTool(VectorStoreDataType dataType, ProjectEntity project, IVectorStoreRecordCollection<Guid, VectorEntity> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
     /// <summary>
     /// Performs a search using the given query string
@@ -22,21 +21,17 @@ internal class SearchTool(VectorStoreDataType dataType, ProjectEntity project, I
         List<string> searchResults = [];
         Guid projectId = project.Id;
         var dataTypeAsString = dataType.ToString();
-        ReadOnlyMemory<float> searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchQuery);
-        VectorSearchResults<VectorEntity> searchResult = await collection.VectorizedSearchAsync(searchVector, new VectorSearchOptions<VectorEntity>
+        List<VectorSearchResult<VectorEntity>> results = [];
+        VectorSearchOptions<VectorEntity> vectorSearchOptions = new()
         {
-            Top = numberOfResultsBack,
             Filter = entity => entity.ProjectId == projectId && entity.DataType == dataTypeAsString,
             IncludeVectors = false
-        });
-
-        List<VectorSearchResult<VectorEntity>> results = [];
-
-        await foreach (VectorSearchResult<VectorEntity> record in searchResult.Results.Where(x => x.Score < scoreShouldBeBelowThis))
+        };
+        await foreach (VectorSearchResult<VectorEntity> result in collection.SearchAsync(searchQuery, numberOfResultsBack, vectorSearchOptions).Where(x => x.Score < scoreShouldBeBelowThis))
         {
-            results.Add(record);
+            results.Add(result);
             StringBuilder sb = new();
-            sb.AppendLine($"Citation: {record.Record.GetUrl(project)} \n***\n" + record.Record.Content);
+            sb.AppendLine($"Citation: {result.Record.GetUrl(project)} \n***\n" + result.Record.Content);
             sb.AppendLine("***");
 
             searchResults.Add(sb.ToString());

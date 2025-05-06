@@ -24,42 +24,42 @@ public class VectorEntity
     /// <summary>
     /// ID of the Content
     /// </summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData]
     [MaxLength(4000)]
     public string? Id { get; init; }
 
     /// <summary>
     /// Kind of the Content
     /// </summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData]
     [MaxLength(4000)]
     public required string? Kind { get; init; }
 
     /// <summary>
     /// Name of the Content
     /// </summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData]
     [MaxLength(4000)]
     public string? Name { get; set; }
 
     /// <summary>
     /// Parent of the Content (if any)
     /// </summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData]
     [MaxLength(4000)]
     public string? Parent { get; init; }
 
     /// <summary>
     /// Kind of the Parent (if any)
     /// </summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData]
     [MaxLength(4000)]
     public string? ParentKind { get; init; }
 
     /// <summary>
     /// Namespace the content is in
     /// </summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData]
     [MaxLength(4000)]
     public string? Namespace { get; init; }
 
@@ -80,7 +80,7 @@ public class VectorEntity
     /// <summary>
     /// The SourcePath of the content
     /// </summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     [MaxLength(4000)]
     public required string SourcePath { get; init; }
 
@@ -93,28 +93,28 @@ public class VectorEntity
     /// <summary>
     /// The Type of the Content
     /// </summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData]
     [MaxLength(4000)]
     public string DataType { get; set; } = null!;
 
     /// <summary>
     /// The ID of the Project the Content belong to
     /// </summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData]
     public Guid ProjectId { get; set; }
 
     /// <summary>
     /// The ID of the Project Source the Content belong to
     /// </summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData]
     public Guid SourceId { get; set; }
 
     /// <summary>
     /// The Vector
     /// </summary>
-    [VectorStoreRecordVector(1536, DistanceFunction.CosineDistance, IndexKind.Flat, StoragePropertyName = Constants.VectorCollections.VectorColumns.Vector)]
+    [VectorStoreRecordVector(1536, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.Flat, StoragePropertyName = Constants.VectorCollections.VectorColumns.Vector)]
     [NotMapped]
-    public ReadOnlyMemory<float>? VectorValue { get; set; }
+    public string VectorValue => Content;
 
     /// <summary>
     /// Retrieves a key used for content comparison

@@ -35,7 +35,7 @@ public partial class HomePublicView(AiChatQuery aiChatQuery, ProjectQuery projec
     private double _scoreShouldBeLowerThanThisInSourceCodeSearch;
     private int _maxNumberOfAnswersBackFromDocumentationSearch;
     private double _scoreShouldBeLowerThanThisInDocumentSearch;
-    private ProjectEntity[] _projects;
+    private ProjectEntity[]? _projects;
 
     protected override void OnParametersSet()
     {
