@@ -8,21 +8,9 @@ using Shared.EntityFramework.DbModels;
 
 namespace Shared.Ai.Queries;
 
-/// <summary>
-/// Contains options to do AI Pull Requests
-/// </summary>
-/// <param name="aiGenericQuery">The Generic AI Query</param>
 [UsedImplicitly]
 public class AiPullRequestReviewQuery(AiGenericQuery aiGenericQuery) : IScopedService
 {
-    /// <summary>
-    /// Retrieves a review for a GitHub pull request
-    /// </summary>
-    /// <param name="project">The project entity related to the pull request</param>
-    /// <param name="chatModel">The AI chat model to use for generating the review</param>
-    /// <param name="prDiffContent">The content of the pull request diff</param>
-    /// <param name="instructions">Instructions to guide the review process</param>
-    /// <returns>A review object representing the pull request review</returns>
     public async Task<Review> GetGithubPullRequestReview(ProjectEntity project, AiChatModel chatModel, string prDiffContent, string instructions)
     {
         Kernel kernel = aiGenericQuery.GetKernel(chatModel);
@@ -54,10 +42,6 @@ public class AiPullRequestReviewQuery(AiGenericQuery aiGenericQuery) : IScopedSe
         throw new Exception("Unable to get Review");
     }
 
-    /// <summary>
-    /// Retrieve a list of available AI chat models
-    /// </summary>
-    /// <returns>A list of AI chat models</returns>
     public List<AiChatModel> GetChatModels()
     {
         return aiGenericQuery.GetChatModels();

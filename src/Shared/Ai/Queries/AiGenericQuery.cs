@@ -7,16 +7,11 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using OpenAI.Chat;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
-using Shared.VectorStore;
+using Shared.VectorStores;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Shared.Ai.Queries;
 
-/// <summary>
-/// Contains the basic operations interacting with the AI
-/// </summary>
-/// <param name="aiConfiguration">The AI Configuration holding the connection info</param>
-/// <param name="vectorStoreQuery">The VectorStoreQuery used to get the vector-store collection</param>
 [UsedImplicitly]
 public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService
 {

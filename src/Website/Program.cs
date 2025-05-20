@@ -1,6 +1,8 @@
+using Azure.AI.OpenAI;
 using Blazored.LocalStorage;
 using BlazorUtilities.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -12,6 +14,7 @@ using Shared.Ai.Queries;
 using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 using Shared.GitHub;
+using System.ClientModel;
 using Website;
 using Website.Extensions;
 using Website.Models;
@@ -31,12 +34,12 @@ if (configuration != null)
     builder.AutoRegisterServicesViaReflection(typeof(Program));
     builder.AutoRegisterServicesViaReflection(typeof(ProjectEntity));
 
-    builder.Services.AddAzureOpenAITextEmbeddingGeneration(configuration.EmbeddingDeploymentName, configuration.Endpoint, configuration.Key);
+    builder.Services.AddAzureOpenAIEmbeddingGenerator(configuration.EmbeddingDeploymentName, configuration.Endpoint, configuration.Key);
     builder.Services.AddSingleton(new AiConfiguration(configuration.Endpoint, configuration.Key, configuration.ChatModels));
     builder.Services.AddDbContextFactory<SqlDbContext>(options => { options.UseSqlServer(configuration.SqlServerConnectionString); });
-    builder.Services.AddScoped<IVectorStore, SqlServerVectorStore>(_ => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions
+    builder.Services.AddScoped<VectorStore, SqlServerVectorStore>(options => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions
     {
-        EmbeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(configuration.EmbeddingDeploymentName, configuration.Endpoint, configuration.Key).AsEmbeddingGenerator()
+        EmbeddingGenerator = options.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>()
     }));
     builder.Services.AddSingleton(new GitHubConnection(configuration.GitHubToken));
 }

@@ -2,18 +2,10 @@ using System.Text;
 
 namespace Shared.Prompting
 {
-    /// <summary>
-    /// PromptBuilder
-    /// </summary>
     public class Prompt
     {
         private string Instructions { get; }
 
-        /// <summary>
-        /// Creates a new Prompt instance using the given instructions
-        /// </summary>
-        /// <param name="instructions">The instructions to initialize the Prompt</param>
-        /// <returns>A new Prompt object</returns>
         public static Prompt Create(string instructions)
         {
             return new Prompt(instructions);
@@ -28,10 +20,6 @@ namespace Shared.Prompting
         internal List<PromptExample> Examples { get; } = [];
         internal List<PromptStep> Steps { get; } = [];
 
-        /// <summary>
-        /// Generate the Prompt as a string
-        /// </summary>
-        /// <returns>The Prompt</returns>
         public override string ToString()
         {
             var builder = new StringBuilder();

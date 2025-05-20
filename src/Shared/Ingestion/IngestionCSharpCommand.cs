@@ -1,23 +1,14 @@
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
-using Octokit;
 using Shared.Chunking.CSharp;
 using Shared.EntityFramework.DbModels;
-using Shared.GitHub;
 using Shared.RawFiles;
 using Shared.RawFiles.Models;
-using Shared.VectorStore;
+using Shared.VectorStores;
 
 namespace Shared.Ingestion;
 
-/// <summary>
-/// Command for Ingesting C# into a VectorStore
-/// </summary>
-/// <param name="chunker">The C# Chunker</param>
-/// <param name="vectorStoreCommand">The Command for adding data to the Vector Store</param>
-/// <param name="vectorStoreQuery">The Query for looking up existing VectorStore Entries</param>
-/// <param name="gitHubQuery">GitHubQuery for when Project Source Location is GitHub and not local paths</param>
 [UsedImplicitly]
 public class IngestionCSharpCommand(
     CSharpChunker chunker,
@@ -26,12 +17,6 @@ public class IngestionCSharpCommand(
     RawFileGitHubQuery rawFileGitHubQuery,
     RawFileLocalQuery rawFileLocalQuery) : IngestionCommand(vectorStoreCommand), IScopedService
 {
-    /// <summary>
-    /// Processes ingestion for the given project and source
-    /// </summary>
-    /// <param name="project">The project to ingest data into</param>
-    /// <param name="source">The source of the project data to ingest</param>
-    /// <returns>A task representing the ingestion operation</returns>
     public override async Task IngestAsync(ProjectEntity project, ProjectSourceEntity source)
     {
         if (source.Kind != ProjectSourceKind.CSharpCode)
@@ -75,7 +60,7 @@ public class IngestionCSharpCommand(
 
         OnNotifyProgress($"{rawFiles.Length} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
 
-        IVectorStoreRecordCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection();
+        VectorStoreCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection();
 
         //Creating References
         foreach (CSharpChunk codeEntity in codeEntities)
@@ -91,7 +76,7 @@ public class IngestionCSharpCommand(
             }
         }
 
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
         var existingData = await vectorStoreQuery.GetExistingAsync(project.Id, source.Id);
 
         int counter = 0;

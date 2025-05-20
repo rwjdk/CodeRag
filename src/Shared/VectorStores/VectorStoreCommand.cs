@@ -1,33 +1,14 @@
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Embeddings;
 using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 
-namespace Shared.VectorStore;
+namespace Shared.VectorStores;
 
-/// <summary>
-/// Command for working with SQL Server as VectorStore
-/// </summary>
-/// <param name="sqlServerCommand">The General Command for SQL Server</param>
 [UsedImplicitly]
 public class VectorStoreCommand(SqlServerCommand sqlServerCommand) : IScopedService
 {
-    /// <summary>
-    /// Inserts or updates a vector entry in the collection for the given project and source
-    /// </summary>
-    /// <param name="projectId">Identifier of the project
-    /// </param>
-    /// <param name="source">Source entity of the project
-    /// </param>
-    /// <param name="collection">Collection of vector records
-    /// </param>
-    /// <param name="entry">Vector entry to upsert
-    /// </param>
-    /// <returns>Task representing the asynchronous operation
-    /// </returns>
-    public async Task Upsert(Guid projectId, ProjectSourceEntity source, IVectorStoreRecordCollection<Guid, VectorEntity> collection, VectorEntity entry)
+    public async Task Upsert(Guid projectId, ProjectSourceEntity source, VectorStoreCollection<Guid, VectorEntity> collection, VectorEntity entry)
     {
         try
         {
@@ -76,7 +57,6 @@ public class VectorStoreCommand(SqlServerCommand sqlServerCommand) : IScopedServ
         }
     }
 
-    /// <summary>Deletes source data identified by the source identifier</summary>\n/// <param name="sourceId">The unique identifier of the source to delete</param>\n/// <returns>A task representing the asynchronous delete operation</returns>
     public async Task DeleteSourceDataAsync(Guid sourceId)
     {
         var context = await sqlServerCommand.CreateDbContextAsync();
@@ -84,11 +64,6 @@ public class VectorStoreCommand(SqlServerCommand sqlServerCommand) : IScopedServ
         await context.SaveChangesAsync();
     }
 
-    /// <summary>
-    /// Deletes data associated with the specified project identifier
-    /// </summary>
-    /// <param name="projectId">The unique identifier of the project to delete data for</param>
-    /// <returns>A task representing the asynchronous operation</returns>
     public async Task DeleteProjectData(Guid projectId)
     {
         var context = await sqlServerCommand.CreateDbContextAsync();

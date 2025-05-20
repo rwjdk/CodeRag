@@ -6,17 +6,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Shared.Chunking.CSharp
 {
-    /// <summary>
-    /// Contains methods for chunking C# Code using the Roslyn Analyzer
-    /// </summary>
     [UsedImplicitly]
     public class CSharpChunker : IScopedService
     {
-        /// <summary>
-        /// Extracts code entities from the given C# code string
-        /// </summary>
-        /// <param name="code">The C# code to analyze</param>
-        /// <returns>A list of CSharpChunk representing the code entities found</returns>
         public List<CSharpChunk> GetCodeEntities(string code)
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText(code);

@@ -12,7 +12,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.4" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.5" />
 		<PackageReference Include="Markdig" Version="0.41.1" />
 		<PackageReference Include="MudBlazor" Version="8.6.0" />
 		<PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />

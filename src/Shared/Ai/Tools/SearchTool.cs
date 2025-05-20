@@ -3,17 +3,12 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Shared.EntityFramework.DbModels;
-using Shared.VectorStore;
+using Shared.VectorStores;
 
 namespace Shared.Ai.Tools;
 
-internal class SearchTool(VectorStoreDataType dataType, ProjectEntity project, IVectorStoreRecordCollection<Guid, VectorEntity> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
+internal class SearchTool(VectorStoreDataType dataType, ProjectEntity project, VectorStoreCollection<Guid, VectorEntity> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
-    /// <summary>
-    /// Performs a search using the given query string
-    /// </summary>
-    /// <param name="searchQuery">The query string to search for</param>
-    /// <returns>An array of search result strings</returns>
     [UsedImplicitly]
     [KernelFunction]
     public async Task<string[]> Search(string searchQuery)

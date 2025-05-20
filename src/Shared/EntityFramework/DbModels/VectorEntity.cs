@@ -18,48 +18,48 @@ public class VectorEntity
     /// ID of the Vector
     /// </summary>
     [Key]
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     public Guid VectorId { get; set; }
 
     /// <summary>
     /// ID of the Content
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     [MaxLength(4000)]
     public string? Id { get; init; }
 
     /// <summary>
     /// Kind of the Content
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     [MaxLength(4000)]
     public required string? Kind { get; init; }
 
     /// <summary>
     /// Name of the Content
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     [MaxLength(4000)]
     public string? Name { get; set; }
 
     /// <summary>
     /// Parent of the Content (if any)
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     [MaxLength(4000)]
     public string? Parent { get; init; }
 
     /// <summary>
     /// Kind of the Parent (if any)
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     [MaxLength(4000)]
     public string? ParentKind { get; init; }
 
     /// <summary>
     /// Namespace the content is in
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     [MaxLength(4000)]
     public string? Namespace { get; init; }
 
@@ -67,70 +67,58 @@ public class VectorEntity
     /// <summary>
     /// Summary of the content
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public string? Summary { get; init; }
 
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     /// <summary>
     /// The Content that have been vectorized
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public required string Content { get; set; }
 
     /// <summary>
     /// The SourcePath of the content
     /// </summary>
-    [VectorStoreRecordData(IsIndexed = true)]
+    [VectorStoreData(IsIndexed = true)]
     [MaxLength(4000)]
     public required string SourcePath { get; init; }
 
     /// <summary>
     /// The time the data was ingested
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public DateTime TimeOfIngestion { get; set; }
 
     /// <summary>
     /// The Type of the Content
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     [MaxLength(4000)]
     public string DataType { get; set; } = null!;
 
     /// <summary>
     /// The ID of the Project the Content belong to
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public Guid ProjectId { get; set; }
 
     /// <summary>
     /// The ID of the Project Source the Content belong to
     /// </summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public Guid SourceId { get; set; }
 
-    /// <summary>
-    /// The Vector
-    /// </summary>
-    [VectorStoreRecordVector(1536, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.Flat, StoragePropertyName = Constants.VectorCollections.VectorColumns.Vector)]
+    [VectorStoreVector(1536, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.Flat, StorageName = Constants.VectorCollections.VectorColumns.Vector)]
     [NotMapped]
     public string VectorValue => Content;
 
-    /// <summary>
-    /// Retrieves a key used for content comparison
-    /// </summary>
-    /// <returns>A string representing the content comparison key</returns>
     public string GetContentCompareKey()
     {
         var contentCompareKey = Id + Kind + Name + Parent + ParentKind + Namespace + Summary + Content + SourcePath;
         return contentCompareKey;
     }
 
-    /// <summary>
-    /// Retrieves the URL associated with the given project
-    /// </summary>
-    /// <param name="project">The project entity to get the URL for</param>
-    /// <returns>The URL string or null if not available</returns>
     public string? GetUrl(ProjectEntity project)
     {
         var source = project.Sources.FirstOrDefault(x => x.Id == SourceId);
@@ -149,10 +137,6 @@ public class VectorEntity
         return rootUrl + "/" + suffix;
     }
 
-    /// <summary>
-    /// Returns a string that represents the current object
-    /// </summary>
-    /// <returns>A string representation of the object</returns>
     public override string ToString()
     {
         return Name ?? "???";

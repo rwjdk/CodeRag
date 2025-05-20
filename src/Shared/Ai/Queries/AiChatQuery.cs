@@ -11,38 +11,17 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Shared.Ai.Queries;
 
-/// <summary>
-/// Represents a query for AI chat operations
-/// </summary>
 [UsedImplicitly]
 public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
 {
     private readonly AiGenericQuery _aiGenericQuery;
 
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="aiGenericQuery">The Generic AI Query</param>
     public AiChatQuery(AiGenericQuery aiGenericQuery)
     {
         _aiGenericQuery = aiGenericQuery;
         aiGenericQuery.NotifyProgress += OnNotifyProgress;
     }
 
-    /// <summary>
-    /// Get an Answer from the AI using upfront Code and Documentation Search if configured and allowing Function Calling
-    /// </summary>
-    /// <param name="chatModel">The Chat-model to use</param>
-    /// <param name="previousConversation">The previous conversation</param>
-    /// <param name="messageToSend">The new message to send</param>
-    /// <param name="useSourceCodeSearch">If Code Search is allowed</param>
-    /// <param name="useDocumentationSearch">If Documentation Search is allowed</param>
-    /// <param name="maxNumberOfAnswersBackFromSourceCodeSearch">Max number of answer back from Code Search Allowed</param>
-    /// <param name="scoreShouldBeLowerThanThisInSourceCodeSearch">How low (more accurate) the search-score should be before code result is included</param>
-    /// <param name="maxNumberOfAnswersBackFromDocumentationSearch">Max number of answer back from Documentation Search Allowed</param>
-    /// <param name="scoreShouldBeLowerThanThisInDocumentSearch">How low (more accurate) the search-score should be before documentation result is included</param>
-    /// <param name="project">The Project to answer questions for</param>
-    /// <returns>The new Answer</returns>
     public async Task<ChatMessageContent?> GetAnswerAsync(
         AiChatModel chatModel,
         List<ChatMessageContent> previousConversation,
@@ -97,18 +76,11 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
         return response;
     }
 
-    /// <summary>
-    /// Retrieve a list of available AI chat models
-    /// </summary>
-    /// <returns>A list of AI chat models</returns>
     public List<AiChatModel> GetChatModels()
     {
         return _aiGenericQuery.GetChatModels();
     }
 
-    /// <summary>
-    /// Releases resources used by the object
-    /// </summary>
     public void Dispose()
     {
         _aiGenericQuery.NotifyProgress -= OnNotifyProgress;

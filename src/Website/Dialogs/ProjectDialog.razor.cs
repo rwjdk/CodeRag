@@ -6,7 +6,7 @@ using Shared;
 using Shared.EntityFramework.DbModels;
 using Shared.Ingestion;
 using Shared.Projects;
-using Shared.VectorStore;
+using Shared.VectorStores;
 using Website.Models;
 
 namespace Website.Dialogs;

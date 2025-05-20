@@ -5,18 +5,9 @@ using Shared.EntityFramework.DbModels;
 
 namespace Shared.Projects;
 
-/// <summary>
-/// Command to control Project
-/// </summary>
-/// <param name="sqlServerCommand">General SQL Server Command</param>
 [UsedImplicitly]
 public class ProjectCommand(SqlServerCommand sqlServerCommand) : IScopedService
 {
-    /// <summary>
-    /// Inserts or updates a project entity in the data store
-    /// </summary>
-    /// <param name="entity">The project entity to insert or update</param>
-    /// <returns>A task representing the asynchronous operation</returns>
     public async Task UpsertProjectAsync(ProjectEntity entity)
     {
         var context = await sqlServerCommand.CreateDbContextAsync();
@@ -61,11 +52,6 @@ public class ProjectCommand(SqlServerCommand sqlServerCommand) : IScopedService
         }
     }
 
-    /// <summary>
-    /// Updates the last synchronization date of the given project source
-    /// </summary>
-    /// <param name="source">The project source entity to update</param>
-    /// <returns>A task representing the asynchronous operation</returns>
     public async Task UpdateLastSourceSyncDateAsync(ProjectSourceEntity source)
     {
         source.LastSync = DateTime.UtcNow;
@@ -79,11 +65,6 @@ public class ProjectCommand(SqlServerCommand sqlServerCommand) : IScopedService
         await context.SaveChangesAsync();
     }
 
-    /// <summary>
-    /// Deletes the specified project entity
-    /// </summary>
-    /// <param name="entity">The project entity to delete</param>
-    /// <returns>A task representing the delete operation</returns>
     public async Task DeleteProjectAsync(ProjectEntity entity)
     {
         await sqlServerCommand.RemoveAsync(entity);

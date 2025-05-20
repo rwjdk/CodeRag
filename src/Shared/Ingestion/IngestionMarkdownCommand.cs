@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
@@ -6,16 +5,10 @@ using Shared.Chunking.Markdown;
 using Shared.EntityFramework.DbModels;
 using Shared.RawFiles;
 using Shared.RawFiles.Models;
-using Shared.VectorStore;
+using Shared.VectorStores;
 
 namespace Shared.Ingestion;
 
-/// <summary>
-/// Command for Ingesting Markdown into a VectorStore
-/// </summary>
-/// <param name="chunker">the Markdown Chunker</param>
-/// <param name="vectorStoreCommand">The Command for adding data to the Vector Store</param>
-/// <param name="vectorStoreQuery">The Query for looking up existing VectorStore Entries</param>
 [UsedImplicitly]
 public class IngestionMarkdownCommand(
     MarkdownChunker chunker,
@@ -24,11 +17,6 @@ public class IngestionMarkdownCommand(
     RawFileGitHubQuery gitHubRawFileContentQuery,
     RawFileLocalQuery rawFileLocalQuery) : IngestionCommand(vectorStoreCommand), IScopedService
 {
-    /// <summary>
-    /// Processes ingestion for a project and its source
-    /// </summary>
-    /// <param name="project">The project to ingest</param>
-    /// <param name="source">The source of the project to ingest</param>
     public override async Task IngestAsync(ProjectEntity project, ProjectSourceEntity source)
     {
         if (source.Kind != ProjectSourceKind.Markdown)
@@ -53,9 +41,9 @@ public class IngestionMarkdownCommand(
 
         RawFile[] rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(project, source, "md");
 
-        IVectorStoreRecordCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection();
+        VectorStoreCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection();
 
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         List<VectorEntity> entries = [];
 
