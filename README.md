@@ -35,7 +35,7 @@ While other AIs that integrate directly into your IDE are cool to use, they requ
 ## How to run locally
 In order to clone and run this repo locally, you will need the following Azure Resources
 - An Azure OpenAI Service Resource ([How to Guide for setup](Guides/HowToCreateAnAzureOpenAiServiceResourceInAzure.md))
-- An Azure SQL Database (for VectorStore)
+- An SQL Server 2025 or Azure SQL Database (for VectorStore)
 - (Optional) A GitHub Account with a configured Fine Grained Token
   - Needed permissions: `Read access to code and metadata` + `Read and Write access to pull requests`
 
@@ -61,7 +61,7 @@ Based on the above Resource,s you need the following configuration variables
 | AiKey | Your Azure OpenAI Service Key | Yes |
 | AiEmbeddingDeploymentName | Your name of your EmbeddingModel deployed in Azure OpenAI | No |
 | AiModelDeployments | One or more ChatModelDeployments (see below) | No |
-| SqlServerConnectionString | Your Azure SQL ConnectionString | Yes |
+| SqlServerConnectionString | Your SQL ConnectionString | Yes |
 | GitHubToken (Optional) | Your optional GitHub Token that allows interaction with the GitHub Repo | Yes |
 
 > Note: I tend to locally keep both sensitive and non-sensitive in secrets.json to have them in a single place, but feel free to move non-sensitive variables to appsettings.json instead
