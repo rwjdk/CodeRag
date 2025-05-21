@@ -1,143 +1,76 @@
-using System.Text.Json;
 using JetBrains.Annotations;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using OpenAI.Chat;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
 using Shared.VectorStores;
-using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
+using System.ClientModel;
+using Azure.AI.OpenAI;
+using Microsoft.Extensions.AI;
+using OpenAI.Chat;
+using ChatMessage = OpenAI.Chat.ChatMessage;
 
 namespace Shared.Ai.Queries;
 
 [UsedImplicitly]
 public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService
 {
-    internal SearchTool ImportDocumentationSearchPlugin(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, Kernel kernel)
+    internal SearchTool GetDocumentationSearchPlugin(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, List<AITool> tools)
     {
         var collection = vectorStoreQuery.GetCollection();
-        var docsTool = new SearchTool(VectorStoreDataType.Documentation, project, collection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
-        kernel.ImportPluginFromObject(docsTool, Constants.Tools.Markdown);
-        return docsTool;
+        SearchTool tool = new(VectorStoreDataType.Documentation, project, collection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
+        tools.Add(AIFunctionFactory.Create(tool.Search, Constants.Tools.Markdown));
+        return tool;
     }
 
-    internal SearchTool ImportCodeSearchPlugin(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, Kernel kernel)
+    internal SearchTool GetCodeSearchPlugin(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, List<AITool> tools)
     {
         var collection = vectorStoreQuery.GetCollection();
-        var codePlugin = new SearchTool(VectorStoreDataType.Code, project, collection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
-        kernel.ImportPluginFromObject(codePlugin, Constants.Tools.CSharp);
-        return codePlugin;
+        SearchTool tool = new(VectorStoreDataType.Code, project, collection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
+        tools.Add(AIFunctionFactory.Create(tool.Search, Constants.Tools.CSharp));
+        return tool;
     }
 
-    internal ChatCompletionAgent GetAgent<T>(AiChatModel chatModel, string instructions, Kernel kernel)
+    private AzureOpenAIClient GetClient(AiChatModel model)
     {
-        AzureOpenAIPromptExecutionSettings executionSettings = new()
+        AzureOpenAIClient client = new(new Uri(aiConfiguration.Endpoint), new ApiKeyCredential(aiConfiguration.Key), new AzureOpenAIClientOptions
         {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-            ResponseFormat = typeof(T)
-        };
-
-        if (chatModel.Temperature.HasValue)
-        {
-            executionSettings.Temperature = chatModel.Temperature.Value;
-        }
-
-        if (!string.IsNullOrWhiteSpace(chatModel.ReasoningEffortLevel))
-        {
-            switch (chatModel.ReasoningEffortLevel)
-            {
-                case "low":
-                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.Low;
-                    break;
-                case "medium":
-                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.Medium;
-                    break;
-                case "high":
-                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.High;
-                    break;
-            }
-        }
-
-        ChatCompletionAgent agent = new()
-        {
-            Instructions = instructions,
-            Kernel = kernel,
-            Arguments = new KernelArguments(executionSettings)
-        };
-        return agent;
-    }
-
-    internal ChatCompletionAgent GetAgent(AiChatModel chatModel, string instructions, Kernel kernel)
-    {
-        AzureOpenAIPromptExecutionSettings executionSettings = new()
-        {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-        };
-        if (chatModel.Temperature.HasValue)
-        {
-            executionSettings.Temperature = chatModel.Temperature.Value;
-        }
-
-        if (!string.IsNullOrWhiteSpace(chatModel.ReasoningEffortLevel))
-        {
-            switch (chatModel.ReasoningEffortLevel)
-            {
-                case "low":
-                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.Low;
-                    break;
-                case "medium":
-                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.Medium;
-                    break;
-                case "high":
-                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.High;
-                    break;
-            }
-        }
-
-        ChatCompletionAgent agent = new()
-        {
-            Instructions = instructions,
-            Kernel = kernel,
-            Arguments = new KernelArguments(executionSettings)
-        };
-        return agent;
-    }
-
-    internal Kernel GetKernel(AiChatModel chatModel)
-    {
-        IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddAzureOpenAIChatCompletion(chatModel.DeploymentName, aiConfiguration.Endpoint, aiConfiguration.Key, httpClient: new HttpClient
-        {
-            Timeout = TimeSpan.FromMinutes(chatModel.TimeoutInSeconds)
+            NetworkTimeout = TimeSpan.FromSeconds(model.TimeoutInSeconds)
         });
-        Kernel kernel = kernelBuilder.Build();
-        return kernel;
+        return client;
+    }
+
+    public IChatClient GetChatClient(AiChatModel chatModel)
+    {
+        ChatClient chatClient = GetClient(chatModel).GetChatClient(chatModel.DeploymentName);
+        IChatClient client = new ChatClientBuilder(chatClient.AsIChatClient())
+            .UseFunctionInvocation()
+            .Build();
+        return client;
     }
 
     internal async Task<T> GetStructuredOutputResponse<T>(ProjectEntity project, AiChatModel chatModel, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch, int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch)
     {
-        Kernel kernel = GetKernel(chatModel);
+        IChatClient chatClient = GetChatClient(chatModel);
+        List<AITool> tools = [];
         if (useSourceCodeSearch)
         {
-            ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, kernel);
+            GetCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, tools);
         }
 
         if (useDocumentationSearch)
         {
-            ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, kernel);
+            GetDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, tools);
         }
 
-        ChatCompletionAgent agent = GetAgent<T>(chatModel, instructions, kernel);
-
-        string json = string.Empty;
-        await foreach (AgentResponseItem<ChatMessageContent> item in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input)))
+        ChatResponse<T> chatResponse = await chatClient.GetResponseAsync<T>(input, new ChatOptions
         {
-            json = item.Message.ToString();
-        }
+            AdditionalProperties = new AdditionalPropertiesDictionary
+            {
+                { "reasoning_effort", "high" } //todo - not tested
+            },
+            Tools = tools
+        });
 
-        return JsonSerializer.Deserialize<T>(json)!;
+        return chatResponse.Result;
     }
 
     internal List<AiChatModel> GetChatModels()

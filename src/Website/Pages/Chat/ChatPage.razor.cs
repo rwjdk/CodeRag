@@ -2,9 +2,8 @@
 using BlazorUtilities.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.AI;
 using Microsoft.JSInterop;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
 using Shared;
 using Shared.Ai;
@@ -28,7 +27,7 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
     private string? _chatInputMessage;
     private bool _currentMessageIsProcessing;
     private bool _shouldRender = true;
-    private List<ChatMessageContent> _conversation = [];
+    private List<ChatMessage> _conversation = [];
     private AiChatModel? _chatModel;
     private bool _useSourceCodeSearch;
     private bool _useDocumentationSearch;
@@ -94,10 +93,10 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
             try
             {
                 await _chatInput.Clear();
-                _conversation.Add(new ChatMessageContent(AuthorRole.User, messageToSend));
+                _conversation.Add(new ChatMessage(ChatRole.User, messageToSend));
                 StateHasChanged();
                 await jsRuntime.InvokeVoidAsync("scrollToElementWhenReady", "bottom");
-                ChatMessageContent? output = await aiChatQuery.GetAnswerAsync(
+                ChatMessage? output = await aiChatQuery.GetAnswerAsync(
                     _chatModel,
                     _conversation,
                     messageToSend,

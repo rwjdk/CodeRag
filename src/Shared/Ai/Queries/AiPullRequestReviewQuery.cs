@@ -1,8 +1,6 @@
 using System.Text;
 using System.Text.Json;
 using JetBrains.Annotations;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Shared.Ai.StructuredOutputModels;
 using Shared.EntityFramework.DbModels;
 
@@ -13,15 +11,17 @@ public class AiPullRequestReviewQuery(AiGenericQuery aiGenericQuery) : IScopedSe
 {
     public async Task<Review> GetGithubPullRequestReview(ProjectEntity project, AiChatModel chatModel, string prDiffContent, string instructions)
     {
-        Kernel kernel = aiGenericQuery.GetKernel(chatModel);
+        throw new NotImplementedException();
+        /* todo
+        Kernel kernel = aiGenericQuery.GetClient(chatModel);
         if (project.ChatUseSourceCodeSearch)
         {
-            aiGenericQuery.ImportCodeSearchPlugin(project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch, project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch, project, kernel);
+            aiGenericQuery.GetCodeSearchPlugin(project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch, project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch, project, kernel);
         }
 
         if (project.ChatUseDocumentationSearch)
         {
-            aiGenericQuery.ImportDocumentationSearchPlugin(project.ChatMaxNumberOfAnswersBackFromDocumentationSearch, project.ChatScoreShouldBeLowerThanThisInDocumentSearch, project, kernel);
+            aiGenericQuery.GetDocumentationSearchPlugin(project.ChatMaxNumberOfAnswersBackFromDocumentationSearch, project.ChatScoreShouldBeLowerThanThisInDocumentSearch, project, kernel);
         }
 
         ChatCompletionAgent agent = aiGenericQuery.GetAgent<Review>(chatModel, instructions, kernel);
@@ -40,6 +40,7 @@ public class AiPullRequestReviewQuery(AiGenericQuery aiGenericQuery) : IScopedSe
         }
 
         throw new Exception("Unable to get Review");
+        */
     }
 
     public List<AiChatModel> GetChatModels()

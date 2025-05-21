@@ -1,7 +1,6 @@
 using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using Shared.EntityFramework.DbModels;
 using Shared.VectorStores;
 
@@ -10,7 +9,6 @@ namespace Shared.Ai.Tools;
 internal class SearchTool(VectorStoreDataType dataType, ProjectEntity project, VectorStoreCollection<Guid, VectorEntity> collection, int numberOfResultsBack, double scoreShouldBeBelowThis, ProgressNotificationBase parent)
 {
     [UsedImplicitly]
-    [KernelFunction]
     public async Task<string[]> Search(string searchQuery)
     {
         List<string> searchResults = [];
@@ -22,8 +20,14 @@ internal class SearchTool(VectorStoreDataType dataType, ProjectEntity project, V
             Filter = entity => entity.ProjectId == projectId && entity.DataType == dataTypeAsString,
             IncludeVectors = false
         };
-        await foreach (VectorSearchResult<VectorEntity> result in collection.SearchAsync(searchQuery, numberOfResultsBack, vectorSearchOptions).Where(x => x.Score < scoreShouldBeBelowThis))
+
+        await foreach (VectorSearchResult<VectorEntity> result in collection.SearchAsync(searchQuery, numberOfResultsBack, vectorSearchOptions))
         {
+            if (result.Score > scoreShouldBeBelowThis)
+            {
+                continue;
+            }
+
             results.Add(result);
             StringBuilder sb = new();
             sb.AppendLine($"Citation: {result.Record.GetUrl(project)} \n***\n" + result.Record.Content);

@@ -4,13 +4,9 @@ using BlazorUtilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
-using Microsoft.SemanticKernel.Embeddings;
 using MudBlazor.Services;
 using Shared.Ai;
-using Shared.Ai.Queries;
 using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 using Shared.GitHub;
@@ -36,7 +32,9 @@ if (configuration != null)
     builder.AutoRegisterServicesViaReflection(typeof(Program));
     builder.AutoRegisterServicesViaReflection(typeof(ProjectEntity));
 
-    builder.Services.AddAzureOpenAIEmbeddingGenerator(configuration.EmbeddingDeploymentName, configuration.Endpoint, configuration.Key);
+
+    AzureOpenAIClient azureOpenAiClient = new(new Uri(configuration.Endpoint), new ApiKeyCredential(configuration.Key));
+    builder.Services.AddEmbeddingGenerator(azureOpenAiClient.GetEmbeddingClient(configuration.EmbeddingDeploymentName).AsIEmbeddingGenerator());
     builder.Services.AddSingleton(new AiConfiguration(configuration.Endpoint, configuration.Key, configuration.ChatModels));
     builder.Services.AddDbContextFactory<SqlDbContext>(options => { options.UseSqlServer(configuration.SqlServerConnectionString); });
     builder.Services.AddScoped<VectorStore, SqlServerVectorStore>(options => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions

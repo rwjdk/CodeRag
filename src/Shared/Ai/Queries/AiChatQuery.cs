@@ -1,13 +1,9 @@
 using System.Diagnostics;
 using JetBrains.Annotations;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.Extensions.AI;
 using Shared.Ai.StructuredOutputModels;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
-using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Shared.Ai.Queries;
 
@@ -22,9 +18,9 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
         aiGenericQuery.NotifyProgress += OnNotifyProgress;
     }
 
-    public async Task<ChatMessageContent?> GetAnswerAsync(
+    public async Task<ChatMessage?> GetAnswerAsync(
         AiChatModel chatModel,
-        List<ChatMessageContent> previousConversation,
+        List<ChatMessage> previousConversation,
         string messageToSend,
         bool useSourceCodeSearch,
         bool useDocumentationSearch,
@@ -35,42 +31,46 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
         ProjectEntity project)
     {
         long timestamp = Stopwatch.GetTimestamp();
-        Kernel kernel = _aiGenericQuery.GetKernel(chatModel);
+        IChatClient client = _aiGenericQuery.GetChatClient(chatModel);
 
         Intent intent = await _aiGenericQuery.GetStructuredOutputResponse<Intent>(project, chatModel, $"You are an expert in the Code Repo '{project.Name}' that analyze the users message to find out if it is just pleasantries or a question and elaborate on it", messageToSend, false, false, 0, 0, 0, 0);
 
-        List<ChatMessageContent> input = previousConversation.Select(x => new ChatMessageContent(x.Role, x.Content)).ToList();
+        List<ChatMessage> input = previousConversation.Select(x => new ChatMessage(x.Role, x.Text)).ToList();
 
-        input.Add(new ChatMessageContent(AuthorRole.Assistant, intent.ElaboratedMessage));
+        input.Add(new ChatMessage(ChatRole.Assistant, intent.ElaboratedMessage));
+        input.Add(new ChatMessage(ChatRole.System, project.GetFormattedDeveloperInstructions()));
 
-        ChatMessageContent messageContent = new(AuthorRole.User, messageToSend);
+        ChatMessage messageContent = new(ChatRole.User, messageToSend);
 
+        List<AITool> tools = [];
         if (useSourceCodeSearch && !intent.IsMessageJustPleasantries)
         {
-            SearchTool codeSearchTool = _aiGenericQuery.ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, kernel);
-            string[] result = await codeSearchTool.Search(intent.ElaboratedMessage);
-            input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Code: " + string.Join(", ", result)));
+            SearchTool codeSearchTool = _aiGenericQuery.GetCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, tools);
+            //string[] result = await codeSearchTool.Search(intent.ElaboratedMessage); //todo - add back
+            //input.Add(new ChatMessage(ChatRole.Assistant, "Relevant Code: " + string.Join(", ", result)));
         }
 
         if (useDocumentationSearch && !intent.IsMessageJustPleasantries)
         {
-            SearchTool docsSearch = _aiGenericQuery.ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, kernel);
-            string[] result = await docsSearch.Search(intent.ElaboratedMessage);
-            input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Documentation: " + string.Join(",", result)));
+            SearchTool docsSearch = _aiGenericQuery.GetDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, tools);
+            //string[] result = await docsSearch.Search(intent.ElaboratedMessage); //todo - add back
+            //input.Add(new ChatMessage(ChatRole.Assistant, "Relevant Documentation: " + string.Join(",", result)));
         }
 
-        ChatCompletionAgent answerAgent = _aiGenericQuery.GetAgent(chatModel, project.GetFormattedDeveloperInstructions(), kernel);
 
         input.Add(messageContent);
-
-        ChatMessageContent response = null!;
+        //todo - provide developer message
+        //todo - provide reasoning effort
+        string? chatModelReasoningEffortLevel = chatModel.ReasoningEffortLevel;
+        string developerInstructions = project.GetFormattedDeveloperInstructions();
 
         OnNotifyProgress("Sending Request to AI");
-        await foreach (AgentResponseItem<ChatMessageContent> item in answerAgent.InvokeAsync(input))
-        {
-            response = item.Message;
-        }
 
+        ChatResponse chatResponse = await client.GetResponseAsync(input, new ChatOptions
+        {
+            Tools = tools,
+        });
+        ChatMessage response = new(ChatRole.Assistant, chatResponse.Text);
         TimeSpan elapsedTime = Stopwatch.GetElapsedTime(timestamp);
         OnNotifyProgress($"Done - Total time: {Convert.ToInt32(elapsedTime.TotalSeconds)} sec");
         return response;

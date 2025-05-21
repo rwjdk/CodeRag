@@ -1,6 +1,6 @@
 ﻿@page "/Chat"
 @using System.Globalization
-@using Microsoft.SemanticKernel.ChatCompletion
+@using Microsoft.Extensions.AI
 @using Shared
 @using Shared.Ai
 @using Website.Extensions
@@ -18,9 +18,9 @@
 
                     @foreach (var message in _conversation)
                     {
-                        <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == AuthorRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
+                        <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == ChatRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
                             <MudChatBubble Style="text-align: left">
-                                @message.Content?.ToMarkdown()
+                                @message.Text.ToMarkdown()
                             </MudChatBubble>
                         </MudChat>
                     }

@@ -1,4 +1,4 @@
-﻿@using Microsoft.SemanticKernel.ChatCompletion
+﻿@using Microsoft.Extensions.AI
 @using Shared.Ai
 @using Website.Extensions
 <div>
@@ -39,9 +39,9 @@
         <div style="height: calc(100vh - 250px); overflow-y: scroll; padding-left: 300px; padding-right: 300px; margin-top: 10px">
             @foreach (var message in _conversation)
             {
-                <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == AuthorRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
+                <MudChat ArrowPosition="ChatArrowPosition.None" ChatPosition="@(message.Role == ChatRole.User ? ChatBubblePosition.End : ChatBubblePosition.Start)">
                     <MudChatBubble Style="text-align: left">
-                        @message.Content?.ToMarkdown()
+                        @message.Text.ToMarkdown()
                     </MudChatBubble>
                 </MudChat>
             }

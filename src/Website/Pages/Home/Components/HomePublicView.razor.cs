@@ -3,9 +3,8 @@ using BlazorUtilities;
 using BlazorUtilities.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.AI;
 using Microsoft.JSInterop;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
 using Shared.Ai;
 using Shared.Ai.Queries;
@@ -28,7 +27,7 @@ public partial class HomePublicView(AiChatQuery aiChatQuery, ProjectQuery projec
     private string? _chatInputMessage;
     private bool _currentMessageIsProcessing;
     private bool _shouldRender = true;
-    private List<ChatMessageContent> _conversation = [];
+    private List<ChatMessage> _conversation = [];
     private AiChatModel? _chatModel;
     private bool _useSourceCodeSearch = true;
     private bool _useDocumentationSearch = true;
@@ -93,10 +92,10 @@ public partial class HomePublicView(AiChatQuery aiChatQuery, ProjectQuery projec
             try
             {
                 await _chatInput.Clear();
-                _conversation.Add(new ChatMessageContent(AuthorRole.User, messageToSend));
+                _conversation.Add(new ChatMessage(ChatRole.User, messageToSend));
                 StateHasChanged();
                 await jsRuntime.InvokeVoidAsync("scrollToElementWhenReady", "bottom");
-                ChatMessageContent? output = await aiChatQuery.GetAnswerAsync(
+                ChatMessage? output = await aiChatQuery.GetAnswerAsync(
                     _chatModel,
                     _conversation,
                     messageToSend,
