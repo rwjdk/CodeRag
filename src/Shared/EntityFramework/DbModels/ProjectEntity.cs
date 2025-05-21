@@ -106,7 +106,7 @@ public class ProjectEntity
         };
     }
 
-    private static string GeneratePullRequestReviewInstructions()
+    public static string GeneratePullRequestReviewInstructions()
     {
         return Prompt.Create("You are a highly experienced and extremely thorough C# code reviewer. Your task is to review the provided GitHub PR diff.")
             .AddStep("You will particularly pay attention to logical and performance bugs and regressions, and generally be very meticulous in determining what this PR introduces in terms of new and/or changed features and/or behaviors.")
@@ -120,7 +120,7 @@ public class ProjectEntity
             .AddRule("Don't comment on 'missing newline at the end of the file'").ToString();
     }
 
-    private static string GenerateCSharpXmlSummaryInstructions()
+    public static string GenerateCSharpXmlSummaryInstructions()
     {
         return Prompt.Create("You are an C# Expert that can generate XML Summaries.")
             .AddRule($"Always use all tools available ('{Constants.Tools.CSharp}' and '{Constants.Tools.Markdown}') before you provide your answer")
@@ -134,7 +134,7 @@ public class ProjectEntity
             .ToString();
     }
 
-    private static string GenerateChatInstructions()
+    public static string GenerateChatInstructions()
     {
         return Prompt
             .Create($"You are an C# expert in {Constants.Keywords.Name} ({Constants.Keywords.Description}. Assume all questions are about {Constants.Keywords.Name} unless specified otherwise")
@@ -149,7 +149,8 @@ public class ProjectEntity
 
     public string GetFormattedDeveloperInstructions()
     {
-        return ChatInstructions
+        string instructions = ChatInstructions ?? GenerateChatInstructions();
+        return instructions
             .Replace(Constants.Keywords.Name, Name, true, CultureInfo.InvariantCulture)
             .Replace(Constants.Keywords.Description, Description, true, CultureInfo.InvariantCulture)
             .Replace(Constants.Keywords.MarkdownSearchTool, Constants.Tools.Markdown, true, CultureInfo.InvariantCulture)

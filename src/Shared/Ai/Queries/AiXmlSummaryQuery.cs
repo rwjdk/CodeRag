@@ -9,7 +9,7 @@ public class AiXmlSummaryQuery(AiGenericQuery aiGenericQuery) : ProgressNotifica
 {
     public async Task<string> GenerateCSharpXmlSummary(ProjectEntity project, string signature, AiChatModel model)
     {
-        string prompt = project.CSharpXmlSummaryInstructions;
+        string prompt = project.CSharpXmlSummaryInstructions ?? ProjectEntity.GenerateCSharpXmlSummaryInstructions();
         AiChatModel chatModel = model;
         XmlSummary response = await aiGenericQuery.GetStructuredOutputResponse<XmlSummary>(
             project,
