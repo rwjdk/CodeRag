@@ -14,4 +14,10 @@ public class ProjectQuery(SqlServerQuery sqlServerQuery) : IScopedService
         var entities = await dbContextAsync.Projects.Include(x => x.Sources).ToArrayAsync();
         return entities;
     }
+
+    public async Task<ProjectEntity?> GetProjectAsync(string owner, string repoName)
+    {
+        await using var dbContextAsync = await sqlServerQuery.CreateDbContextAsync();
+        return await dbContextAsync.Projects.Include(x => x.Sources).FirstOrDefaultAsync(x => x.GitHubOwner == owner && x.GitHubRepo == repoName);
+    }
 }

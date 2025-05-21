@@ -10,9 +10,9 @@ public class ProjectSourceEntity
     [Key]
     public Guid Id { get; private set; } = Guid.NewGuid();
 
-    public required Guid ProjectEntityId { get; init; }
+    public Guid ProjectEntityId { get; init; }
 
-    public required ProjectEntity Project { get; init; }
+    public ProjectEntity? Project { get; init; }
 
     public DateTime? LastSync { get; set; }
 
@@ -32,12 +32,10 @@ public class ProjectSourceEntity
     public string? RootUrl { get; set; }
 
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public required string FileIgnorePatterns { get; set; }
-
-    #region Markdown Specific Settings
+    public string? FileIgnorePatterns { get; set; }
 
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
-    public required string MarkdownChunkLineIgnorePatterns { get; set; }
+    public string? MarkdownChunkLineIgnorePatterns { get; set; }
 
     public bool MarkdownIgnoreCommentedOutContent { get; set; }
 
@@ -52,8 +50,6 @@ public class ProjectSourceEntity
     public int MarkdownChunkIgnoreIfLessThanThisAmountOfChars { get; set; }
 
     public bool MarkdownFilenameEqualDocUrlSubpage { get; set; }
-
-    #endregion
 
     [NotMapped]
     public bool AddMode { get; set; }

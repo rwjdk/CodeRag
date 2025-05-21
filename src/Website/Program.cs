@@ -15,9 +15,11 @@ using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 using Shared.GitHub;
 using System.ClientModel;
+using Microsoft.AspNetCore.Mvc;
 using Website;
 using Website.Extensions;
 using Website.Models;
+using Website.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +65,9 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapPost("/sync_project", async Task<IResult> ([FromBody] UrlToProjectServiceRequest serviceRequest, UrlToProjectService service) =>
+await service.ConvertRepoUrlToProject(serviceRequest));
 
 if (configuration != null)
 {
