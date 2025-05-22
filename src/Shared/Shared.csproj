@@ -31,7 +31,7 @@
 		<PackageReference Include="Microsoft.SemanticKernel.Connectors.SqlServer" Version="1.53.1-preview" />
 		<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.53.1" />
 
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />		<PackageReference Include="Octokit" Version="14.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />		<PackageReference Include="Octokit" Version="14.0.0" />		<PackageReference Include="Polly" Version="8.5.2" />
 	</ItemGroup>
 
 </Project>

@@ -1,4 +1,3 @@
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
 using Shared.Chunking.CSharp;
@@ -6,6 +5,8 @@ using Shared.EntityFramework.DbModels;
 using Shared.RawFiles;
 using Shared.RawFiles.Models;
 using Shared.VectorStores;
+using System.Text;
+using System.Threading;
 
 namespace Shared.Ingestion;
 
@@ -127,7 +128,7 @@ public class IngestionCSharpCommand(
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
             if (existing == null)
             {
-                await VectorStoreCommand.Upsert(project.Id, source, collection, entry);
+                await Retry.ExecuteWithRetryAsync(async () => { await VectorStoreCommand.Upsert(project.Id, source, collection, entry); }, 3, TimeSpan.FromSeconds(30));
             }
             else
             {
