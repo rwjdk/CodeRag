@@ -1,3 +1,7 @@
+> [!Caution]
+> This Repo is in an Early Preview state, meaning that everythings are subject to change and certain feature combinations are not yet supported. Use/Clone/Fork at own risk
+
+
 # CodeRag
 An AI Expert for your C# Codebase
 
@@ -7,10 +11,6 @@ CodeRag is an AI Solution that parses your C# Code Repo + existing documentation
 
 ## Why also use this when things like GitHub Copilot and CursorAI Exist?
 While other AIs that integrate directly into your IDE are cool to use, they require access to the actual source code to function. This is technically fine in a Public Repo, it is a task most developers do not go through (cloning the repo), and in Private Repos, this is of cause not an option. So this is primarily aimed at people who use your source code in a compiled form (nuget, DLL, etc), but still need to understand how to use the API you expose, but leveraging a ChatBot to ask questions about the API without direct access to the source code (CodeRag only extract public classes, methods, etc.).
-
-<hr/>
-
-> WARNING: This Repo is in a Preview state, meaning that things are subject to change and certain feature combinations are not yet supported. See the Issue Tracker for known limitations and issues
 
 ## Features
 
