@@ -8,6 +8,8 @@
         <RTextField Label="Ignore Path Patterns" @bind-Value="ProjectSource.FileIgnorePatterns" />
         <RTextField Label="Root URL" @bind-Value="@ProjectSource.RootUrl" />
         
+        <RNullableNumericField Label="Ignore File if more than this amount of lines" @bind-Value="@ProjectSource.IgnoreFileIfMoreThanThisNumberOfLines" Min="1" Clearable/>
+
         @switch (ProjectSource.Kind)
         {
             case ProjectSourceKind.Markdown:

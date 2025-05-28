@@ -50,6 +50,12 @@ public class IngestionCSharpCommand(
 
         foreach (RawFile rawFile in rawFiles)
         {
+            var numberOfLine = rawFile.Content.Split(["\n"], StringSplitOptions.RemoveEmptyEntries).Length;
+            if (source.IgnoreFileIfMoreThanThisNumberOfLines.HasValue && numberOfLine > source.IgnoreFileIfMoreThanThisNumberOfLines)
+            {
+                continue;
+            }
+
             List<CSharpChunk> entitiesForFile = chunker.GetCodeEntities(rawFile.Content);
             foreach (CSharpChunk codeEntity in entitiesForFile)
             {

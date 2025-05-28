@@ -6,7 +6,6 @@ using Shared.RawFiles;
 using Shared.RawFiles.Models;
 using Shared.VectorStores;
 using System.Text.RegularExpressions;
-using System.Threading;
 
 namespace Shared.Ingestion;
 
@@ -48,10 +47,14 @@ public class IngestionMarkdownCommand(
 
         List<VectorEntity> entries = [];
 
-        int counter = 0;
         foreach (var rawFile in rawFiles)
         {
-            counter++;
+            var numberOfLine = rawFile.Content.Split(["\n"], StringSplitOptions.RemoveEmptyEntries).Length;
+            if (source.IgnoreFileIfMoreThanThisNumberOfLines.HasValue && numberOfLine > source.IgnoreFileIfMoreThanThisNumberOfLines)
+            {
+                continue;
+            }
+
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(rawFile.Path);
             var content = rawFile.Content;
             if (source.MarkdownIgnoreCommentedOutContent)
@@ -77,8 +80,6 @@ public class IngestionMarkdownCommand(
             var newLine = Environment.NewLine;
             content = Regex.Replace(content, @"\r\n[\r\n]+|\r[\r]+|\n[\n]+", newLine + newLine);
             content = content.Trim();
-
-            var numberOfLine = content.Split(["\n"], StringSplitOptions.RemoveEmptyEntries).Length;
 
             if (numberOfLine > source.MarkdownOnlyChunkIfMoreThanThisNumberOfLines)
             {
@@ -111,7 +112,7 @@ public class IngestionMarkdownCommand(
 
         var existingData = await vectorStoreQuery.GetExistingAsync(project.Id, source.Id);
 
-        counter = 0;
+        int counter = 0;
         List<Guid> idsToKeep = [];
         foreach (var entry in entries)
         {

@@ -31,6 +31,8 @@ public class ProjectSourceEntity
     [MaxLength(1000)]
     public string? RootUrl { get; set; }
 
+    public int? IgnoreFileIfMoreThanThisNumberOfLines { get; set; }
+
     // ReSharper disable once EntityFramework.ModelValidation.UnlimitedStringLength
     public string? FileIgnorePatterns { get; set; }
 
