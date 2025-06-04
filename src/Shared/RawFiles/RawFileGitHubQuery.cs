@@ -9,7 +9,7 @@ namespace Shared.RawFiles;
 [UsedImplicitly]
 public class RawFileGitHubQuery(GitHubQuery gitHubQuery) : RawFileQuery, IScopedService
 {
-    public override async Task<RawFile[]> GetRawContentForSourceAsync(ProjectEntity project, ProjectSourceEntity source, string fileExtensionType)
+    public override async Task<RawFile[]?> GetRawContentForSourceAsync(ProjectEntity project, ProjectSourceEntity source, string fileExtensionType)
     {
         SharedGuards(source, expectedLocation: ProjectSourceLocation.GitHub);
 
@@ -23,7 +23,14 @@ public class RawFileGitHubQuery(GitHubQuery gitHubQuery) : RawFileQuery, IScoped
         OnNotifyProgress("Exploring GitHub");
         var gitHubClient = gitHubQuery.GetGitHubClient();
 
-        var treeResponse = await gitHubQuery.GetTreeAsync(gitHubClient, project.GitHubOwner, project.GitHubRepo, source.Recursive);
+        var commit = await gitHubQuery.GetLatestCommit(gitHubClient, project.GitHubOwner, project.GitHubRepo);
+        if (source.LastGitGubCommitTimestamp.HasValue && commit.Committer.Date <= source.LastGitGubCommitTimestamp.Value)
+        {
+            OnNotifyProgress("No new Commits detected in the repo so skipping retrieval");
+            return null;
+        }
+
+        var treeResponse = await gitHubQuery.GetTreeAsync(gitHubClient, commit, project.GitHubOwner, project.GitHubRepo, source.Recursive);
         fileExtensionType = "." + fileExtensionType;
 
 

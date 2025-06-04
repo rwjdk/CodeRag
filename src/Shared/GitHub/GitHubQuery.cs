@@ -33,20 +33,24 @@ public class GitHubQuery(GitHubConnection connection) : IScopedService
         return pullRequests.ToArray();
     }
 
-    public async Task<TreeResponse> GetTreeAsync(GitHubClient client, string owner, string repo, bool recursive)
+    public async Task<TreeResponse> GetTreeAsync(GitHubClient client, Commit commit, string owner, string repo, bool recursive)
     {
-        var repository = await client.Repository.Get(owner, repo);
-        string? defaultBranch = repository.DefaultBranch; //todo - support other branches (https://github.com/rwjdk/CodeRag/issues/2)
-
-        var reference = await client.Git.Reference.Get(owner, repo, $"heads/{defaultBranch}");
-
-        var commit = await client.Git.Commit.Get(owner, repo, reference.Object.Sha);
         if (recursive)
         {
             return await client.Git.Tree.GetRecursive(owner, repo, commit.Tree.Sha);
         }
 
         return await client.Git.Tree.Get(owner, repo, commit.Tree.Sha);
+    }
+
+    public async Task<Commit> GetLatestCommit(GitHubClient client, string owner, string repo)
+    {
+        Repository repository = await client.Repository.Get(owner, repo);
+        string defaultBranch = repository.DefaultBranch; //todo - support other branches (https://github.com/rwjdk/CodeRag/issues/2)
+
+        Reference reference = await client.Git.Reference.Get(owner, repo, $"heads/{defaultBranch}");
+
+        return await client.Git.Commit.Get(owner, repo, reference.Object.Sha);
     }
 
     public async Task<string?> GetFileContentAsync(GitHubClient client, string gitHubOwner, string gitHubRepo, string path)

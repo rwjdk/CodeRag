@@ -5,7 +5,7 @@ namespace Shared.RawFiles;
 
 public abstract class RawFileQuery : ProgressNotificationBase
 {
-    public abstract Task<RawFile[]> GetRawContentForSourceAsync(ProjectEntity project, ProjectSourceEntity source, string fileExtensionType);
+    public abstract Task<RawFile[]?> GetRawContentForSourceAsync(ProjectEntity project, ProjectSourceEntity source, string fileExtensionType);
 
     protected void SharedGuards(ProjectSourceEntity source, ProjectSourceLocation expectedLocation)
     {

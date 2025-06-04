@@ -6,7 +6,6 @@ using Shared.RawFiles;
 using Shared.RawFiles.Models;
 using Shared.VectorStores;
 using System.Text;
-using System.Threading;
 
 namespace Shared.Ingestion;
 
@@ -45,7 +44,13 @@ public class IngestionCSharpCommand(
 
         rawFileContentQuery.NotifyProgress += OnNotifyProgress;
 
-        RawFile[] rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(project, source, "cs");
+        RawFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(project, source, "cs");
+        if (rawFiles == null)
+        {
+            OnNotifyProgress("Nothing new to Ingest so skipping");
+            return;
+        }
+
         List<CSharpChunk> codeEntities = [];
 
         foreach (RawFile rawFile in rawFiles)

@@ -8,7 +8,7 @@ namespace Shared.RawFiles;
 [UsedImplicitly]
 public class RawFileLocalQuery : RawFileQuery, IScopedService
 {
-    public override async Task<RawFile[]> GetRawContentForSourceAsync(ProjectEntity project, ProjectSourceEntity source, string fileExtensionType)
+    public override async Task<RawFile[]?> GetRawContentForSourceAsync(ProjectEntity project, ProjectSourceEntity source, string fileExtensionType)
     {
         SharedGuards(source, expectedLocation: ProjectSourceLocation.Local);
 

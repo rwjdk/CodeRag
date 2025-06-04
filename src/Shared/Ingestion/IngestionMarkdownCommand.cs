@@ -39,7 +39,12 @@ public class IngestionMarkdownCommand(
 
         rawFileContentQuery.NotifyProgress += OnNotifyProgress;
 
-        RawFile[] rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(project, source, "md");
+        RawFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(project, source, "md");
+        if (rawFiles == null)
+        {
+            OnNotifyProgress("Nothing new to Ingest so skipping");
+            return;
+        }
 
         VectorStoreCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection();
 

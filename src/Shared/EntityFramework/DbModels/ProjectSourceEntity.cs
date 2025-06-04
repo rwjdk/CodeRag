@@ -53,6 +53,8 @@ public class ProjectSourceEntity
 
     public bool MarkdownFilenameEqualDocUrlSubpage { get; set; }
 
+    public DateTimeOffset? LastGitGubCommitTimestamp { get; set; }
+
     [NotMapped]
     public bool AddMode { get; set; }
 

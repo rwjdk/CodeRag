@@ -124,6 +124,7 @@ public partial class ProjectDialog(ProjectCommand projectCommand, IngestionCShar
     {
         if (source != null)
         {
+            DateTimeOffset syncStart = DateTimeOffset.UtcNow;
             _syncingSource = source;
             _lastMessage = null;
             _current = 0;
@@ -141,6 +142,7 @@ public partial class ProjectDialog(ProjectCommand projectCommand, IngestionCShar
                     throw new ArgumentOutOfRangeException();
             }
 
+            await projectCommand.UpdateLastGithubCommitDateAsync(source, syncStart);
             await projectCommand.UpdateLastSourceSyncDateAsync(source);
             _syncingSource = null;
             StateHasChanged();
