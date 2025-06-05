@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using CodeRag.Abstractions;
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;

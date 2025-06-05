@@ -1,10 +1,16 @@
-﻿@using Shared.EntityFramework.DbModels
+﻿@using CodeRag.RawFileRetrieval.Models
+@using Shared.EntityFramework.DbModels
 <MudDialog Style="max-width: 70% !important; min-width: 70% !important; max-height: 70% !important; min-height: 70% !important;">
     <DialogContent>
         <RTextField Label="Name" @bind-Value="@ProjectSource.Name" />
         <RTextField Label="Path" @bind-Value="@ProjectSource.Path" />
         <RCheckBox Label="Recursive" @bind-Value="@ProjectSource.Recursive" />
-        <RSelectFromEnum Label="Location" T="ProjectSourceLocation" @bind-Value="@ProjectSource.Location" />
+        <RSelectFromEnum Label="Location" T="RawFileLocation" @bind-Value="@ProjectSource.Location" />
+        @if (ProjectSource.Location == RawFileLocation.GitHub)
+        {
+            <RTextField Label="GitHub Owner" @bind-Value="@ProjectSource.GitHubOwner" />
+            <RTextField Label="GitHub Repo" @bind-Value="@ProjectSource.GitHubRepo" />
+        }
         <RTextField Label="Ignore Path Patterns" @bind-Value="ProjectSource.FileIgnorePatterns" />
         <RTextField Label="Root URL" @bind-Value="@ProjectSource.RootUrl" />
         

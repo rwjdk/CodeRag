@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<NoWarn>SKEXP0001,SKEXP0050,SKEXP0010,SKEXP0020,SKEXP0110,SKEXP0070,SKEXP0110</NoWarn>
@@ -18,20 +18,24 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Chunking\CSharp\Models\**" />
-	  <EmbeddedResource Remove="Chunking\CSharp\Models\**" />
-	  <None Remove="Chunking\CSharp\Models\**" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
 		<PackageReference Include="Microsoft.SemanticKernel" Version="1.53.1" />
 		<PackageReference Include="Microsoft.SemanticKernel.Connectors.SqlServer" Version="1.53.1-preview" />
 		<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.53.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />		
+		<PackageReference Include="Octokit" Version="14.0.0" />		
+		<PackageReference Include="Polly" Version="8.5.2" />
+	</ItemGroup>
 
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />		<PackageReference Include="Octokit" Version="14.0.0" />		<PackageReference Include="Polly" Version="8.5.2" />
+	<ItemGroup>
+	  <ProjectReference Include="..\CodeRag.Abstractions\CodeRag.Abstractions.csproj" />
+	  <ProjectReference Include="..\CodeRag.Chunking.CSharp\CodeRag.Chunking.CSharp.csproj" />
+	  <ProjectReference Include="..\CodeRag.Chunking.Markdown\CodeRag.Chunking.Markdown.csproj" />
+	  <ProjectReference Include="..\CodeRag.Integrations.GitHub\CodeRag.Integrations.GitHub.csproj" />
+	  <ProjectReference Include="..\CodeRag.RawFileRetrieval\CodeRag.RawFileRetrieval.csproj" />
+	  <ProjectReference Include="..\CodeRag.VectorStore\CodeRag.VectorStore.csproj" />
 	</ItemGroup>
 
 </Project>

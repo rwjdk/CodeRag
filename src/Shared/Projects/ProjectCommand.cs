@@ -1,3 +1,4 @@
+using CodeRag.Abstractions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Shared.EntityFramework;
@@ -67,7 +68,7 @@ public class ProjectCommand(SqlServerCommand sqlServerCommand) : IScopedService
 
     public async Task UpdateLastGithubCommitDateAsync(ProjectSourceEntity source, DateTimeOffset date)
     {
-        source.LastGitGubCommitTimestamp = date;
+        source.GitGubLastCommitTimestamp = date;
         var context = await sqlServerCommand.CreateDbContextAsync();
         var existingSource = context.ProjectSources.FirstOrDefault(x => x.Id == source.Id);
         if (existingSource != null)

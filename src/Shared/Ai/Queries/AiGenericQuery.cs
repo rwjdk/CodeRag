@@ -1,4 +1,6 @@
 using System.Text.Json;
+using CodeRag.Abstractions;
+using CodeRag.VectorStore;
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -17,7 +19,7 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery ve
 {
     internal SearchTool ImportDocumentationSearchPlugin(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, Kernel kernel)
     {
-        var collection = vectorStoreQuery.GetCollection();
+        var collection = vectorStoreQuery.GetCollection<Guid, VectorEntity>();
         var docsTool = new SearchTool(VectorStoreDataType.Documentation, project, collection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
         kernel.ImportPluginFromObject(docsTool, Constants.Tools.Markdown);
         return docsTool;
@@ -25,7 +27,7 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery ve
 
     internal SearchTool ImportCodeSearchPlugin(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, Kernel kernel)
     {
-        var collection = vectorStoreQuery.GetCollection();
+        var collection = vectorStoreQuery.GetCollection<Guid, VectorEntity>();
         var codePlugin = new SearchTool(VectorStoreDataType.Code, project, collection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
         kernel.ImportPluginFromObject(codePlugin, Constants.Tools.CSharp);
         return codePlugin;

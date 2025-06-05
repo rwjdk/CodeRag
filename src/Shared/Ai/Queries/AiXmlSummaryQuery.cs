@@ -1,3 +1,4 @@
+using CodeRag.Abstractions;
 using JetBrains.Annotations;
 using Shared.Ai.StructuredOutputModels;
 using Shared.EntityFramework.DbModels;

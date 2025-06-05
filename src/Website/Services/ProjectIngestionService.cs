@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using CodeRag.Abstractions;
+using JetBrains.Annotations;
 using Shared;
 using Shared.EntityFramework.DbModels;
 using Shared.Ingestion;
@@ -22,11 +23,11 @@ public class ProjectIngestionService(ProjectCommand projectCommand, IngestionMar
         switch (source.Kind)
         {
             case ProjectSourceKind.CSharpCode:
-                await ingestionCSharpCommand.IngestAsync(project, source);
+                await ingestionCSharpCommand.IngestAsync(source);
 
                 break;
             case ProjectSourceKind.Markdown:
-                await ingestionMarkdownCommand.IngestAsync(project, source);
+                await ingestionMarkdownCommand.IngestAsync(source);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

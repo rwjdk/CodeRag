@@ -1,4 +1,5 @@
-﻿using Shared;
+﻿using CodeRag.Abstractions;
+using Shared;
 using Shared.Ai;
 using Website.Models;
 

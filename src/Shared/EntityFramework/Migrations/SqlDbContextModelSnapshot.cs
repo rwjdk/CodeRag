@@ -121,14 +121,22 @@ namespace CodeRag.Shared.Migrations
                     b.Property<string>("FileIgnorePatterns")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTimeOffset?>("GitGubLastCommitTimestamp")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("GitHubOwner")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("GitHubRepo")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int?>("IgnoreFileIfMoreThanThisNumberOfLines")
                         .HasColumnType("int");
 
                     b.Property<int>("Kind")
                         .HasColumnType("int");
-
-                    b.Property<DateTimeOffset?>("LastGitGubCommitTimestamp")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<DateTime?>("LastSync")
                         .HasColumnType("datetime2");
@@ -226,9 +234,6 @@ namespace CodeRag.Shared.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
 
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("SourceId")
                         .HasColumnType("uniqueidentifier");
 
@@ -249,8 +254,6 @@ namespace CodeRag.Shared.Migrations
                     b.HasKey("VectorId");
 
                     b.HasIndex("DataType");
-
-                    b.HasIndex("ProjectId");
 
                     b.HasIndex("SourceId");
 

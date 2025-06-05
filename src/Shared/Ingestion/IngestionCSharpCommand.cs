@@ -1,23 +1,25 @@
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
-using Shared.Chunking.CSharp;
 using Shared.EntityFramework.DbModels;
-using Shared.RawFiles;
-using Shared.RawFiles.Models;
 using Shared.VectorStores;
 using System.Text;
+using CodeRag.Abstractions;
+using CodeRag.Chunking.CSharp;
+using CodeRag.RawFileRetrieval;
+using CodeRag.RawFileRetrieval.Models;
+using CodeRag.VectorStore;
 
 namespace Shared.Ingestion;
 
 [UsedImplicitly]
 public class IngestionCSharpCommand(
     CSharpChunker chunker,
-    VectorStoreCommand vectorStoreCommand,
+    VectorStoreCommandSpecific vectorStoreCommand,
     VectorStoreQuery vectorStoreQuery,
     RawFileGitHubQuery rawFileGitHubQuery,
     RawFileLocalQuery rawFileLocalQuery) : IngestionCommand(vectorStoreCommand), IScopedService
 {
-    public override async Task IngestAsync(ProjectEntity project, ProjectSourceEntity source)
+    public override async Task IngestAsync(ProjectSourceEntity source)
     {
         if (source.Kind != ProjectSourceKind.CSharpCode)
         {
@@ -32,10 +34,10 @@ public class IngestionCSharpCommand(
         RawFileQuery rawFileContentQuery;
         switch (source.Location)
         {
-            case ProjectSourceLocation.GitHub:
+            case RawFileLocation.GitHub:
                 rawFileContentQuery = rawFileGitHubQuery;
                 break;
-            case ProjectSourceLocation.Local:
+            case RawFileLocation.Local:
                 rawFileContentQuery = rawFileLocalQuery;
                 break;
             default:
@@ -44,7 +46,7 @@ public class IngestionCSharpCommand(
 
         rawFileContentQuery.NotifyProgress += OnNotifyProgress;
 
-        RawFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(project, source, "cs");
+        RawFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(source.ToRawFileSource(), "cs");
         if (rawFiles == null)
         {
             OnNotifyProgress("Nothing new to Ingest so skipping");
@@ -72,7 +74,7 @@ public class IngestionCSharpCommand(
 
         OnNotifyProgress($"{rawFiles.Length} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
 
-        VectorStoreCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection();
+        VectorStoreCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection<Guid, VectorEntity>();
 
         //Creating References
         foreach (CSharpChunk codeEntity in codeEntities)
@@ -89,7 +91,7 @@ public class IngestionCSharpCommand(
         }
 
         await collection.EnsureCollectionExistsAsync();
-        var existingData = await vectorStoreQuery.GetExistingAsync(project.Id, source.Id);
+        var existingData = await vectorStoreQuery.GetExistingAsync<Guid, VectorEntity>(x => x.SourceId == source.Id);
 
         int counter = 0;
         List<Guid> idsToKeep = [];
@@ -139,7 +141,7 @@ public class IngestionCSharpCommand(
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
             if (existing == null)
             {
-                await Retry.ExecuteWithRetryAsync(async () => { await VectorStoreCommand.Upsert(project.Id, source, collection, entry); }, 3, TimeSpan.FromSeconds(30));
+                await Retry.ExecuteWithRetryAsync(async () => { await VectorStoreCommandSpecific.Upsert(source, collection, entry); }, 3, TimeSpan.FromSeconds(30));
             }
             else
             {

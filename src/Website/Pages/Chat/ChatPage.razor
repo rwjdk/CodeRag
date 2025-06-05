@@ -1,8 +1,11 @@
 ﻿@page "/Chat"
 @using System.Globalization
+@using CodeRag.Abstractions
+@using Microsoft.Extensions.VectorData
 @using Microsoft.SemanticKernel.ChatCompletion
 @using Shared
 @using Shared.Ai
+@using Shared.EntityFramework.DbModels
 @using Website.Extensions
 <div>
     @if (_chatModel == null)
@@ -94,14 +97,14 @@
                     <h3>Details for last request</h3>
                     <MudDataGrid Dense Striped Items="_log" ColumnResizeMode="ResizeMode.Column" Height="calc(100vh - 500px)" SortMode="SortMode.None" Filterable="false">
                         <Columns>
-                            <HierarchyColumn T="ProgressNotification" ButtonDisabledFunc="x=> x.HasNoDetails" />
+                            <HierarchyColumn T="ProgressNotification" ButtonDisabledFunc="x=> x.Arguments == null" />
                             <PropertyColumn Property="x => x.Timestamp.DateTime.ToShortTimeString()" Title="Time" />
                             <PropertyColumn Property="x => x.Message" />
                         </Columns>
                         <ChildRowContent>
-                            @if (context.Item.SearchResults != null && context.Item.SearchResults.Count != 0)
+                            @if(context.Item.Arguments is List<VectorSearchResult<VectorEntity>> searchResults && searchResults.Count != 0)
                             {
-                                <MudDataGrid Dense Striped Items="context.Item.SearchResults" SortMode="SortMode.None" Filterable="false">
+                                <MudDataGrid Dense Striped T="VectorSearchResult<VectorEntity>" Items="searchResults" SortMode="SortMode.None" Filterable="false">
                                     <Columns>
                                         <TemplateColumn Title="Details" Context="row">
                                             <CellTemplate>
@@ -110,16 +113,17 @@
                                                     <div class="font-size-10">@row.Item.Record.Namespace</div>
                                                 </div>
                                             </CellTemplate>
-                                        </TemplateColumn>
-                                        <PropertyColumn Property="x => Math.Round(Convert.ToDecimal(x.Score), 2).ToString(CultureInfo.InvariantCulture)"/>
+                                        </TemplateColumn>__T
+                                        <PropertyColumn Property="x => Math.Round(Convert.ToDecimal(x.Score), 2).ToString(CultureInfo.InvariantCulture)"/>__T
                                         <TemplateColumn Context="row" Title="">
                                             <CellTemplate>
-                                                <RIconButton Href="@row.Item.Record.GetUrl(Project)" Target="_blank" Icon="@Icons.Material.Filled.Launch" />
+                                                <RIconButton Href="@row.Item.Record.GetUrl(Project)" Target="_blank" Icon="@Icons.Material.Filled.Launch"/>
                                             </CellTemplate>
-                                        </TemplateColumn>
+                                        </TemplateColumn>__T
                                     </Columns>
                                 </MudDataGrid>
                             }
+
                         </ChildRowContent>
                     </MudDataGrid>
                 }

@@ -1,20 +1,19 @@
-using Azure.AI.OpenAI;
 using Blazored.LocalStorage;
 using BlazorUtilities.Extensions;
+using CodeRag.Chunking.CSharp;
+using CodeRag.Chunking.Markdown;
+using CodeRag.Integrations.GitHub;
+using CodeRag.RawFileRetrieval.Models;
+using CodeRag.VectorStore;
+using CodeRag.VectorStore.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
-using Microsoft.SemanticKernel.Embeddings;
 using MudBlazor.Services;
 using Shared.Ai;
-using Shared.Ai.Queries;
 using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
-using Shared.GitHub;
-using System.ClientModel;
 using Microsoft.AspNetCore.Mvc;
 using Website;
 using Website.Extensions;
@@ -35,7 +34,14 @@ if (configuration != null)
 {
     builder.AutoRegisterServicesViaReflection(typeof(Program));
     builder.AutoRegisterServicesViaReflection(typeof(ProjectEntity));
+    builder.AutoRegisterServicesViaReflection(typeof(GitHubConnection));
+    builder.AutoRegisterServicesViaReflection(typeof(RawFile));
+    builder.AutoRegisterServicesViaReflection(typeof(CSharpChunker));
+    builder.AutoRegisterServicesViaReflection(typeof(MarkdownChunker));
+    builder.AutoRegisterServicesViaReflection(typeof(VectorStoreQuery));
 
+
+    builder.Services.AddSingleton(new VectorStoreConfiguration(Shared.Constants.VectorCollections.VectorSources, 50));
     builder.Services.AddAzureOpenAIEmbeddingGenerator(configuration.EmbeddingDeploymentName, configuration.Endpoint, configuration.Key);
     builder.Services.AddSingleton(new AiConfiguration(configuration.Endpoint, configuration.Key, configuration.ChatModels));
     builder.Services.AddDbContextFactory<SqlDbContext>(options => { options.UseSqlServer(configuration.SqlServerConnectionString); });

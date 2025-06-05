@@ -1,11 +1,13 @@
 using JetBrains.Annotations;
 using Microsoft.Extensions.VectorData;
-using Shared.Chunking.Markdown;
 using Shared.EntityFramework.DbModels;
-using Shared.RawFiles;
-using Shared.RawFiles.Models;
 using Shared.VectorStores;
 using System.Text.RegularExpressions;
+using CodeRag.Abstractions;
+using CodeRag.Chunking.Markdown;
+using CodeRag.RawFileRetrieval;
+using CodeRag.RawFileRetrieval.Models;
+using CodeRag.VectorStore;
 
 namespace Shared.Ingestion;
 
@@ -13,11 +15,11 @@ namespace Shared.Ingestion;
 public class IngestionMarkdownCommand(
     MarkdownChunker chunker,
     VectorStoreQuery vectorStoreQuery,
-    VectorStoreCommand vectorStoreCommand,
+    VectorStoreCommandSpecific vectorStoreCommand,
     RawFileGitHubQuery gitHubRawFileContentQuery,
     RawFileLocalQuery rawFileLocalQuery) : IngestionCommand(vectorStoreCommand), IScopedService
 {
-    public override async Task IngestAsync(ProjectEntity project, ProjectSourceEntity source)
+    public override async Task IngestAsync(ProjectSourceEntity source)
     {
         if (source.Kind != ProjectSourceKind.Markdown)
         {
@@ -27,10 +29,10 @@ public class IngestionMarkdownCommand(
         RawFileQuery rawFileContentQuery;
         switch (source.Location)
         {
-            case ProjectSourceLocation.GitHub:
+            case RawFileLocation.GitHub:
                 rawFileContentQuery = gitHubRawFileContentQuery;
                 break;
-            case ProjectSourceLocation.Local:
+            case RawFileLocation.Local:
                 rawFileContentQuery = rawFileLocalQuery;
                 break;
             default:
@@ -39,14 +41,14 @@ public class IngestionMarkdownCommand(
 
         rawFileContentQuery.NotifyProgress += OnNotifyProgress;
 
-        RawFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(project, source, "md");
+        RawFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(source.ToRawFileSource(), "md");
         if (rawFiles == null)
         {
             OnNotifyProgress("Nothing new to Ingest so skipping");
             return;
         }
 
-        VectorStoreCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection();
+        VectorStoreCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection<Guid, VectorEntity>();
 
         await collection.EnsureCollectionExistsAsync();
 
@@ -115,7 +117,7 @@ public class IngestionMarkdownCommand(
             }
         }
 
-        var existingData = await vectorStoreQuery.GetExistingAsync(project.Id, source.Id);
+        var existingData = await vectorStoreQuery.GetExistingAsync<Guid, VectorEntity>(x => x.SourceId == source.Id);
 
         int counter = 0;
         List<Guid> idsToKeep = [];
@@ -126,7 +128,7 @@ public class IngestionMarkdownCommand(
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
             if (existing == null)
             {
-                await Retry.ExecuteWithRetryAsync(async () => { await VectorStoreCommand.Upsert(project.Id, source, collection, entry); }, 3, TimeSpan.FromSeconds(30));
+                await Retry.ExecuteWithRetryAsync(async () => { await VectorStoreCommandSpecific.Upsert(source, collection, entry); }, 3, TimeSpan.FromSeconds(30));
             }
             else
             {

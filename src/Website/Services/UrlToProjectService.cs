@@ -1,8 +1,9 @@
-﻿using JetBrains.Annotations;
+﻿using CodeRag.Abstractions;
+using CodeRag.Integrations.GitHub;
+using CodeRag.RawFileRetrieval.Models;
+using JetBrains.Annotations;
 using Octokit;
-using Shared;
 using Shared.EntityFramework.DbModels;
-using Shared.GitHub;
 using Shared.Projects;
 using Website.Models;
 
@@ -61,7 +62,7 @@ public class UrlToProjectService(GitHubQuery gitHubQuery, ProjectQuery projectQu
                         Kind = ProjectSourceKind.CSharpCode,
                         Path = "/",
                         Recursive = true,
-                        Location = ProjectSourceLocation.GitHub,
+                        Location = RawFileLocation.GitHub,
                     },
                     new ProjectSourceEntity
                     {
@@ -69,7 +70,7 @@ public class UrlToProjectService(GitHubQuery gitHubQuery, ProjectQuery projectQu
                         Kind = ProjectSourceKind.Markdown,
                         Path = "/",
                         Recursive = true,
-                        Location = ProjectSourceLocation.GitHub,
+                        Location = RawFileLocation.GitHub,
                     }
                 ]
             };

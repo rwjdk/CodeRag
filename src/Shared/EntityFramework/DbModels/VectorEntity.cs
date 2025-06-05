@@ -1,7 +1,8 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using CodeRag.VectorStore.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Shared.EntityFramework.DbModels;
 
@@ -9,10 +10,9 @@ namespace Shared.EntityFramework.DbModels;
 /// Represents a vector entity with identification, classification, content, and metadata properties
 /// </summary>
 [Table(Constants.VectorCollections.VectorSources)]
-[Index(nameof(ProjectId))]
 [Index(nameof(SourceId))]
 [Index(nameof(DataType))]
-public class VectorEntity
+public class VectorEntity : IVectorEntity<Guid>
 {
     /// <summary>
     /// ID of the Vector
@@ -96,12 +96,6 @@ public class VectorEntity
     [VectorStoreData]
     [MaxLength(4000)]
     public string DataType { get; set; } = null!;
-
-    /// <summary>
-    /// The ID of the Project the Content belong to
-    /// </summary>
-    [VectorStoreData]
-    public Guid ProjectId { get; set; }
 
     /// <summary>
     /// The ID of the Project Source the Content belong to

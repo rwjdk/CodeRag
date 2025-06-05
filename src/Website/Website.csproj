@@ -26,6 +26,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\BlazorUtils\BlazorUtilities.csproj" />
+		<ProjectReference Include="..\CodeRag.Integrations.GitHub\CodeRag.Integrations.GitHub.csproj" />
+		<ProjectReference Include="..\CodeRag.RawFileRetrieval\CodeRag.RawFileRetrieval.csproj" />
 		<ProjectReference Include="..\Shared\Shared.csproj" />
 	</ItemGroup>
 

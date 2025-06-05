@@ -1,5 +1,7 @@
 ﻿using BlazorUtilities;
 using BlazorUtilities.Helpers;
+using CodeRag.Abstractions;
+using CodeRag.VectorStore;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Shared;
@@ -11,7 +13,12 @@ using Website.Models;
 
 namespace Website.Dialogs;
 
-public partial class ProjectDialog(ProjectCommand projectCommand, IngestionCSharpCommand ingestionCSharpCommand, IngestionMarkdownCommand ingestionMarkdownCommand, VectorStoreCommand vectorStoreCommand) : IDisposable
+public partial class ProjectDialog(
+    ProjectCommand projectCommand,
+    IngestionCSharpCommand ingestionCSharpCommand,
+    IngestionMarkdownCommand ingestionMarkdownCommand,
+    VectorStoreCommandSpecific vectorStoreCommandSpecific,
+    VectorStoreCommand vectorStoreCommand) : IDisposable
 {
     private int _current;
     private string? _lastMessage;
@@ -75,7 +82,7 @@ public partial class ProjectDialog(ProjectCommand projectCommand, IngestionCShar
         {
             foreach (Guid sourceId in _sourceIdsPendingDeletion)
             {
-                await vectorStoreCommand.DeleteSourceDataAsync(sourceId);
+                await vectorStoreCommand.DeleteAsync<Guid, VectorEntity>(x => x.SourceId == sourceId);
             }
 
             _sourceIdsPendingDeletion.Clear();
@@ -133,10 +140,10 @@ public partial class ProjectDialog(ProjectCommand projectCommand, IngestionCShar
             switch (source.Kind)
             {
                 case ProjectSourceKind.CSharpCode:
-                    await ingestionCSharpCommand.IngestAsync(Project, source);
+                    await ingestionCSharpCommand.IngestAsync(source);
                     break;
                 case ProjectSourceKind.Markdown:
-                    await ingestionMarkdownCommand.IngestAsync(Project, source);
+                    await ingestionMarkdownCommand.IngestAsync(source);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -179,7 +186,11 @@ public partial class ProjectDialog(ProjectCommand projectCommand, IngestionCShar
     {
         await BlazorUtils.PromptYesNoQuestion("Are you sure you wish to delete this project (THERE IS NO GOING BACK)?", async () =>
         {
-            await vectorStoreCommand.DeleteProjectData(Project.Id);
+            foreach (ProjectSourceEntity source in Project.Sources)
+            {
+                await vectorStoreCommand.DeleteAsync<Guid, VectorEntity>(x => x.SourceId == source.Id);
+            }
+
             await projectCommand.DeleteProjectAsync(Project);
             Dialog.Close();
         });

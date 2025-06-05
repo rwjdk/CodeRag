@@ -1,6 +1,7 @@
 ﻿@page "/XmlSummariesGeneration"
+@using CodeRag.Chunking.CSharp
+@using CodeRag.RawFileRetrieval.Models
 @using Shared.Ai
-@using Shared.Chunking.CSharp
 @using Shared.EntityFramework.DbModels
 @using Website.Models
 <MudGrid Spacing="1" Class="align-items-center">
@@ -11,7 +12,7 @@
         {
             <MudAlert Severity="Severity.Warning">This Project have no C# Sources</MudAlert>
         }
-        else if (_selectedSource.Location != ProjectSourceLocation.Local)
+        else if (_selectedSource.Location != RawFileLocation.Local)
         {
             <MudAlert Severity="Severity.Warning">So far this feature only support Local Sources</MudAlert>
         }
@@ -42,7 +43,7 @@
 </MudGrid>
 
 
-@if (_selectedSource is { Location: ProjectSourceLocation.Local })
+@if (_selectedSource is { Location: RawFileLocation.Local })
 {
     @if (_tree != null)
     {

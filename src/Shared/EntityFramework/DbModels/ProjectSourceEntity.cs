@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
+using CodeRag.RawFileRetrieval.Models;
 
 namespace Shared.EntityFramework.DbModels;
 
@@ -21,7 +22,7 @@ public class ProjectSourceEntity
 
     public required ProjectSourceKind Kind { get; init; }
 
-    public required ProjectSourceLocation Location { get; set; }
+    public required RawFileLocation Location { get; set; }
 
     [MaxLength(1000)]
     public required string Path { get; set; }
@@ -53,7 +54,13 @@ public class ProjectSourceEntity
 
     public bool MarkdownFilenameEqualDocUrlSubpage { get; set; }
 
-    public DateTimeOffset? LastGitGubCommitTimestamp { get; set; }
+    [MaxLength(100)]
+    public string? GitHubOwner { get; set; }
+
+    [MaxLength(500)]
+    public string? GitHubRepo { get; set; }
+
+    public DateTimeOffset? GitGubLastCommitTimestamp { get; set; }
 
     [NotMapped]
     public bool AddMode { get; set; }
@@ -68,7 +75,7 @@ public class ProjectSourceEntity
             Project = project,
             ProjectEntityId = project.Id,
             Recursive = true,
-            Location = ProjectSourceLocation.Local,
+            Location = RawFileLocation.Local,
             MarkdownChunkIgnoreIfLessThanThisAmountOfChars = 25,
             MarkdownIgnoreImages = true,
             MarkdownIgnoreCommentedOutContent = true,
@@ -79,22 +86,17 @@ public class ProjectSourceEntity
         };
     }
 
-    public bool IgnoreFile(string path)
+    public RawFileSource ToRawFileSource()
     {
-        if (string.IsNullOrWhiteSpace(FileIgnorePatterns))
+        return new RawFileSource
         {
-            return false;
-        }
-
-        string[] patternsToIgnore = FileIgnorePatterns.Split(';', StringSplitOptions.RemoveEmptyEntries);
-        foreach (string pattern in patternsToIgnore.Where(x => !string.IsNullOrWhiteSpace(x)))
-        {
-            if (Regex.IsMatch(path, pattern, RegexOptions.IgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
+            FileIgnorePatterns = FileIgnorePatterns,
+            Location = Location,
+            Path = Path,
+            Recursive = Recursive,
+            GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
+            GitHubOwner = GitHubOwner,
+            GitHubRepo = GitHubRepo
+        };
     }
 }
