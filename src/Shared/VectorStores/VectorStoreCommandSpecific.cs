@@ -9,11 +9,12 @@ namespace Shared.VectorStores;
 [UsedImplicitly]
 public class VectorStoreCommandSpecific : IScopedService
 {
-    public async Task Upsert(ProjectSourceEntity source, VectorStoreCollection<Guid, VectorEntity> collection, VectorEntity entry)
+    public async Task Upsert(ProjectEntity project, ProjectSourceEntity source, VectorStoreCollection<Guid, VectorEntity> collection, VectorEntity entry)
     {
         try
         {
             entry.VectorId = Guid.NewGuid();
+            entry.ProjectId = project.Id;
             entry.SourceId = source.Id;
 
             switch (source.Kind)
@@ -42,11 +43,11 @@ public class VectorStoreCommandSpecific : IScopedService
                 string part2 = entry.Content.Substring(middle);
                 entry.Content = part1;
                 entry.Name = name + $" ({Guid.NewGuid()})";
-                await Upsert(source, collection, entry);
+                await Upsert(project, source, collection, entry);
                 entry.VectorId = Guid.NewGuid();
                 entry.Content = part2;
                 entry.Name = name + $" ({Guid.NewGuid()})";
-                await Upsert(source, collection, entry);
+                await Upsert(project, source, collection, entry);
             }
             else
             {

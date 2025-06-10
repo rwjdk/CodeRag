@@ -140,10 +140,10 @@ public partial class ProjectDialog(
             switch (source.Kind)
             {
                 case ProjectSourceKind.CSharpCode:
-                    await ingestionCSharpCommand.IngestAsync(source);
+                    await ingestionCSharpCommand.IngestAsync(Project, source);
                     break;
                 case ProjectSourceKind.Markdown:
-                    await ingestionMarkdownCommand.IngestAsync(source);
+                    await ingestionMarkdownCommand.IngestAsync(Project, source);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

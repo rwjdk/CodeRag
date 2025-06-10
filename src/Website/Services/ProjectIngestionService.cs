@@ -23,11 +23,11 @@ public class ProjectIngestionService(ProjectCommand projectCommand, IngestionMar
         switch (source.Kind)
         {
             case ProjectSourceKind.CSharpCode:
-                await ingestionCSharpCommand.IngestAsync(source);
+                await ingestionCSharpCommand.IngestAsync(project, source);
 
                 break;
             case ProjectSourceKind.Markdown:
-                await ingestionMarkdownCommand.IngestAsync(source);
+                await ingestionMarkdownCommand.IngestAsync(project, source);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

@@ -19,7 +19,7 @@ public class IngestionMarkdownCommand(
     RawFileGitHubQuery gitHubRawFileContentQuery,
     RawFileLocalQuery rawFileLocalQuery) : IngestionCommand(vectorStoreCommand), IScopedService
 {
-    public override async Task IngestAsync(ProjectSourceEntity source)
+    public override async Task IngestAsync(ProjectEntity project, ProjectSourceEntity source)
     {
         if (source.Kind != ProjectSourceKind.Markdown)
         {
@@ -128,7 +128,7 @@ public class IngestionMarkdownCommand(
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
             if (existing == null)
             {
-                await Retry.ExecuteWithRetryAsync(async () => { await VectorStoreCommandSpecific.Upsert(source, collection, entry); }, 3, TimeSpan.FromSeconds(30));
+                await Retry.ExecuteWithRetryAsync(async () => { await VectorStoreCommandSpecific.Upsert(project, source, collection, entry); }, 3, TimeSpan.FromSeconds(30));
             }
             else
             {

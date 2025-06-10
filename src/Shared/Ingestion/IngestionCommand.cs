@@ -8,5 +8,5 @@ public abstract class IngestionCommand(VectorStoreCommandSpecific vectorStoreCom
 {
     protected VectorStoreCommandSpecific VectorStoreCommandSpecific { get; } = vectorStoreCommandSpecific;
 
-    public abstract Task IngestAsync(ProjectSourceEntity source);
+    public abstract Task IngestAsync(ProjectEntity project, ProjectSourceEntity source);
 }

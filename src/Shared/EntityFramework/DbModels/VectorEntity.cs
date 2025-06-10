@@ -1,4 +1,5 @@
 using CodeRag.VectorStore.Models;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.VectorData;
 using System.ComponentModel.DataAnnotations;
@@ -10,6 +11,7 @@ namespace Shared.EntityFramework.DbModels;
 /// Represents a vector entity with identification, classification, content, and metadata properties
 /// </summary>
 [Table(Constants.VectorCollections.VectorSources)]
+[Index(nameof(ProjectId))]
 [Index(nameof(SourceId))]
 [Index(nameof(DataType))]
 public class VectorEntity : IVectorEntity<Guid>
@@ -98,6 +100,12 @@ public class VectorEntity : IVectorEntity<Guid>
     public string DataType { get; set; } = null!;
 
     /// <summary>
+    /// The ID of the Project the Content belong to
+    /// </summary>
+    [VectorStoreData]
+    public Guid ProjectId { get; set; }
+
+    /// <summary>
     /// The ID of the Project Source the Content belong to
     /// </summary>
     [VectorStoreData]
@@ -109,7 +117,7 @@ public class VectorEntity : IVectorEntity<Guid>
 
     public string GetContentCompareKey()
     {
-        var contentCompareKey = Id + Kind + Name + Parent + ParentKind + Namespace + Summary + Content + SourcePath;
+        var contentCompareKey = Id + Kind + Name + Parent + ParentKind + Namespace + Summary + Content + SourcePath + ProjectId + SourceId;
         return contentCompareKey;
     }
 
