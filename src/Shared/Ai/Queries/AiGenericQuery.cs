@@ -1,6 +1,4 @@
 using System.Text.Json;
-using CodeRag.Abstractions;
-using CodeRag.VectorStorage;
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -9,8 +7,10 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using OpenAI.Chat;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
+using SimpleRag.Abstractions;
 using SimpleRag.Source.CSharp;
 using SimpleRag.Source.Markdown;
+using SimpleRag.VectorStorage;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Shared.Ai.Queries;

@@ -1,11 +1,10 @@
-﻿using CodeRag.Abstractions;
-using CodeRag.Abstractions.Models;
-using CodeRag.Integrations.GitHub;
-using CodeRag.RawFileRetrieval.Models;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Octokit;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
+using SimpleRag.Abstractions;
+using SimpleRag.Abstractions.Models;
+using SimpleRag.Integrations.GitHub;
 using Website.Models;
 
 namespace Website.Services;

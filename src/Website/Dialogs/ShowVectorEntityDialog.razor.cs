@@ -1,8 +1,8 @@
 ﻿using BlazorUtilities;
-using CodeRag.VectorStorage.Models;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Shared.EntityFramework.DbModels;
+using SimpleRag.VectorStorage.Models;
 
 namespace Website.Dialogs;
 

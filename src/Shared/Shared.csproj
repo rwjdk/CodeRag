@@ -29,6 +29,7 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
 		<PackageReference Include="Microsoft.SemanticKernel" Version="1.53.1" />
 		<PackageReference Include="Microsoft.SemanticKernel.Connectors.SqlServer" Version="1.53.1-preview" />
+		<PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.53.1-preview" />
 		<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.53.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />		
 		<PackageReference Include="Octokit" Version="14.0.0" />		
@@ -36,12 +37,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\CodeRag.Abstractions\CodeRag.Abstractions.csproj" />
-	  <ProjectReference Include="..\CodeRag.Integrations.GitHub\CodeRag.Integrations.GitHub.csproj" />
-	  <ProjectReference Include="..\CodeRag.RawFileRetrieval\CodeRag.RawFileRetrieval.csproj" />
-	  <ProjectReference Include="..\CodeRag.VectorStore\CodeRag.VectorStorage.csproj" />
+	  <ProjectReference Include="..\SimpleRag.Abstractions\SimpleRag.Abstractions.csproj" />
 	  <ProjectReference Include="..\SimpleRag.Source.CSharp\SimpleRag.Source.CSharp.csproj" />
 	  <ProjectReference Include="..\SimpleRag.Source.Markdown\SimpleRag.Source.Markdown.csproj" />
+	  <ProjectReference Include="..\SimpleRag.VectorStore\SimpleRag.VectorStorage.csproj" />
 	</ItemGroup>
 
 </Project>

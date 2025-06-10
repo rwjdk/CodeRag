@@ -1,6 +1,5 @@
 ﻿using BlazorUtilities;
 using BlazorUtilities.Components;
-using CodeRag.Abstractions.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
@@ -10,6 +9,7 @@ using Shared.Ai;
 using Shared.EntityFramework.DbModels;
 using Website.Models;
 using Shared.Ai.Queries;
+using SimpleRag.Abstractions.Models;
 using SimpleRag.Source.CSharp;
 using SimpleRag.Source.CSharp.Models;
 

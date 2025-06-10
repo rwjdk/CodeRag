@@ -1,8 +1,8 @@
-using CodeRag.Abstractions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
+using SimpleRag.Abstractions;
 
 namespace Shared.Projects;
 

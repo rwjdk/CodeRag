@@ -1,13 +1,12 @@
 using System.Diagnostics;
-using CodeRag.Abstractions;
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Embeddings;
 using Shared.Ai.StructuredOutputModels;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
+using SimpleRag.Abstractions;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Shared.Ai.Queries;

@@ -1,9 +1,9 @@
 using System.Text;
-using CodeRag.Abstractions;
 using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SimpleRag.Abstractions;
 using SimpleRag.Source.CSharp.Models;
 
 namespace SimpleRag.Source.CSharp

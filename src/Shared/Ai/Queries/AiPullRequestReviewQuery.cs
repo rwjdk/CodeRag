@@ -1,11 +1,11 @@
 using System.Text;
 using System.Text.Json;
-using CodeRag.Abstractions;
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Shared.Ai.StructuredOutputModels;
 using Shared.EntityFramework.DbModels;
+using SimpleRag.Abstractions;
 
 namespace Shared.Ai.Queries;
 

@@ -1,12 +1,12 @@
 using System.Text;
-using CodeRag.Abstractions;
-using CodeRag.Abstractions.Models;
-using CodeRag.RawFileRetrieval;
-using CodeRag.RawFileRetrieval.Models;
-using CodeRag.VectorStorage;
-using CodeRag.VectorStorage.Models;
 using JetBrains.Annotations;
+using SimpleRag.Abstractions;
+using SimpleRag.Abstractions.Models;
+using SimpleRag.FileRetrieval;
+using SimpleRag.FileRetrieval.Models;
 using SimpleRag.Source.CSharp.Models;
+using SimpleRag.VectorStorage;
+using SimpleRag.VectorStorage.Models;
 
 namespace SimpleRag.Source.CSharp;
 
@@ -15,12 +15,12 @@ public class CSharpSourceCommand(
     CSharpChunker chunker,
     VectorStoreCommand vectorStoreCommand,
     VectorStoreQuery vectorStoreQuery,
-    RawFileGitHubQuery rawFileGitHubQuery,
-    RawFileLocalQuery rawFileLocalQuery) : ProgressNotificationBase, IScopedService
+    RagFileGitHubQuery rawFileGitHubQuery,
+    RagFileLocalQuery rawRagFileLocalQuery) : ProgressNotificationBase, IScopedService
 {
     public const string SourceKind = "CSharp";
 
-    public async Task IngestAsync(CodeRag.Abstractions.Models.RagSource source)
+    public async Task IngestAsync(RagSource source)
     {
         if (source.Kind != RagSourceKind.CSharp)
         {
@@ -32,14 +32,14 @@ public class CSharpSourceCommand(
             throw new SourceException("Source Path is not defined");
         }
 
-        RawFileQuery rawFileContentQuery;
+        RagFileQuery rawFileContentQuery;
         switch (source.Location)
         {
             case RagSourceLocation.GitHub:
                 rawFileContentQuery = rawFileGitHubQuery;
                 break;
             case RagSourceLocation.Local:
-                rawFileContentQuery = rawFileLocalQuery;
+                rawFileContentQuery = rawRagFileLocalQuery;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(source.Location));
@@ -47,8 +47,8 @@ public class CSharpSourceCommand(
 
         rawFileContentQuery.NotifyProgress += OnNotifyProgress;
 
-        RawFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(source, "cs");
-        if (rawFiles == null)
+        RagFile[]? files = await rawFileContentQuery.GetRawContentForSourceAsync(source, "cs");
+        if (files == null)
         {
             OnNotifyProgress("Nothing new to Ingest so skipping");
             return;
@@ -56,24 +56,24 @@ public class CSharpSourceCommand(
 
         List<CSharpChunk> codeEntities = [];
 
-        foreach (RawFile rawFile in rawFiles)
+        foreach (RagFile file in files)
         {
-            var numberOfLine = rawFile.Content.Split(["\n"], StringSplitOptions.RemoveEmptyEntries).Length;
+            var numberOfLine = file.Content.Split(["\n"], StringSplitOptions.RemoveEmptyEntries).Length;
             if (source.IgnoreFileIfMoreThanThisNumberOfLines.HasValue && numberOfLine > source.IgnoreFileIfMoreThanThisNumberOfLines)
             {
                 continue;
             }
 
-            List<CSharpChunk> entitiesForFile = chunker.GetCodeEntities(rawFile.Content);
+            List<CSharpChunk> entitiesForFile = chunker.GetCodeEntities(file.Content);
             foreach (CSharpChunk codeEntity in entitiesForFile)
             {
-                codeEntity.SourcePath = rawFile.PathWithoutRoot;
+                codeEntity.SourcePath = file.PathWithoutRoot;
             }
 
             codeEntities.AddRange(entitiesForFile);
         }
 
-        OnNotifyProgress($"{rawFiles.Length} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
+        OnNotifyProgress($"{files.Length} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
 
         //Creating References
         foreach (CSharpChunk codeEntity in codeEntities)
@@ -131,8 +131,7 @@ public class CSharpSourceCommand(
                 ContentId = null,
                 SourceCollectionId = source.CollectionId,
                 SourceKind = SourceKind,
-                TimeOfIngestion = DateTime.UtcNow,
-                SourcePath = codeEntity.SourcePath!,
+                SourcePath = codeEntity.SourcePath,
                 ContentKind = codeEntity.KindAsString,
                 ContentParent = codeEntity.Parent,
                 ContentParentKind = codeEntity.ParentKindAsString,

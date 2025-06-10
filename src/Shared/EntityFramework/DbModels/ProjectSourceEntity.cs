@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using CodeRag.Abstractions.Models;
+using SimpleRag.Abstractions.Models;
 
 namespace Shared.EntityFramework.DbModels;
 

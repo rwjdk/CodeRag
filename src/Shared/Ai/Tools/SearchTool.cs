@@ -1,8 +1,8 @@
-using CodeRag.Abstractions;
-using CodeRag.VectorStorage;
-using CodeRag.VectorStorage.Models;
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
+using SimpleRag.Abstractions;
+using SimpleRag.VectorStorage;
+using SimpleRag.VectorStorage.Models;
 
 namespace Shared.Ai.Tools;
 

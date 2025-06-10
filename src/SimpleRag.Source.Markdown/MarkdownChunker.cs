@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
-using CodeRag.Abstractions;
 using JetBrains.Annotations;
+using SimpleRag.Abstractions;
 using SimpleRag.Source.Markdown.Models;
 
 namespace SimpleRag.Source.Markdown

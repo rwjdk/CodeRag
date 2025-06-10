@@ -1,8 +1,8 @@
-﻿using CodeRag.Abstractions;
-using CodeRag.Abstractions.Models;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
+using SimpleRag.Abstractions;
+using SimpleRag.Abstractions.Models;
 using SimpleRag.Source.CSharp;
 using SimpleRag.Source.Markdown;
 

@@ -1,14 +1,14 @@
 ﻿using BlazorUtilities;
 using BlazorUtilities.Helpers;
-using CodeRag.Abstractions;
-using CodeRag.Abstractions.Models;
-using CodeRag.VectorStorage;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
+using SimpleRag.Abstractions;
+using SimpleRag.Abstractions.Models;
 using SimpleRag.Source.CSharp;
 using SimpleRag.Source.Markdown;
+using SimpleRag.VectorStorage;
 using Website.Models;
 
 namespace Website.Dialogs;

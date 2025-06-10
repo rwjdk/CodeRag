@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleRag.Abstractions\SimpleRag.Abstractions.csproj" />
+    <ProjectReference Include="..\SimpleRag.Integrations.GitHub\SimpleRag.Integrations.GitHub.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CodeRag.Abstractions\CodeRag.Abstractions.csproj" />
-    <ProjectReference Include="..\CodeRag.RawFileRetrieval\CodeRag.RawFileRetrieval.csproj" />
-    <ProjectReference Include="..\CodeRag.VectorStore\CodeRag.VectorStorage.csproj" />
+    <ProjectReference Include="..\SimpleRag.Abstractions\SimpleRag.Abstractions.csproj" />
+    <ProjectReference Include="..\SimpleRag.FileRetrieval\SimpleRag.FileRetrieval.csproj" />
+    <ProjectReference Include="..\SimpleRag.VectorStore\SimpleRag.VectorStorage.csproj" />
   </ItemGroup>
 
 </Project>

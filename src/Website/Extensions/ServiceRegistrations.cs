@@ -1,6 +1,5 @@
-﻿using CodeRag.Abstractions;
-using Shared;
-using Shared.Ai;
+﻿using Shared.Ai;
+using SimpleRag.Abstractions;
 using Website.Models;
 
 namespace Website.Extensions;

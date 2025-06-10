@@ -1,7 +1,5 @@
 ﻿using BlazorUtilities;
 using BlazorUtilities.Components;
-using CodeRag.Abstractions;
-using CodeRag.VectorStorage.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -12,6 +10,8 @@ using Shared;
 using Shared.Ai;
 using Shared.Ai.Queries;
 using Shared.EntityFramework.DbModels;
+using SimpleRag.Abstractions;
+using SimpleRag.VectorStorage.Models;
 using Website.Dialogs;
 
 namespace Website.Pages.Chat;

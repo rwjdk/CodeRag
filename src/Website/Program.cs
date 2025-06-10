@@ -1,8 +1,5 @@
 using Blazored.LocalStorage;
 using BlazorUtilities.Extensions;
-using CodeRag.Integrations.GitHub;
-using CodeRag.RawFileRetrieval.Models;
-using CodeRag.VectorStorage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
@@ -12,8 +9,11 @@ using Shared.Ai;
 using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 using Microsoft.AspNetCore.Mvc;
+using SimpleRag.FileRetrieval.Models;
+using SimpleRag.Integrations.GitHub;
 using SimpleRag.Source.CSharp;
 using SimpleRag.Source.Markdown;
+using SimpleRag.VectorStorage;
 using Website;
 using Website.Extensions;
 using Website.Models;
@@ -34,7 +34,7 @@ if (configuration != null)
     builder.AutoRegisterServicesViaReflection(typeof(Program));
     builder.AutoRegisterServicesViaReflection(typeof(ProjectEntity));
     builder.AutoRegisterServicesViaReflection(typeof(GitHubConnection));
-    builder.AutoRegisterServicesViaReflection(typeof(RawFile));
+    builder.AutoRegisterServicesViaReflection(typeof(RagFile));
     builder.AutoRegisterServicesViaReflection(typeof(CSharpSourceCommand));
     builder.AutoRegisterServicesViaReflection(typeof(MarkdownSourceCommand));
     builder.AutoRegisterServicesViaReflection(typeof(VectorStoreQuery));
@@ -44,10 +44,13 @@ if (configuration != null)
     builder.Services.AddAzureOpenAIEmbeddingGenerator(configuration.EmbeddingDeploymentName, configuration.Endpoint, configuration.Key);
     builder.Services.AddSingleton(new AiConfiguration(configuration.Endpoint, configuration.Key, configuration.ChatModels));
     builder.Services.AddDbContextFactory<SqlDbContext>(options => { options.UseSqlServer(configuration.SqlServerConnectionString); });
+
     builder.Services.AddScoped<VectorStore, SqlServerVectorStore>(options => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions
     {
         EmbeddingGenerator = options.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>()
     }));
+
+
     builder.Services.AddSingleton(new GitHubConnection(configuration.GitHubToken));
 }
 

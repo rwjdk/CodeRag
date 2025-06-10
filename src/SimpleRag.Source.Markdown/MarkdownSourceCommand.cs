@@ -1,12 +1,12 @@
-using System.Text.RegularExpressions;
-using CodeRag.Abstractions;
-using CodeRag.Abstractions.Models;
-using CodeRag.RawFileRetrieval;
-using CodeRag.RawFileRetrieval.Models;
-using CodeRag.VectorStorage;
-using CodeRag.VectorStorage.Models;
 using JetBrains.Annotations;
+using SimpleRag.Abstractions;
+using SimpleRag.Abstractions.Models;
+using SimpleRag.FileRetrieval;
+using SimpleRag.FileRetrieval.Models;
 using SimpleRag.Source.Markdown.Models;
+using SimpleRag.VectorStorage;
+using SimpleRag.VectorStorage.Models;
+using System.Text.RegularExpressions;
 
 namespace SimpleRag.Source.Markdown;
 
@@ -15,8 +15,8 @@ public class MarkdownSourceCommand(
     MarkdownChunker chunker,
     VectorStoreQuery vectorStoreQuery,
     VectorStoreCommand vectorStoreCommand,
-    RawFileGitHubQuery gitHubRawFileContentQuery,
-    RawFileLocalQuery rawFileLocalQuery) : ProgressNotificationBase, IScopedService
+    RagFileGitHubQuery gitHubRawFileContentQuery,
+    RagFileLocalQuery rawFileLocalQuery) : ProgressNotificationBase, IScopedService
 {
     public const string SourceKind = "Markdown";
 
@@ -27,7 +27,7 @@ public class MarkdownSourceCommand(
             throw new SourceException($"Invalid Kind. Expected '{nameof(RagSourceKind.Markdown)}' but received {source.Kind}");
         }
 
-        RawFileQuery rawFileContentQuery;
+        RagFileQuery rawFileContentQuery;
         switch (source.Location)
         {
             case RagSourceLocation.GitHub:
@@ -42,7 +42,7 @@ public class MarkdownSourceCommand(
 
         rawFileContentQuery.NotifyProgress += OnNotifyProgress;
 
-        RawFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(source, "md");
+        RagFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(source, "md");
         if (rawFiles == null)
         {
             OnNotifyProgress("Nothing new to Ingest so skipping");
@@ -103,7 +103,6 @@ public class MarkdownSourceCommand(
                     SourceId = source.Id,
                     SourceKind = SourceKind,
                     SourceCollectionId = source.CollectionId,
-                    TimeOfIngestion = DateTime.UtcNow,
                     SourcePath = rawFile.PathWithoutRoot,
                     ContentParent = null,
                     ContentParentKind = null,
@@ -118,7 +117,6 @@ public class MarkdownSourceCommand(
                     SourceId = source.Id,
                     SourceKind = SourceKind,
                     SourceCollectionId = source.CollectionId,
-                    TimeOfIngestion = DateTime.UtcNow,
                     SourcePath = rawFile.PathWithoutRoot,
                     ContentKind = "Markdown",
                     Content = $"{fileNameWithoutExtension}{newLine}---{newLine}{content}",

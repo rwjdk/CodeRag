@@ -1,11 +1,11 @@
 ﻿using BlazorUtilities;
-using CodeRag.Integrations.GitHub;
 using Microsoft.AspNetCore.Components;
 using Octokit;
 using Shared.Ai;
 using Shared.Ai.Queries;
 using Shared.Ai.StructuredOutputModels;
 using Shared.EntityFramework.DbModels;
+using SimpleRag.Integrations.GitHub;
 
 namespace Website.Pages.PrReview;
 
