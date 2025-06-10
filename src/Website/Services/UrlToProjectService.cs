@@ -1,4 +1,5 @@
 ﻿using CodeRag.Abstractions;
+using CodeRag.Abstractions.Models;
 using CodeRag.Integrations.GitHub;
 using CodeRag.RawFileRetrieval.Models;
 using JetBrains.Annotations;
@@ -59,18 +60,18 @@ public class UrlToProjectService(GitHubQuery gitHubQuery, ProjectQuery projectQu
                     new ProjectSourceEntity
                     {
                         Name = "C# Code",
-                        Kind = ProjectSourceKind.CSharpCode,
+                        Kind = RagSourceKind.CSharp,
                         Path = "/",
                         Recursive = true,
-                        Location = RawFileLocation.GitHub,
+                        Location = RagSourceLocation.GitHub,
                     },
                     new ProjectSourceEntity
                     {
                         Name = "Markdown",
-                        Kind = ProjectSourceKind.Markdown,
+                        Kind = RagSourceKind.Markdown,
                         Path = "/",
                         Recursive = true,
-                        Location = RawFileLocation.GitHub,
+                        Location = RagSourceLocation.GitHub,
                     }
                 ]
             };

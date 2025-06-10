@@ -1,14 +1,15 @@
 ﻿using CodeRag.Abstractions;
+using CodeRag.Abstractions.Models;
 using JetBrains.Annotations;
-using Shared;
 using Shared.EntityFramework.DbModels;
-using Shared.Ingestion;
 using Shared.Projects;
+using SimpleRag.Source.CSharp;
+using SimpleRag.Source.Markdown;
 
 namespace Website.Services;
 
 [UsedImplicitly]
-public class ProjectIngestionService(ProjectCommand projectCommand, IngestionMarkdownCommand ingestionMarkdownCommand, IngestionCSharpCommand ingestionCSharpCommand) : IScopedService
+public class ProjectIngestionService(ProjectCommand projectCommand, MarkdownSourceCommand ingestionMarkdownCommand, CSharpSourceCommand ingestionCSharpCommand) : IScopedService
 {
     public async Task IngestAsync(ProjectEntity project)
     {
@@ -22,12 +23,11 @@ public class ProjectIngestionService(ProjectCommand projectCommand, IngestionMar
     {
         switch (source.Kind)
         {
-            case ProjectSourceKind.CSharpCode:
-                await ingestionCSharpCommand.IngestAsync(project, source);
-
+            case RagSourceKind.CSharp:
+                await ingestionCSharpCommand.IngestAsync(source.AsRagSource(project));
                 break;
-            case ProjectSourceKind.Markdown:
-                await ingestionMarkdownCommand.IngestAsync(project, source);
+            case RagSourceKind.Markdown:
+                await ingestionMarkdownCommand.IngestAsync(source.AsRagSource(project));
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

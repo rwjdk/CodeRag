@@ -2,7 +2,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
 
-namespace CodeRag.Chunking.CSharp;
+namespace SimpleRag.Source.CSharp.Models;
 
 public class CSharpChunk(CSharpKind kind, string @namespace, string? parent, CSharpKind? parentKind, string name, string xmlSummary, string content, List<string> dependencies, SyntaxNode node)
 {
@@ -28,8 +28,6 @@ public class CSharpChunk(CSharpKind kind, string @namespace, string? parent, CSh
 
     public string? ParentKindAsString => ParentKind.ToString();
 
-    public string? LocalSourcePath { get; set; }
-
     public string Path
     {
         get
@@ -47,6 +45,7 @@ public class CSharpChunk(CSharpKind kind, string @namespace, string? parent, CSh
     }
 
     public List<CSharpChunk>? References { get; set; }
+    public string SourcePath { get; set; } = "";
 
     public override string ToString()
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace CodeRag.VectorStore.Extensions;
+namespace CodeRag.VectorStorage.Extensions;
 
 public static class ServiceCollectionExtensions
 {

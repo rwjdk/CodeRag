@@ -1,4 +1,4 @@
-namespace CodeRag.Chunking.CSharp;
+namespace SimpleRag.Source.CSharp.Models;
 
 public enum CSharpKind
 {

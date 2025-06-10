@@ -1,6 +1,6 @@
 using System.Text.Json;
 using CodeRag.Abstractions;
-using CodeRag.VectorStore;
+using CodeRag.VectorStorage;
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -9,7 +9,8 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using OpenAI.Chat;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
-using Shared.VectorStores;
+using SimpleRag.Source.CSharp;
+using SimpleRag.Source.Markdown;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Shared.Ai.Queries;
@@ -19,16 +20,14 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery ve
 {
     internal SearchTool ImportDocumentationSearchPlugin(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, Kernel kernel)
     {
-        var collection = vectorStoreQuery.GetCollection<Guid, VectorEntity>();
-        var docsTool = new SearchTool(VectorStoreDataType.Documentation, project, collection, maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, this);
+        var docsTool = new SearchTool(vectorStoreQuery, project.Id.ToString(), CSharpSourceCommand.SourceKind, maxNumberOfAnswersBackFromDocumentationSearch, this);
         kernel.ImportPluginFromObject(docsTool, Constants.Tools.Markdown);
         return docsTool;
     }
 
     internal SearchTool ImportCodeSearchPlugin(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, Kernel kernel)
     {
-        var collection = vectorStoreQuery.GetCollection<Guid, VectorEntity>();
-        var codePlugin = new SearchTool(VectorStoreDataType.Code, project, collection, maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, this);
+        var codePlugin = new SearchTool(vectorStoreQuery, project.Id.ToString(), MarkdownSourceCommand.SourceKind, maxNumberOfAnswersBackFromSourceCodeSearch, this);
         kernel.ImportPluginFromObject(codePlugin, Constants.Tools.CSharp);
         return codePlugin;
     }
@@ -48,18 +47,13 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery ve
 
         if (!string.IsNullOrWhiteSpace(chatModel.ReasoningEffortLevel))
         {
-            switch (chatModel.ReasoningEffortLevel)
+            executionSettings.ReasoningEffort = chatModel.ReasoningEffortLevel switch
             {
-                case "low":
-                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.Low;
-                    break;
-                case "medium":
-                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.Medium;
-                    break;
-                case "high":
-                    executionSettings.ReasoningEffort = ChatReasoningEffortLevel.High;
-                    break;
-            }
+                "low" => ChatReasoningEffortLevel.Low,
+                "medium" => ChatReasoningEffortLevel.Medium,
+                "high" => ChatReasoningEffortLevel.High,
+                _ => executionSettings.ReasoningEffort
+            };
         }
 
         ChatCompletionAgent agent = new()

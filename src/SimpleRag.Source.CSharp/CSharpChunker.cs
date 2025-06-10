@@ -4,8 +4,9 @@ using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SimpleRag.Source.CSharp.Models;
 
-namespace CodeRag.Chunking.CSharp
+namespace SimpleRag.Source.CSharp
 {
     [UsedImplicitly]
     public class CSharpChunker : IScopedService

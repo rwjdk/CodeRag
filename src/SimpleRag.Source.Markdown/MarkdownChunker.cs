@@ -1,8 +1,9 @@
 using System.Text.RegularExpressions;
 using CodeRag.Abstractions;
 using JetBrains.Annotations;
+using SimpleRag.Source.Markdown.Models;
 
-namespace CodeRag.Chunking.Markdown
+namespace SimpleRag.Source.Markdown
 {
     [UsedImplicitly]
     public class MarkdownChunker : IScopedService

@@ -1,23 +1,34 @@
-﻿using Microsoft.Extensions.VectorData;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Text;
 using CodeRag.Abstractions;
-using CodeRag.VectorStore.Models;
+using CodeRag.VectorStorage.Models;
+using Microsoft.Extensions.VectorData;
 
-namespace CodeRag.VectorStore;
+namespace CodeRag.VectorStorage;
 
-public class VectorStoreQuery(Microsoft.Extensions.VectorData.VectorStore vectorStore, VectorStoreConfiguration vectorStoreConfiguration) : IScopedService
+public class VectorStoreQuery(VectorStore vectorStore, VectorStoreConfiguration vectorStoreConfiguration) : IScopedService
 {
-    public VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>() where TKey : notnull where TRecord : class, IVectorEntity<TKey>
+    private bool _creationEnsured;
+
+    private async Task<VectorStoreCollection<string, VectorEntity>> GetCollectionAndEnsureItExist(CancellationToken cancellationToken = default)
     {
-        return vectorStore.GetCollection<TKey, TRecord>(vectorStoreConfiguration.VectorStoreName);
+        VectorStoreCollection<string, VectorEntity> collection = vectorStore.GetCollection<string, VectorEntity>(vectorStoreConfiguration.VectorStoreName);
+        if (_creationEnsured)
+        {
+            return collection;
+        }
+
+        await collection.EnsureCollectionExistsAsync(cancellationToken);
+        _creationEnsured = true;
+        return collection;
     }
 
-    public async Task<string> Search<TKey, TRecord>(string searchQuery, int numberOfRecordsBack, Expression<Func<TRecord, bool>>? filter) where TKey : notnull where TRecord : class, IVectorEntity<TKey>
+
+    public async Task<SearchResult> Search(string searchQuery, int numberOfRecordsBack, Expression<Func<VectorEntity, bool>>? filter) //todo - give back a more complex object
     {
-        VectorStoreCollection<TKey, TRecord> collection = GetCollection<TKey, TRecord>();
+        VectorStoreCollection<string, VectorEntity> collection = await GetCollectionAndEnsureItExist();
         await collection.EnsureCollectionExistsAsync();
-        VectorSearchOptions<TRecord> vectorSearchOptions = new()
+        VectorSearchOptions<VectorEntity> vectorSearchOptions = new()
         {
             IncludeVectors = false
         };
@@ -31,30 +42,31 @@ public class VectorStoreQuery(Microsoft.Extensions.VectorData.VectorStore vector
             numberOfRecordsBack = vectorStoreConfiguration.MaxRecordSearch.Value;
         }
 
-        StringBuilder result = new();
-        await foreach (VectorSearchResult<TRecord> searchResult in collection.SearchAsync(searchQuery, numberOfRecordsBack, vectorSearchOptions))
+        List<VectorSearchResult<VectorEntity>> result = [];
+        await foreach (VectorSearchResult<VectorEntity> searchResult in collection.SearchAsync(searchQuery, numberOfRecordsBack, vectorSearchOptions))
         {
-            result.AppendLine("<search_result >");
-            result.AppendLine(searchResult.Record.Content);
-            result.AppendLine("</search_result>");
+            result.Add(searchResult);
         }
 
-        return result.ToString();
+        return new SearchResult
+        {
+            Entities = result.ToArray()
+        };
     }
 
-    public async Task<TRecord[]> GetExistingAsync<TKey, TRecord>(Expression<Func<TRecord, bool>>? filter = null) where TKey : notnull where TRecord : class, IVectorEntity<TKey>
+    public async Task<VectorEntity[]> GetExistingAsync(Expression<Func<VectorEntity, bool>>? filter = null)
     {
-        List<TRecord> result = [];
-        VectorStoreCollection<TKey, TRecord> collection = GetCollection<TKey, TRecord>();
+        List<VectorEntity> result = [];
+        VectorStoreCollection<string, VectorEntity> collection = await GetCollectionAndEnsureItExist();
         await collection.EnsureCollectionExistsAsync();
 
-        Expression<Func<TRecord, bool>> filterToUse = entity => true;
+        Expression<Func<VectorEntity, bool>> filterToUse = entity => true;
         if (filter != null)
         {
             filterToUse = filter;
         }
 
-        await foreach (TRecord entity in collection.GetAsync(filterToUse, int.MaxValue, new FilteredRecordRetrievalOptions<TRecord>
+        await foreach (VectorEntity entity in collection.GetAsync(filterToUse, int.MaxValue, new FilteredRecordRetrievalOptions<VectorEntity>
                        {
                            IncludeVectors = false
                        }))

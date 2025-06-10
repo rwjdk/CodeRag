@@ -1,11 +1,9 @@
 ﻿@page "/Chat"
-@using System.Globalization
 @using CodeRag.Abstractions
+@using CodeRag.VectorStorage.Models
 @using Microsoft.Extensions.VectorData
 @using Microsoft.SemanticKernel.ChatCompletion
-@using Shared
 @using Shared.Ai
-@using Shared.EntityFramework.DbModels
 @using Website.Extensions
 <div>
     @if (_chatModel == null)
@@ -109,17 +107,11 @@
                                         <TemplateColumn Title="Details" Context="row">
                                             <CellTemplate>
                                                 <div class="pointer" @onclick="() => ShowSourceCodeVectorEntry(row.Item.Record)">
-                                                    @row.Item.Record.Kind: @row.Item.Record.Name
-                                                    <div class="font-size-10">@row.Item.Record.Namespace</div>
+                                                    @row.Item.Record.ContentKind: @row.Item.Record.ContentName
+                                                    <div class="font-size-10">@row.Item.Record.ContentNamespace</div>
                                                 </div>
                                             </CellTemplate>
-                                        </TemplateColumn>__T
-                                        <PropertyColumn Property="x => Math.Round(Convert.ToDecimal(x.Score), 2).ToString(CultureInfo.InvariantCulture)"/>__T
-                                        <TemplateColumn Context="row" Title="">
-                                            <CellTemplate>
-                                                <RIconButton Href="@row.Item.Record.GetUrl(Project)" Target="_blank" Icon="@Icons.Material.Filled.Launch"/>
-                                            </CellTemplate>
-                                        </TemplateColumn>__T
+                                        </TemplateColumn>
                                     </Columns>
                                 </MudDataGrid>
                             }

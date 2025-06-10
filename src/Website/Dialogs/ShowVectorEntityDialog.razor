@@ -1,8 +1,8 @@
 ﻿<MudDialog Style="max-width: 80% !important; min-width: 80% !important;">
     <DialogContent>
         <div>
-            <h1>@Entity.Name (@Entity.Kind)</h1>
-            <div class="font-size-12">Namespace: @Entity.Namespace | Ingested: @Entity.TimeOfIngestion.ToLongDateString()</div>
+            <h1>@Entity.ContentName (@Entity.ContentKind)</h1>
+            <div class="font-size-12">Namespace: @Entity.ContentNamespace | Ingested: @Entity.TimeOfIngestion.ToLongDateString()</div>
         </div>
         <pre style="white-space: pre-wrap; word-wrap: break-word;">
             @Entity.Content

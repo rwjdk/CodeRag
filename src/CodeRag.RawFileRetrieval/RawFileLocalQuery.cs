@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using CodeRag.Abstractions;
+using CodeRag.Abstractions.Models;
 using CodeRag.RawFileRetrieval.Models;
 using JetBrains.Annotations;
 
@@ -8,9 +9,9 @@ namespace CodeRag.RawFileRetrieval;
 [UsedImplicitly]
 public class RawFileLocalQuery : RawFileQuery, IScopedService
 {
-    public override async Task<RawFile[]?> GetRawContentForSourceAsync(RawFileSource source, string fileExtensionType)
+    public override async Task<RawFile[]?> GetRawContentForSourceAsync(RagSource source, string fileExtensionType)
     {
-        SharedGuards(source, expectedLocation: RawFileLocation.Local);
+        SharedGuards(source, expectedLocation: RagSourceLocation.Local);
 
         List<RawFile> result = [];
 

@@ -1,4 +1,5 @@
-﻿@using Shared.EntityFramework.DbModels
+﻿@using CodeRag.Abstractions.Models
+@using Shared.EntityFramework.DbModels
 <MudDialog Style="max-width: 80% !important; min-width: 80% !important; max-height: 80% !important; min-height: 80% !important;">
     <DialogContent>
         <RTextField Label="Name" @bind-Value="@Project.Name" />
@@ -40,8 +41,8 @@
                         <RButton Disabled="BlazorUtils.IsWorking">New Source</RButton>
                     </ActivatorContent>
                     <ChildContent>
-                        <MudMenuItem Icon="@Icons.Material.Filled.Code" OnClick="()=> CreateNewSource(ProjectSourceKind.CSharpCode)">Create new C# Source</MudMenuItem>
-                        <MudMenuItem Icon="@Icons.Material.Filled.MenuBook" OnClick="()=> CreateNewSource(ProjectSourceKind.Markdown)">Create new Markdown Source</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Code" OnClick="()=> CreateNewSource(RagSourceKind.CSharp)">Create new C# Source</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.MenuBook" OnClick="() => CreateNewSource(RagSourceKind.Markdown)">Create new Markdown Source</MudMenuItem>
                     </ChildContent>
                 </MudMenu>
             </MudTabPanel>

@@ -1,6 +1,7 @@
 ﻿using BlazorUtilities;
 using BlazorUtilities.Components;
 using CodeRag.Abstractions;
+using CodeRag.VectorStorage.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -146,6 +147,6 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
         {
             CloseButton = true,
         };
-        await dialogService.ShowAsync<ShowVectorEntityDialog>(entity.SourcePath, parameters, dialogOptions);
+        await dialogService.ShowAsync<ShowVectorEntityDialog>(entity.ContentName, parameters, dialogOptions);
     }
 }

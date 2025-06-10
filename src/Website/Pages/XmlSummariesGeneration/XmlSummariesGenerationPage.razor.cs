@@ -1,7 +1,6 @@
 ﻿using BlazorUtilities;
 using BlazorUtilities.Components;
-using CodeRag.Chunking.CSharp;
-using CodeRag.RawFileRetrieval.Models;
+using CodeRag.Abstractions.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
@@ -11,6 +10,8 @@ using Shared.Ai;
 using Shared.EntityFramework.DbModels;
 using Website.Models;
 using Shared.Ai.Queries;
+using SimpleRag.Source.CSharp;
+using SimpleRag.Source.CSharp.Models;
 
 namespace Website.Pages.XmlSummariesGeneration;
 
@@ -72,9 +73,9 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
         try
         {
             _chatModel = aiXmlSummaryQuery.GetChatModels().FirstOrDefault();
-            _sources = Project.Sources.Where(x => x.Kind == ProjectSourceKind.CSharpCode).ToArray();
+            _sources = Project.Sources.Where(x => x.Kind == RagSourceKind.CSharp).ToArray();
             _selectedSource = _sources.FirstOrDefault();
-            if (_selectedSource is { Location: RawFileLocation.Local }) //todo: Support GitHubLocation in XmlSummaries (https://github.com/rwjdk/CodeRag/issues/3)
+            if (_selectedSource is { Location: RagSourceLocation.Local }) //todo: Support GitHubLocation in XmlSummaries (https://github.com/rwjdk/CodeRag/issues/3)
             {
                 await Refresh();
             }
@@ -108,7 +109,7 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
 
         foreach (var file in dirInfo.GetFiles("*.cs"))
         {
-            if (_selectedSource!.ToRawFileSource().IgnoreFile(file.FullName))
+            if (_selectedSource!.AsRagSource(Project).IgnoreFile(file.FullName))
             {
                 continue;
             }

@@ -1,3 +1,3 @@
-﻿namespace CodeRag.VectorStore;
+﻿namespace CodeRag.VectorStorage;
 
-public record VectorStoreConfiguration(string VectorStoreName, int? MaxRecordSearch = null);
+public record VectorStoreConfiguration(string VectorStoreName, int? MaxRecordSearch = null); //todo - should this be there?

@@ -1,43 +1,44 @@
-using JetBrains.Annotations;
-using Microsoft.Extensions.VectorData;
-using Shared.EntityFramework.DbModels;
-using Shared.VectorStores;
 using System.Text;
 using CodeRag.Abstractions;
-using CodeRag.Chunking.CSharp;
+using CodeRag.Abstractions.Models;
 using CodeRag.RawFileRetrieval;
 using CodeRag.RawFileRetrieval.Models;
-using CodeRag.VectorStore;
+using CodeRag.VectorStorage;
+using CodeRag.VectorStorage.Models;
+using JetBrains.Annotations;
+using SimpleRag.Source.CSharp.Models;
 
-namespace Shared.Ingestion;
+namespace SimpleRag.Source.CSharp;
 
 [UsedImplicitly]
-public class IngestionCSharpCommand(
+public class CSharpSourceCommand(
     CSharpChunker chunker,
-    VectorStoreCommandSpecific vectorStoreCommand,
+    VectorStoreCommand vectorStoreCommand,
     VectorStoreQuery vectorStoreQuery,
     RawFileGitHubQuery rawFileGitHubQuery,
-    RawFileLocalQuery rawFileLocalQuery) : IngestionCommand(vectorStoreCommand), IScopedService
+    RawFileLocalQuery rawFileLocalQuery) : ProgressNotificationBase, IScopedService
 {
-    public override async Task IngestAsync(ProjectEntity projectEntity, ProjectSourceEntity source)
+    public const string SourceKind = "CSharp";
+
+    public async Task IngestAsync(CodeRag.Abstractions.Models.RagSource source)
     {
-        if (source.Kind != ProjectSourceKind.CSharpCode)
+        if (source.Kind != RagSourceKind.CSharp)
         {
-            throw new IngestionException($"Invalid Kind. Expected '{nameof(ProjectSourceKind.CSharpCode)}' but received {source.Kind}");
+            throw new SourceException($"Invalid Kind. Expected '{nameof(RagSourceKind.CSharp)}' but received {source.Kind}");
         }
 
         if (string.IsNullOrWhiteSpace(source.Path))
         {
-            throw new IngestionException("Source Path is not defined");
+            throw new SourceException("Source Path is not defined");
         }
 
         RawFileQuery rawFileContentQuery;
         switch (source.Location)
         {
-            case RawFileLocation.GitHub:
+            case RagSourceLocation.GitHub:
                 rawFileContentQuery = rawFileGitHubQuery;
                 break;
-            case RawFileLocation.Local:
+            case RagSourceLocation.Local:
                 rawFileContentQuery = rawFileLocalQuery;
                 break;
             default:
@@ -46,7 +47,7 @@ public class IngestionCSharpCommand(
 
         rawFileContentQuery.NotifyProgress += OnNotifyProgress;
 
-        RawFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(source.ToRawFileSource(), "cs");
+        RawFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(source, "cs");
         if (rawFiles == null)
         {
             OnNotifyProgress("Nothing new to Ingest so skipping");
@@ -66,15 +67,13 @@ public class IngestionCSharpCommand(
             List<CSharpChunk> entitiesForFile = chunker.GetCodeEntities(rawFile.Content);
             foreach (CSharpChunk codeEntity in entitiesForFile)
             {
-                codeEntity.LocalSourcePath = rawFile.PathWithoutRoot;
+                codeEntity.SourcePath = rawFile.PathWithoutRoot;
             }
 
             codeEntities.AddRange(entitiesForFile);
         }
 
         OnNotifyProgress($"{rawFiles.Length} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
-
-        VectorStoreCollection<Guid, VectorEntity> collection = vectorStoreQuery.GetCollection<Guid, VectorEntity>();
 
         //Creating References
         foreach (CSharpChunk codeEntity in codeEntities)
@@ -90,11 +89,10 @@ public class IngestionCSharpCommand(
             }
         }
 
-        await collection.EnsureCollectionExistsAsync();
-        var existingData = await vectorStoreQuery.GetExistingAsync<Guid, VectorEntity>(x => x.SourceId == source.Id);
+        VectorEntity[] existingData = await vectorStoreQuery.GetExistingAsync(x => x.SourceId == source.Id);
 
         int counter = 0;
-        List<Guid> idsToKeep = [];
+        List<string> idsToKeep = [];
         foreach (CSharpChunk codeEntity in codeEntities)
         {
             counter++;
@@ -126,34 +124,39 @@ public class IngestionCSharpCommand(
                 content.AppendLine(string.Join(Environment.NewLine, codeEntity.References.Select(x => "- " + x.Path)));
             }
 
-            VectorEntity entry = new()
+            VectorEntity entity = new()
             {
-                Kind = codeEntity.KindAsString,
-                Namespace = codeEntity.Namespace,
-                Name = codeEntity.Name,
-                Parent = codeEntity.Parent,
-                ParentKind = codeEntity.ParentKindAsString,
-                Summary = codeEntity.XmlSummary,
-                SourcePath = codeEntity.LocalSourcePath!,
+                Id = Guid.NewGuid().ToString(),
+                SourceId = source.Id,
+                ContentId = null,
+                SourceCollectionId = source.CollectionId,
+                SourceKind = SourceKind,
+                TimeOfIngestion = DateTime.UtcNow,
+                SourcePath = codeEntity.SourcePath!,
+                ContentKind = codeEntity.KindAsString,
+                ContentParent = codeEntity.Parent,
+                ContentParentKind = codeEntity.ParentKindAsString,
+                ContentName = codeEntity.Name,
+                ContentNamespace = codeEntity.Namespace,
                 Content = content.ToString(),
             };
 
-            var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entry.GetContentCompareKey());
+            var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entity.GetContentCompareKey());
             if (existing == null)
             {
-                await Retry.ExecuteWithRetryAsync(async () => { await VectorStoreCommandSpecific.Upsert(projectEntity, source, collection, entry); }, 3, TimeSpan.FromSeconds(30));
+                await Retry.ExecuteWithRetryAsync(async () => { await vectorStoreCommand.UpsertAsync(entity); }, 3, TimeSpan.FromSeconds(30));
             }
             else
             {
-                idsToKeep.Add(existing.VectorId);
+                idsToKeep.Add(existing.Id);
             }
         }
 
-        var idsToDelete = existingData.Select(x => x.VectorId).Except(idsToKeep).ToList();
+        var idsToDelete = existingData.Select(x => x.Id).Except(idsToKeep).ToList();
         if (idsToDelete.Count != 0)
         {
             OnNotifyProgress("Removing entities that are no longer in source...");
-            await collection.DeleteAsync(idsToDelete);
+            await vectorStoreCommand.DeleteAsync(idsToDelete);
         }
 
         OnNotifyProgress("Done");

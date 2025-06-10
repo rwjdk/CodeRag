@@ -1,23 +1,22 @@
 ﻿using BlazorUtilities;
 using BlazorUtilities.Helpers;
 using CodeRag.Abstractions;
-using CodeRag.VectorStore;
+using CodeRag.Abstractions.Models;
+using CodeRag.VectorStorage;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using Shared;
 using Shared.EntityFramework.DbModels;
-using Shared.Ingestion;
 using Shared.Projects;
-using Shared.VectorStores;
+using SimpleRag.Source.CSharp;
+using SimpleRag.Source.Markdown;
 using Website.Models;
 
 namespace Website.Dialogs;
 
 public partial class ProjectDialog(
     ProjectCommand projectCommand,
-    IngestionCSharpCommand ingestionCSharpCommand,
-    IngestionMarkdownCommand ingestionMarkdownCommand,
-    VectorStoreCommandSpecific vectorStoreCommandSpecific,
+    CSharpSourceCommand cSharpSourceCommand,
+    MarkdownSourceCommand ingestionMarkdownCommand,
     VectorStoreCommand vectorStoreCommand) : IDisposable
 {
     private int _current;
@@ -40,13 +39,13 @@ public partial class ProjectDialog(
 
     protected override void OnInitialized()
     {
-        ingestionCSharpCommand.NotifyProgress += NotifyProgress;
+        cSharpSourceCommand.NotifyProgress += NotifyProgress;
         ingestionMarkdownCommand.NotifyProgress += NotifyProgress;
     }
 
     public void Dispose()
     {
-        ingestionCSharpCommand.NotifyProgress -= NotifyProgress;
+        cSharpSourceCommand.NotifyProgress -= NotifyProgress;
         ingestionMarkdownCommand.NotifyProgress -= NotifyProgress;
     }
 
@@ -82,7 +81,7 @@ public partial class ProjectDialog(
         {
             foreach (Guid sourceId in _sourceIdsPendingDeletion)
             {
-                await vectorStoreCommand.DeleteAsync<Guid, VectorEntity>(x => x.SourceId == sourceId);
+                await vectorStoreCommand.DeleteAsync(x => x.SourceId == sourceId.ToString());
             }
 
             _sourceIdsPendingDeletion.Clear();
@@ -96,7 +95,7 @@ public partial class ProjectDialog(
         }
     }
 
-    private async Task CreateNewSource(ProjectSourceKind kind)
+    private async Task CreateNewSource(RagSourceKind kind)
     {
         ProjectSourceEntity newSource = ProjectSourceEntity.Empty(Project, kind);
         DialogResult result = await Site.ShowProjectSourceDialogAsync(Project, newSource);
@@ -139,11 +138,11 @@ public partial class ProjectDialog(
             using var workingProgress = BlazorUtils.StartWorking();
             switch (source.Kind)
             {
-                case ProjectSourceKind.CSharpCode:
-                    await ingestionCSharpCommand.IngestAsync(Project, source);
+                case RagSourceKind.CSharp:
+                    await cSharpSourceCommand.IngestAsync(source.AsRagSource(Project));
                     break;
-                case ProjectSourceKind.Markdown:
-                    await ingestionMarkdownCommand.IngestAsync(Project, source);
+                case RagSourceKind.Markdown:
+                    await ingestionMarkdownCommand.IngestAsync(source.AsRagSource(Project));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -186,11 +185,7 @@ public partial class ProjectDialog(
     {
         await BlazorUtils.PromptYesNoQuestion("Are you sure you wish to delete this project (THERE IS NO GOING BACK)?", async () =>
         {
-            foreach (ProjectSourceEntity source in Project.Sources)
-            {
-                await vectorStoreCommand.DeleteAsync<Guid, VectorEntity>(x => x.SourceId == source.Id);
-            }
-
+            await vectorStoreCommand.DeleteAsync(x => x.SourceCollectionId == Project.Id.ToString());
             await projectCommand.DeleteProjectAsync(Project);
             Dialog.Close();
         });

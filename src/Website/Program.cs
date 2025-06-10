@@ -1,11 +1,8 @@
 using Blazored.LocalStorage;
 using BlazorUtilities.Extensions;
-using CodeRag.Chunking.CSharp;
-using CodeRag.Chunking.Markdown;
 using CodeRag.Integrations.GitHub;
 using CodeRag.RawFileRetrieval.Models;
-using CodeRag.VectorStore;
-using CodeRag.VectorStore.Models;
+using CodeRag.VectorStorage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
@@ -15,6 +12,8 @@ using Shared.Ai;
 using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 using Microsoft.AspNetCore.Mvc;
+using SimpleRag.Source.CSharp;
+using SimpleRag.Source.Markdown;
 using Website;
 using Website.Extensions;
 using Website.Models;
@@ -36,8 +35,8 @@ if (configuration != null)
     builder.AutoRegisterServicesViaReflection(typeof(ProjectEntity));
     builder.AutoRegisterServicesViaReflection(typeof(GitHubConnection));
     builder.AutoRegisterServicesViaReflection(typeof(RawFile));
-    builder.AutoRegisterServicesViaReflection(typeof(CSharpChunker));
-    builder.AutoRegisterServicesViaReflection(typeof(MarkdownChunker));
+    builder.AutoRegisterServicesViaReflection(typeof(CSharpSourceCommand));
+    builder.AutoRegisterServicesViaReflection(typeof(MarkdownSourceCommand));
     builder.AutoRegisterServicesViaReflection(typeof(VectorStoreQuery));
 
 

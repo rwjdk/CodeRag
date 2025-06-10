@@ -1,14 +1,15 @@
 ﻿using CodeRag.Abstractions;
 using CodeRag.RawFileRetrieval.Models;
 using System.Text.RegularExpressions;
+using CodeRag.Abstractions.Models;
 
 namespace CodeRag.RawFileRetrieval;
 
 public abstract class RawFileQuery : ProgressNotificationBase
 {
-    public abstract Task<RawFile[]?> GetRawContentForSourceAsync(RawFileSource source, string fileExtensionType);
+    public abstract Task<RawFile[]?> GetRawContentForSourceAsync(RagSource source, string fileExtensionType);
 
-    protected void SharedGuards(RawFileSource source, RawFileLocation expectedLocation)
+    protected void SharedGuards(RagSource source, RagSourceLocation expectedLocation)
     {
         if (string.IsNullOrWhiteSpace(source.Path))
         {

@@ -18,6 +18,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Ingestion\**" />
+	  <EmbeddedResource Remove="Ingestion\**" />
+	  <None Remove="Ingestion\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
@@ -31,11 +37,11 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\CodeRag.Abstractions\CodeRag.Abstractions.csproj" />
-	  <ProjectReference Include="..\CodeRag.Chunking.CSharp\CodeRag.Chunking.CSharp.csproj" />
-	  <ProjectReference Include="..\CodeRag.Chunking.Markdown\CodeRag.Chunking.Markdown.csproj" />
 	  <ProjectReference Include="..\CodeRag.Integrations.GitHub\CodeRag.Integrations.GitHub.csproj" />
 	  <ProjectReference Include="..\CodeRag.RawFileRetrieval\CodeRag.RawFileRetrieval.csproj" />
-	  <ProjectReference Include="..\CodeRag.VectorStore\CodeRag.VectorStore.csproj" />
+	  <ProjectReference Include="..\CodeRag.VectorStore\CodeRag.VectorStorage.csproj" />
+	  <ProjectReference Include="..\SimpleRag.Source.CSharp\SimpleRag.Source.CSharp.csproj" />
+	  <ProjectReference Include="..\SimpleRag.Source.Markdown\SimpleRag.Source.Markdown.csproj" />
 	</ItemGroup>
 
 </Project>

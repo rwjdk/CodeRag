@@ -7,11 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\CodeRag.Abstractions\CodeRag.Abstractions.csproj" />
+    <ProjectReference Include="..\CodeRag.RawFileRetrieval\CodeRag.RawFileRetrieval.csproj" />
+    <ProjectReference Include="..\CodeRag.VectorStore\CodeRag.VectorStorage.csproj" />
   </ItemGroup>
 
 </Project>

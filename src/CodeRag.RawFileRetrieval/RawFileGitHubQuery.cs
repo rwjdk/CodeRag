@@ -1,4 +1,5 @@
 ﻿using CodeRag.Abstractions;
+using CodeRag.Abstractions.Models;
 using CodeRag.Integrations.GitHub;
 using CodeRag.RawFileRetrieval.Models;
 using JetBrains.Annotations;
@@ -9,9 +10,9 @@ namespace CodeRag.RawFileRetrieval;
 [UsedImplicitly]
 public class RawFileGitHubQuery(GitHubQuery gitHubQuery) : RawFileQuery, IScopedService
 {
-    public override async Task<RawFile[]?> GetRawContentForSourceAsync(RawFileSource source, string fileExtensionType)
+    public override async Task<RawFile[]?> GetRawContentForSourceAsync(RagSource source, string fileExtensionType)
     {
-        SharedGuards(source, expectedLocation: RawFileLocation.GitHub);
+        SharedGuards(source, expectedLocation: RagSourceLocation.GitHub);
 
         if (string.IsNullOrWhiteSpace(source.GitHubOwner) || string.IsNullOrWhiteSpace(source.GitHubRepo))
         {

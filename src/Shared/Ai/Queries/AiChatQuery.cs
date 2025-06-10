@@ -49,15 +49,15 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
         if (useSourceCodeSearch && !intent.IsMessageJustPleasantries)
         {
             SearchTool codeSearchTool = _aiGenericQuery.ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, kernel);
-            string[] result = await codeSearchTool.Search(intent.ElaboratedMessage);
-            input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Code: " + string.Join(", ", result)));
+            var result = await codeSearchTool.Search(intent.ElaboratedMessage);
+            input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Code: " + result));
         }
 
         if (useDocumentationSearch && !intent.IsMessageJustPleasantries)
         {
             SearchTool docsSearch = _aiGenericQuery.ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, kernel);
-            string[] result = await docsSearch.Search(intent.ElaboratedMessage);
-            input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Documentation: " + string.Join(",", result)));
+            string result = await docsSearch.Search(intent.ElaboratedMessage);
+            input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Documentation: " + result));
         }
 
         ChatCompletionAgent answerAgent = _aiGenericQuery.GetAgent(chatModel, project.GetFormattedDeveloperInstructions(), kernel);

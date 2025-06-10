@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.RegularExpressions;
-using CodeRag.RawFileRetrieval.Models;
+using CodeRag.Abstractions.Models;
 
 namespace Shared.EntityFramework.DbModels;
 
@@ -20,9 +19,9 @@ public class ProjectSourceEntity
     [MaxLength(100)]
     public required string Name { get; set; }
 
-    public required ProjectSourceKind Kind { get; init; }
+    public required RagSourceKind Kind { get; init; }
 
-    public required RawFileLocation Location { get; set; }
+    public required RagSourceLocation Location { get; set; }
 
     [MaxLength(1000)]
     public required string Path { get; set; }
@@ -65,7 +64,7 @@ public class ProjectSourceEntity
     [NotMapped]
     public bool AddMode { get; set; }
 
-    public static ProjectSourceEntity Empty(ProjectEntity project, ProjectSourceKind kind)
+    public static ProjectSourceEntity Empty(ProjectEntity project, RagSourceKind kind)
     {
         return new ProjectSourceEntity
         {
@@ -75,7 +74,7 @@ public class ProjectSourceEntity
             Project = project,
             ProjectEntityId = project.Id,
             Recursive = true,
-            Location = RawFileLocation.Local,
+            Location = RagSourceLocation.Local,
             MarkdownChunkIgnoreIfLessThanThisAmountOfChars = 25,
             MarkdownIgnoreImages = true,
             MarkdownIgnoreCommentedOutContent = true,
@@ -86,17 +85,28 @@ public class ProjectSourceEntity
         };
     }
 
-    public RawFileSource ToRawFileSource()
+    public RagSource AsRagSource(ProjectEntity project)
     {
-        return new RawFileSource
+        return new RagSource
         {
+            CollectionId = project.Id.ToString(),
+            Id = Id.ToString(),
+            Recursive = Recursive,
+            Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
             Location = Location,
-            Path = Path,
-            Recursive = Recursive,
-            GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
             GitHubOwner = GitHubOwner,
-            GitHubRepo = GitHubRepo
+            GitHubRepo = GitHubRepo,
+            GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
+            Kind = Kind,
+            IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
+            MarkdownIgnoreCommentedOutContent = MarkdownIgnoreCommentedOutContent,
+            MarkdownIgnoreImages = MarkdownIgnoreImages,
+            MarkdownIgnoreMicrosoftLearnNoneCsharpContent = MarkdownIgnoreMicrosoftLearnNoneCsharpContent,
+            MarkdownOnlyChunkIfMoreThanThisNumberOfLines = MarkdownOnlyChunkIfMoreThanThisNumberOfLines,
+            MarkdownLevelsToChunk = MarkdownLevelsToChunk,
+            MarkdownChunkLineIgnorePatterns = MarkdownChunkLineIgnorePatterns,
+            MarkdownChunkIgnoreIfLessThanThisAmountOfChars = MarkdownChunkIgnoreIfLessThanThisAmountOfChars
         };
     }
 }

@@ -1,17 +1,15 @@
-﻿@using Shared.EntityFramework.DbModels
+﻿@using CodeRag.VectorStorage.Models
 <MudDataGrid T="VectorEntity" Items="Items" Dense SelectedItem="_selectEntry" SelectedItemChanged="x => SwitchSelectedItem(x)" Height="70vh">
     <Columns>
         <TemplateColumn T="VectorEntity">
             <CellTemplate>
-                @if (context.Item.VectorId == _selectEntry?.VectorId)
+                @if (context.Item.Id == _selectEntry?.Id)
                 {
-                    <div style="color: var(--mud-palette-primary)"><strong>@context.Item.Name</strong></div>
-                    <div class="font-size-10">@context.Item.SourcePath</div>
+                    <div style="color: var(--mud-palette-primary)"><strong>@context.Item.ContentName</strong></div>
                 }
                 else
                 {
-                    <div>@context.Item.Name</div>
-                    <div class="font-size-10">@context.Item.SourcePath</div>
+                    <div>@context.Item.ContentName</div>
                 }
             </CellTemplate>
         </TemplateColumn>
@@ -34,7 +32,7 @@
             return;
         }
 
-        if (_selectEntry?.VectorId != entity.VectorId)
+        if (_selectEntry?.Id != entity.Id)
         {
             _selectEntry = entity;
             await SelectedItemChanged.InvokeAsync(_selectEntry);
