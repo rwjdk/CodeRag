@@ -1,6 +1,6 @@
 namespace SimpleRag.Abstractions.Models;
 
-public enum RagSourceLocation
+public enum SourceLocation
 {
     Local = 1,
     GitHub = 2

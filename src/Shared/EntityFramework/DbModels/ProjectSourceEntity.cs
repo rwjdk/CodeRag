@@ -1,6 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using SimpleRag.Abstractions.Models;
+using SimpleRag.FileRetrieval.Models;
+using SimpleRag.Source.CSharp.Models;
+using SimpleRag.Source.Markdown.Models;
 
 namespace Shared.EntityFramework.DbModels;
 
@@ -19,9 +22,9 @@ public class ProjectSourceEntity
     [MaxLength(100)]
     public required string Name { get; set; }
 
-    public required RagSourceKind Kind { get; init; }
+    public required SourceKind Kind { get; init; }
 
-    public required RagSourceLocation Location { get; set; }
+    public required SourceLocation Location { get; set; }
 
     [MaxLength(1000)]
     public required string Path { get; set; }
@@ -64,7 +67,7 @@ public class ProjectSourceEntity
     [NotMapped]
     public bool AddMode { get; set; }
 
-    public static ProjectSourceEntity Empty(ProjectEntity project, RagSourceKind kind)
+    public static ProjectSourceEntity Empty(ProjectEntity project, SourceKind kind)
     {
         return new ProjectSourceEntity
         {
@@ -74,7 +77,7 @@ public class ProjectSourceEntity
             Project = project,
             ProjectEntityId = project.Id,
             Recursive = true,
-            Location = RagSourceLocation.Local,
+            Location = SourceLocation.Local,
             MarkdownChunkIgnoreIfLessThanThisAmountOfChars = 25,
             MarkdownIgnoreImages = true,
             MarkdownIgnoreCommentedOutContent = true,
@@ -85,9 +88,23 @@ public class ProjectSourceEntity
         };
     }
 
-    public RagSource AsRagSource(ProjectEntity project)
+    public RawFileSource AsRagFileSource()
     {
-        return new RagSource
+        return new RawFileSource
+        {
+            Recursive = Recursive,
+            Path = Path,
+            FileIgnorePatterns = FileIgnorePatterns,
+            Location = Location,
+            GitHubOwner = GitHubOwner,
+            GitHubRepo = GitHubRepo,
+            GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
+        };
+    }
+
+    public CSharpSource AsCSharpSource(ProjectEntity project)
+    {
+        return new CSharpSource
         {
             CollectionId = project.Id.ToString(),
             Id = Id.ToString(),
@@ -98,7 +115,23 @@ public class ProjectSourceEntity
             GitHubOwner = GitHubOwner,
             GitHubRepo = GitHubRepo,
             GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
-            Kind = Kind,
+            IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
+        };
+    }
+
+    public MarkdownSource AsMarkdownSource(ProjectEntity project)
+    {
+        return new MarkdownSource
+        {
+            CollectionId = project.Id.ToString(),
+            Id = Id.ToString(),
+            Recursive = Recursive,
+            Path = Path,
+            FileIgnorePatterns = FileIgnorePatterns,
+            Location = Location,
+            GitHubOwner = GitHubOwner,
+            GitHubRepo = GitHubRepo,
+            GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
             IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
             MarkdownIgnoreCommentedOutContent = MarkdownIgnoreCommentedOutContent,
             MarkdownIgnoreImages = MarkdownIgnoreImages,

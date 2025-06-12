@@ -1,19 +1,19 @@
-﻿using System.Text.RegularExpressions;
+﻿using SimpleRag.Abstractions.Models;
+using SimpleRag.FileRetrieval.Models;
 
-namespace SimpleRag.Abstractions.Models;
+namespace SimpleRag.Source.Markdown.Models;
 
-public class RagSource
+public class MarkdownSource
 {
     public required string CollectionId { get; set; }
     public required string Id { get; set; }
     public required bool Recursive { get; set; }
     public required string Path { get; set; }
     public required string? FileIgnorePatterns { get; set; }
-    public required RagSourceLocation Location { get; set; }
+    public required SourceLocation Location { get; set; }
     public required string? GitHubOwner { get; set; }
     public required string? GitHubRepo { get; set; }
     public required DateTimeOffset? GitHubLastCommitTimestamp { get; set; }
-    public required RagSourceKind Kind { get; set; }
     public required int? IgnoreFileIfMoreThanThisNumberOfLines { get; set; }
     public required bool MarkdownIgnoreCommentedOutContent { get; set; }
     public required bool MarkdownIgnoreImages { get; set; }
@@ -23,22 +23,17 @@ public class RagSource
     public required string? MarkdownChunkLineIgnorePatterns { get; set; }
     public required int? MarkdownChunkIgnoreIfLessThanThisAmountOfChars { get; set; }
 
-    public bool IgnoreFile(string path)
+    public RawFileSource AsRagFileSource()
     {
-        if (string.IsNullOrWhiteSpace(FileIgnorePatterns))
+        return new RawFileSource
         {
-            return false;
-        }
-
-        string[] patternsToIgnore = FileIgnorePatterns.Split(';', StringSplitOptions.RemoveEmptyEntries);
-        foreach (string pattern in patternsToIgnore.Where(x => !string.IsNullOrWhiteSpace(x)))
-        {
-            if (Regex.IsMatch(path, pattern, RegexOptions.IgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
+            FileIgnorePatterns = FileIgnorePatterns,
+            GitHubLastCommitTimestamp = GitHubLastCommitTimestamp,
+            GitHubOwner = GitHubOwner,
+            GitHubRepo = GitHubRepo,
+            Location = Location,
+            Path = Path,
+            Recursive = Recursive
+        };
     }
 }

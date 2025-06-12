@@ -1,6 +1,5 @@
 ﻿using JetBrains.Annotations;
 using Octokit;
-using SimpleRag.Abstractions;
 using SimpleRag.Abstractions.Models;
 using SimpleRag.FileRetrieval.Models;
 using SimpleRag.Integrations.GitHub;
@@ -8,18 +7,18 @@ using SimpleRag.Integrations.GitHub;
 namespace SimpleRag.FileRetrieval;
 
 [UsedImplicitly]
-public class RagFileGitHubQuery(GitHubQuery gitHubQuery) : RagFileQuery, IScopedService
+public class RawFileGitHubQuery(GitHubQuery gitHubQuery) : RawFileQuery
 {
-    public override async Task<RagFile[]?> GetRawContentForSourceAsync(RagSource source, string fileExtensionType)
+    public override async Task<RawFile[]?> GetRawContentForSourceAsync(RawFileSource source, string fileExtensionType)
     {
-        SharedGuards(source, expectedLocation: RagSourceLocation.GitHub);
+        SharedGuards(source, expectedLocation: SourceLocation.GitHub);
 
         if (string.IsNullOrWhiteSpace(source.GitHubOwner) || string.IsNullOrWhiteSpace(source.GitHubRepo))
         {
-            throw new RagFileException("GitHub Owner and Repo is not defined");
+            throw new RawFileException("GitHub Owner and Repo is not defined");
         }
 
-        List<RagFile> result = [];
+        List<RawFile> result = [];
 
         OnNotifyProgress("Exploring GitHub");
         var gitHubClient = gitHubQuery.GetGitHubClient();
@@ -72,7 +71,7 @@ public class RagFileGitHubQuery(GitHubQuery gitHubQuery) : RagFileQuery, IScoped
                 continue;
             }
 
-            result.Add(new RagFile(path, content, pathWithoutRoot));
+            result.Add(new RawFile(path, content, pathWithoutRoot));
         }
 
         NotifyIgnoredFiles(ignoredFiles);

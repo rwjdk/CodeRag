@@ -4,8 +4,8 @@
         <RTextField Label="Name" @bind-Value="@ProjectSource.Name" />
         <RTextField Label="Path" @bind-Value="@ProjectSource.Path" />
         <RCheckBox Label="Recursive" @bind-Value="@ProjectSource.Recursive" />
-        <RSelectFromEnum Label="Location" T="RagSourceLocation" @bind-Value="@ProjectSource.Location" />
-        @if (ProjectSource.Location == RagSourceLocation.GitHub)
+        <RSelectFromEnum Label="Location" T="SourceLocation" @bind-Value="@ProjectSource.Location" />
+        @if (ProjectSource.Location == SourceLocation.GitHub)
         {
             <RTextField Label="GitHub Owner" @bind-Value="@ProjectSource.GitHubOwner" />
             <RTextField Label="GitHub Repo" @bind-Value="@ProjectSource.GitHubRepo" />
@@ -17,7 +17,7 @@
 
         @switch (ProjectSource.Kind)
         {
-            case RagSourceKind.Markdown:
+            case SourceKind.Markdown:
                 <RCheckBox Label="Markdown: Ignore commented out Content" @bind-Value="@ProjectSource.MarkdownIgnoreCommentedOutContent" />
                 <RCheckBox Label="Markdown: Ignore images" @bind-Value="@ProjectSource.MarkdownIgnoreImages" />
                 <RCheckBox Label="Markdown: Ignore Microsoft Learn None C# Content" @bind-Value="@ProjectSource.MarkdownIgnoreMicrosoftLearnNoneCsharpContent" />

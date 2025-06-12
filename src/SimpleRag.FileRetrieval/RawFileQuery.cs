@@ -5,20 +5,20 @@ using SimpleRag.FileRetrieval.Models;
 
 namespace SimpleRag.FileRetrieval;
 
-public abstract class RagFileQuery : ProgressNotificationBase
+public abstract class RawFileQuery : ProgressNotificationBase
 {
-    public abstract Task<RagFile[]?> GetRawContentForSourceAsync(RagSource source, string fileExtensionType);
+    public abstract Task<RawFile[]?> GetRawContentForSourceAsync(RawFileSource source, string fileExtensionType);
 
-    protected void SharedGuards(RagSource source, RagSourceLocation expectedLocation)
+    protected void SharedGuards(RawFileSource source, SourceLocation expectedLocation)
     {
         if (string.IsNullOrWhiteSpace(source.Path))
         {
-            throw new RagFileException("Path is not defined");
+            throw new RawFileException("Path is not defined");
         }
 
         if (source.Location != expectedLocation)
         {
-            throw new RagFileException($"Wrong Location Type. Expected '{expectedLocation}' but got '{source.Location}'");
+            throw new RawFileException($"Wrong Location Type. Expected '{expectedLocation}' but got '{source.Location}'");
         }
     }
 

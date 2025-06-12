@@ -73,9 +73,9 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
         try
         {
             _chatModel = aiXmlSummaryQuery.GetChatModels().FirstOrDefault();
-            _sources = Project.Sources.Where(x => x.Kind == RagSourceKind.CSharp).ToArray();
+            _sources = Project.Sources.Where(x => x.Kind == SourceKind.CSharp).ToArray();
             _selectedSource = _sources.FirstOrDefault();
-            if (_selectedSource is { Location: RagSourceLocation.Local }) //todo: Support GitHubLocation in XmlSummaries (https://github.com/rwjdk/CodeRag/issues/3)
+            if (_selectedSource is { Location: SourceLocation.Local }) //todo: Support GitHubLocation in XmlSummaries (https://github.com/rwjdk/CodeRag/issues/3)
             {
                 await Refresh();
             }
@@ -109,7 +109,7 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
 
         foreach (var file in dirInfo.GetFiles("*.cs"))
         {
-            if (_selectedSource!.AsRagSource(Project).IgnoreFile(file.FullName))
+            if (_selectedSource!.AsRagFileSource().IgnoreFile(file.FullName))
             {
                 continue;
             }

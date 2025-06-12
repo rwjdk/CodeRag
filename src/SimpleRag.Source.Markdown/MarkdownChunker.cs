@@ -6,7 +6,7 @@ using SimpleRag.Source.Markdown.Models;
 namespace SimpleRag.Source.Markdown
 {
     [UsedImplicitly]
-    public class MarkdownChunker : IScopedService
+    public class MarkdownChunker
     {
         public MarkdownChunk[] GetChunks(string content, int level = 3, string? linesToIgnorePatterns = null, int? ignoreIfLessThanThisAmountOfChars = null)
         {

@@ -95,7 +95,7 @@ public partial class ProjectDialog(
         }
     }
 
-    private async Task CreateNewSource(RagSourceKind kind)
+    private async Task CreateNewSource(SourceKind kind)
     {
         ProjectSourceEntity newSource = ProjectSourceEntity.Empty(Project, kind);
         DialogResult result = await Site.ShowProjectSourceDialogAsync(Project, newSource);
@@ -138,11 +138,11 @@ public partial class ProjectDialog(
             using var workingProgress = BlazorUtils.StartWorking();
             switch (source.Kind)
             {
-                case RagSourceKind.CSharp:
-                    await cSharpSourceCommand.IngestAsync(source.AsRagSource(Project));
+                case SourceKind.CSharp:
+                    await cSharpSourceCommand.IngestAsync(source.AsCSharpSource(Project));
                     break;
-                case RagSourceKind.Markdown:
-                    await ingestionMarkdownCommand.IngestAsync(source.AsRagSource(Project));
+                case SourceKind.Markdown:
+                    await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSource(Project));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

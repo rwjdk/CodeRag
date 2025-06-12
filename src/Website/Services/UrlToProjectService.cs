@@ -59,18 +59,18 @@ public class UrlToProjectService(GitHubQuery gitHubQuery, ProjectQuery projectQu
                     new ProjectSourceEntity
                     {
                         Name = "C# Code",
-                        Kind = RagSourceKind.CSharp,
+                        Kind = SourceKind.CSharp,
                         Path = "/",
                         Recursive = true,
-                        Location = RagSourceLocation.GitHub,
+                        Location = SourceLocation.GitHub,
                     },
                     new ProjectSourceEntity
                     {
                         Name = "Markdown",
-                        Kind = RagSourceKind.Markdown,
+                        Kind = SourceKind.Markdown,
                         Path = "/",
                         Recursive = true,
-                        Location = RagSourceLocation.GitHub,
+                        Location = SourceLocation.GitHub,
                     }
                 ]
             };

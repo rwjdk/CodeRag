@@ -11,7 +11,7 @@ public class VectorStoreQuery(VectorStore vectorStore, VectorStoreConfiguration 
 
     private async Task<VectorStoreCollection<string, VectorEntity>> GetCollectionAndEnsureItExist(CancellationToken cancellationToken = default)
     {
-        VectorStoreCollection<string, VectorEntity> collection = vectorStore.GetCollection<string, VectorEntity>(vectorStoreConfiguration.VectorStoreName);
+        VectorStoreCollection<string, VectorEntity> collection = vectorStore.GetCollection<string, VectorEntity>(vectorStoreConfiguration.CollectionName);
         if (_creationEnsured)
         {
             return collection;

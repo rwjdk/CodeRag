@@ -9,11 +9,16 @@ using Shared.Ai;
 using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 using Microsoft.AspNetCore.Mvc;
+using SimpleRag.FileRetrieval.Extensions;
 using SimpleRag.FileRetrieval.Models;
 using SimpleRag.Integrations.GitHub;
+using SimpleRag.Integrations.GitHub.Extensions;
 using SimpleRag.Source.CSharp;
+using SimpleRag.Source.CSharp.Extensions;
 using SimpleRag.Source.Markdown;
+using SimpleRag.Source.Markdown.Extensions;
 using SimpleRag.VectorStorage;
+using SimpleRag.VectorStorage.Extensions;
 using Website;
 using Website.Extensions;
 using Website.Models;
@@ -33,25 +38,20 @@ if (configuration != null)
 {
     builder.AutoRegisterServicesViaReflection(typeof(Program));
     builder.AutoRegisterServicesViaReflection(typeof(ProjectEntity));
-    builder.AutoRegisterServicesViaReflection(typeof(GitHubConnection));
-    builder.AutoRegisterServicesViaReflection(typeof(RagFile));
-    builder.AutoRegisterServicesViaReflection(typeof(CSharpSourceCommand));
-    builder.AutoRegisterServicesViaReflection(typeof(MarkdownSourceCommand));
-    builder.AutoRegisterServicesViaReflection(typeof(VectorStoreQuery));
 
-
-    builder.Services.AddSingleton(new VectorStoreConfiguration(Shared.Constants.VectorCollections.VectorSources, 50));
     builder.Services.AddAzureOpenAIEmbeddingGenerator(configuration.EmbeddingDeploymentName, configuration.Endpoint, configuration.Key);
     builder.Services.AddSingleton(new AiConfiguration(configuration.Endpoint, configuration.Key, configuration.ChatModels));
     builder.Services.AddDbContextFactory<SqlDbContext>(options => { options.UseSqlServer(configuration.SqlServerConnectionString); });
 
-    builder.Services.AddScoped<VectorStore, SqlServerVectorStore>(options => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions
+    builder.Services.AddSimpleRagVectorStore(new VectorStoreConfiguration(Shared.Constants.VectorCollections.VectorSources, 50), options => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions
     {
         EmbeddingGenerator = options.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>()
     }));
 
-
-    builder.Services.AddSingleton(new GitHubConnection(configuration.GitHubToken));
+    builder.Services.AddSimpleRagCSharpSource();
+    builder.Services.AddSimpleRagMarkdownSource();
+    builder.Services.AddSimpleRagFileRetrieval();
+    builder.Services.AddSimpleRagGithubIntegration(configuration.GitHubToken);
 }
 
 

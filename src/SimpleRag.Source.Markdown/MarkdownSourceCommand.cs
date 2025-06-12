@@ -15,25 +15,20 @@ public class MarkdownSourceCommand(
     MarkdownChunker chunker,
     VectorStoreQuery vectorStoreQuery,
     VectorStoreCommand vectorStoreCommand,
-    RagFileGitHubQuery gitHubRawFileContentQuery,
-    RagFileLocalQuery rawFileLocalQuery) : ProgressNotificationBase, IScopedService
+    RawFileGitHubQuery gitHubRawFileContentQuery,
+    RawFileLocalQuery rawFileLocalQuery) : ProgressNotificationBase
 {
     public const string SourceKind = "Markdown";
 
-    public async Task IngestAsync(RagSource source)
+    public async Task IngestAsync(MarkdownSource source)
     {
-        if (source.Kind != RagSourceKind.Markdown)
-        {
-            throw new SourceException($"Invalid Kind. Expected '{nameof(RagSourceKind.Markdown)}' but received {source.Kind}");
-        }
-
-        RagFileQuery rawFileContentQuery;
+        RawFileQuery rawFileContentQuery;
         switch (source.Location)
         {
-            case RagSourceLocation.GitHub:
+            case SourceLocation.GitHub:
                 rawFileContentQuery = gitHubRawFileContentQuery;
                 break;
-            case RagSourceLocation.Local:
+            case SourceLocation.Local:
                 rawFileContentQuery = rawFileLocalQuery;
                 break;
             default:
@@ -42,7 +37,7 @@ public class MarkdownSourceCommand(
 
         rawFileContentQuery.NotifyProgress += OnNotifyProgress;
 
-        RagFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(source, "md");
+        RawFile[]? rawFiles = await rawFileContentQuery.GetRawContentForSourceAsync(source.AsRagFileSource(), "md");
         if (rawFiles == null)
         {
             OnNotifyProgress("Nothing new to Ingest so skipping");

@@ -1,6 +1,6 @@
 ﻿namespace SimpleRag.Abstractions.Models;
 
-public enum RagSourceKind
+public enum SourceKind
 {
     CSharp = 1,
     Markdown = 2

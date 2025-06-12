@@ -13,7 +13,7 @@ public class VectorStoreCommand(VectorStore vectorStore, VectorStoreConfiguratio
 
     private async Task<VectorStoreCollection<string, VectorEntity>> GetCollectionAndEnsureItExist(CancellationToken cancellationToken = default)
     {
-        VectorStoreCollection<string, VectorEntity> collection = vectorStore.GetCollection<string, VectorEntity>(vectorStoreConfiguration.VectorStoreName);
+        VectorStoreCollection<string, VectorEntity> collection = vectorStore.GetCollection<string, VectorEntity>(vectorStoreConfiguration.CollectionName);
         if (_creationEnsured)
         {
             return collection;

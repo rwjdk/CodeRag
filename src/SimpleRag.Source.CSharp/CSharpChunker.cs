@@ -9,7 +9,7 @@ using SimpleRag.Source.CSharp.Models;
 namespace SimpleRag.Source.CSharp
 {
     [UsedImplicitly]
-    public class CSharpChunker : IScopedService
+    public class CSharpChunker
     {
         public List<CSharpChunk> GetCodeEntities(string code)
         {

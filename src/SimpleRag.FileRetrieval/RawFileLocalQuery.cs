@@ -1,19 +1,18 @@
 ﻿using System.Text;
 using JetBrains.Annotations;
-using SimpleRag.Abstractions;
 using SimpleRag.Abstractions.Models;
 using SimpleRag.FileRetrieval.Models;
 
 namespace SimpleRag.FileRetrieval;
 
 [UsedImplicitly]
-public class RagFileLocalQuery : RagFileQuery, IScopedService
+public class RawFileLocalQuery : RawFileQuery
 {
-    public override async Task<RagFile[]?> GetRawContentForSourceAsync(RagSource source, string fileExtensionType)
+    public override async Task<RawFile[]?> GetRawContentForSourceAsync(RawFileSource source, string fileExtensionType)
     {
-        SharedGuards(source, expectedLocation: RagSourceLocation.Local);
+        SharedGuards(source, expectedLocation: SourceLocation.Local);
 
-        List<RagFile> result = [];
+        List<RawFile> result = [];
 
         string[] files = Directory.GetFiles(source.Path, "*." + fileExtensionType, source.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         NotifyNumberOfFilesFound(files.Length);
@@ -32,7 +31,7 @@ public class RagFileLocalQuery : RagFileQuery, IScopedService
             OnNotifyProgress("Parsing Local files from Disk", counter, files.Length);
             var pathWithoutRoot = path.Replace(source.Path, string.Empty);
             string content = await System.IO.File.ReadAllTextAsync(path, Encoding.UTF8);
-            result.Add(new RagFile(path, content, pathWithoutRoot));
+            result.Add(new RawFile(path, content, pathWithoutRoot));
         }
 
         NotifyIgnoredFiles(ignoredFiles);

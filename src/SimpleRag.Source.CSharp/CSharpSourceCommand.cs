@@ -15,30 +15,25 @@ public class CSharpSourceCommand(
     CSharpChunker chunker,
     VectorStoreCommand vectorStoreCommand,
     VectorStoreQuery vectorStoreQuery,
-    RagFileGitHubQuery rawFileGitHubQuery,
-    RagFileLocalQuery rawRagFileLocalQuery) : ProgressNotificationBase, IScopedService
+    RawFileGitHubQuery rawFileGitHubQuery,
+    RawFileLocalQuery rawRagFileLocalQuery) : ProgressNotificationBase
 {
     public const string SourceKind = "CSharp";
 
-    public async Task IngestAsync(RagSource source)
+    public async Task IngestAsync(CSharpSource source)
     {
-        if (source.Kind != RagSourceKind.CSharp)
-        {
-            throw new SourceException($"Invalid Kind. Expected '{nameof(RagSourceKind.CSharp)}' but received {source.Kind}");
-        }
-
         if (string.IsNullOrWhiteSpace(source.Path))
         {
             throw new SourceException("Source Path is not defined");
         }
 
-        RagFileQuery rawFileContentQuery;
+        RawFileQuery rawFileContentQuery;
         switch (source.Location)
         {
-            case RagSourceLocation.GitHub:
+            case SourceLocation.GitHub:
                 rawFileContentQuery = rawFileGitHubQuery;
                 break;
-            case RagSourceLocation.Local:
+            case SourceLocation.Local:
                 rawFileContentQuery = rawRagFileLocalQuery;
                 break;
             default:
@@ -47,7 +42,7 @@ public class CSharpSourceCommand(
 
         rawFileContentQuery.NotifyProgress += OnNotifyProgress;
 
-        RagFile[]? files = await rawFileContentQuery.GetRawContentForSourceAsync(source, "cs");
+        RawFile[]? files = await rawFileContentQuery.GetRawContentForSourceAsync(source.AsRagFileSource(), "cs");
         if (files == null)
         {
             OnNotifyProgress("Nothing new to Ingest so skipping");
@@ -56,7 +51,7 @@ public class CSharpSourceCommand(
 
         List<CSharpChunk> codeEntities = [];
 
-        foreach (RagFile file in files)
+        foreach (RawFile file in files)
         {
             var numberOfLine = file.Content.Split(["\n"], StringSplitOptions.RemoveEmptyEntries).Length;
             if (source.IgnoreFileIfMoreThanThisNumberOfLines.HasValue && numberOfLine > source.IgnoreFileIfMoreThanThisNumberOfLines)

@@ -12,7 +12,7 @@
         {
             <MudAlert Severity="Severity.Warning">This Project have no C# Sources</MudAlert>
         }
-        else if (_selectedSource.Location != RagSourceLocation.Local)
+        else if (_selectedSource.Location != SourceLocation.Local)
         {
             <MudAlert Severity="Severity.Warning">So far this feature only support Local Sources</MudAlert>
         }
@@ -43,7 +43,7 @@
 </MudGrid>
 
 
-@if (_selectedSource is { Location: RagSourceLocation.Local })
+@if (_selectedSource is { Location: SourceLocation.Local })
 {
     @if (_tree != null)
     {
