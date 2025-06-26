@@ -22,4 +22,13 @@ public class UnitTest1
         CSharpChunker chunker = new();
         List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
     }
+
+    [Fact]
+    public void Test3()
+    {
+        string code = File.ReadAllText("TestFiles\\ClassWithNestedObjects.cs");
+
+        CSharpChunker chunker = new();
+        List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
+    }
 }

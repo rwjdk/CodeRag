@@ -41,8 +41,9 @@ namespace SimpleRag.Source.CSharp
                 string ns = GetNamespace(node);
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
-                string parent = string.Empty;
-                result.Add(new CSharpChunk(CSharpKind.Interface, ns, parent, CSharpKind.None, name, xmlSummary, node.ToString(), [], root));
+                var parent = GetParentFromNesting(node.Parent);
+                CSharpKind parentKind = GetParentType(node.Parent);
+                result.Add(new CSharpChunk(CSharpKind.Interface, ns, parent, parentKind, name, xmlSummary, node.ToString(), [], root));
             }
 
             return result;
@@ -65,8 +66,9 @@ namespace SimpleRag.Source.CSharp
                 string ns = GetNamespace(node);
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
-                string parent = string.Empty;
-                result.Add(new CSharpChunk(CSharpKind.Delegate, ns, parent, CSharpKind.None, name, xmlSummary, node.ToString(), [], node));
+                var parent = GetParentFromNesting(node.Parent);
+                CSharpKind parentKind = GetParentType(node.Parent);
+                result.Add(new CSharpChunk(CSharpKind.Delegate, ns, parent, parentKind, name, xmlSummary, node.ToString(), [], node));
             }
 
             return result;
@@ -86,8 +88,9 @@ namespace SimpleRag.Source.CSharp
                 string ns = GetNamespace(node);
                 string xmlSummary = GetXmlSummary(node);
                 string name = node.Identifier.ValueText;
-                string parent = string.Empty;
-                result.Add(new CSharpChunk(CSharpKind.Enum, ns, parent, CSharpKind.None, name, xmlSummary, RemoveAttributes(node).ToString(), [], node));
+                var parent = GetParentFromNesting(node.Parent);
+                CSharpKind parentKind = GetParentType(node.Parent);
+                result.Add(new CSharpChunk(CSharpKind.Enum, ns, parent, parentKind, name, xmlSummary, RemoveAttributes(node).ToString(), [], node));
             }
 
             return result;
@@ -122,7 +125,6 @@ namespace SimpleRag.Source.CSharp
                     CSharpKind parentKind = kind;
                     List<string> dependencies = GetMethodDependencies(method);
                     dependencies = dependencies.Distinct().ToList();
-
                     result.Add(new CSharpChunk(CSharpKind.Method, ns, parent, parentKind, name, xmlSummary, content, dependencies, method));
                 }
 
@@ -188,9 +190,10 @@ namespace SimpleRag.Source.CSharp
                     }
 
                     sb.AppendLine("}");
-                    string parent = string.Empty;
+                    var parent = GetParentFromNesting(node.Parent);
+                    CSharpKind parentKind = GetParentType(node.Parent);
                     dependencies = dependencies.Distinct().ToList();
-                    result.Add(new CSharpChunk(kind, ns, parent, CSharpKind.None, name, GetXmlSummary(node), sb.ToString(), dependencies, node));
+                    result.Add(new CSharpChunk(kind, ns, parent, parentKind, name, GetXmlSummary(node), sb.ToString(), dependencies, node));
                 }
             }
 
@@ -306,6 +309,31 @@ namespace SimpleRag.Source.CSharp
             List<string> result = [];
             result.AddRange(method.ParameterList.Parameters.Select(p => p.Type?.ToString() ?? "unknown"));
             return result;
+        }
+
+
+        private string GetParentFromNesting(SyntaxNode? parent)
+        {
+            return parent switch
+            {
+                ClassDeclarationSyntax @class => @class.Identifier.Text,
+                RecordDeclarationSyntax @record => @record.Identifier.Text,
+                StructDeclarationSyntax @struct => @struct.Identifier.Text,
+                InterfaceDeclarationSyntax @interface => @interface.Identifier.Text,
+                _ => string.Empty
+            };
+        }
+
+        private CSharpKind GetParentType(SyntaxNode? parent)
+        {
+            return parent switch
+            {
+                ClassDeclarationSyntax => CSharpKind.Class,
+                RecordDeclarationSyntax => CSharpKind.Record,
+                StructDeclarationSyntax => CSharpKind.Struct,
+                InterfaceDeclarationSyntax => CSharpKind.Interface,
+                _ => CSharpKind.None
+            };
         }
     }
 }
