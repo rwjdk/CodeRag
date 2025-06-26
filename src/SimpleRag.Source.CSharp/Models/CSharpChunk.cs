@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.Formatting;
 
 namespace SimpleRag.Source.CSharp.Models;
 
-public class CSharpChunk(CSharpKind kind, string @namespace, string? parent, CSharpKind? parentKind, string name, string xmlSummary, string content, List<string> dependencies, SyntaxNode node)
+public class CSharpChunk(CSharpKind kind, string @namespace, string? parent, CSharpKind? parentKind, string name, string xmlSummary, string value, List<string> dependencies, SyntaxNode node)
 {
     public CSharpKind Kind { get; } = kind;
 
@@ -18,7 +18,7 @@ public class CSharpChunk(CSharpKind kind, string @namespace, string? parent, CSh
 
     public string XmlSummary { get; set; } = xmlSummary;
 
-    public string Content { get; } = content;
+    public string Value { get; } = value;
 
     public List<string> Dependencies { get; } = dependencies;
 

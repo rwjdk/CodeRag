@@ -20,7 +20,12 @@ public class CSharpSourceCommand(
 {
     public const string SourceKind = "CSharp";
 
-    public async Task IngestAsync(CSharpSource source)
+    /// <summary>
+    /// Ingest a C# Source
+    /// </summary>
+    /// <param name="source">The Source to ingest</param>
+    /// <param name="contentFormat">The desired format of the Content to be vectorized. Use ContentKeywords struct to build up the string with keywords or leave null to use the default provided format</param>
+    public async Task IngestAsync(CSharpSource source, CSharpContentFormat? contentFormat = null)
     {
         if (string.IsNullOrWhiteSpace(source.Path))
         {
@@ -70,6 +75,21 @@ public class CSharpSourceCommand(
 
         OnNotifyProgress($"{files.Length} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
 
+        contentFormat ??= new CSharpContentFormat()
+        {
+            Format = $"""
+                      <code kind="{ContentKeywords.Kind}" name="{ContentKeywords.Name}" namespace="{ContentKeywords.Namespace}" parent="{ContentKeywords.ParentKind}" parent="{ContentKeywords.Parent}">
+                        {ContentKeywords.XmlSummary} {ContentKeywords.Value}
+                        <dependencies>
+                            {ContentKeywords.Dependencies}    
+                        </dependencies>
+                        <used_by>
+                            {ContentKeywords.References}    
+                        </used_by>
+                      </code>
+                      """
+        };
+
         //Creating References
         foreach (CSharpChunk codeEntity in codeEntities)
         {
@@ -94,30 +114,31 @@ public class CSharpSourceCommand(
 
             OnNotifyProgress("Embedding Data", counter, codeEntities.Count);
 
-            StringBuilder content = new();
-            content.AppendLine($"// Namespace: {codeEntity.Namespace}");
-            if (codeEntity.ParentKind != CSharpKind.None)
+            //Replace content
+            string dependencies = string.Join(Environment.NewLine, codeEntity.Dependencies.Select(x => "- " + x));
+            if (string.IsNullOrWhiteSpace(dependencies))
             {
-                content.AppendLine($"// {codeEntity.ParentKind}: {codeEntity.Parent}");
+                dependencies = "- None";
             }
 
-            content.AppendLine($"// {codeEntity.KindAsString}: {codeEntity.Name}");
-            content.AppendLine("// ---");
-            content.AppendLine($"{codeEntity.XmlSummary + codeEntity.Content}");
-
-            if (codeEntity.Dependencies.Count != 0)
+            string references = string.Join(Environment.NewLine, codeEntity.References?.Select(x => "- " + x.Path) ?? []);
+            if (string.IsNullOrWhiteSpace(references))
             {
-                content.AppendLine();
-                content.AppendLine("//Dependencies:");
-                content.AppendLine(string.Join(Environment.NewLine, codeEntity.Dependencies.Select(x => "- " + x)));
+                references = "- None";
             }
 
-            if (codeEntity.References != null && codeEntity.References.Count != 0)
-            {
-                content.AppendLine();
-                content.AppendLine("//Used by:");
-                content.AppendLine(string.Join(Environment.NewLine, codeEntity.References.Select(x => "- " + x.Path)));
-            }
+            var content = contentFormat.Format
+                .Replace(ContentKeywords.Parent, codeEntity.Parent)
+                .Replace(ContentKeywords.Namespace, codeEntity.Namespace)
+                .Replace(ContentKeywords.ParentKind, codeEntity.ParentKindAsString)
+                .Replace(ContentKeywords.Value, codeEntity.Value)
+                .Replace(ContentKeywords.Kind, codeEntity.KindAsString)
+                .Replace(ContentKeywords.Name, codeEntity.Name)
+                .Replace(ContentKeywords.XmlSummary, codeEntity.XmlSummary)
+                .Replace(ContentKeywords.Dependencies, dependencies)
+                .Replace(ContentKeywords.References, references)
+                .Replace(ContentKeywords.Path, codeEntity.Path)
+                .Replace(ContentKeywords.SourcePath, codeEntity.SourcePath);
 
             VectorEntity entity = new()
             {
@@ -135,7 +156,7 @@ public class CSharpSourceCommand(
                 ContentDependencies = string.Join(";", codeEntity.Dependencies),
                 ContentReferences = string.Join(";", codeEntity.References?.Select(x => x.Path) ?? []),
                 ContentDescription = codeEntity.XmlSummary,
-                Content = content.ToString(),
+                Content = content,
             };
 
             var existing = existingData.FirstOrDefault(x => x.GetContentCompareKey() == entity.GetContentCompareKey());

@@ -185,7 +185,7 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
     private async Task Generate(CSharpChunk chunk)
     {
         using WorkingProgress workingProgress = BlazorUtils.StartWorking();
-        var xmlSummary = await aiXmlSummaryQuery.GenerateCSharpXmlSummary(Project, chunk.Content, _chatModel!);
+        var xmlSummary = await aiXmlSummaryQuery.GenerateCSharpXmlSummary(Project, chunk.Value, _chatModel!);
         chunk.XmlSummary = xmlSummary;
         workingProgress.ShowSuccess("New XML Summary generated. Use the Save Button to Accept the changes");
     }
