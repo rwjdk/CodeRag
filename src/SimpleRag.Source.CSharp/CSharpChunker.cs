@@ -113,24 +113,33 @@ namespace SimpleRag.Source.CSharp
 
                 string ns = GetNamespace(node);
 
-                if (methods.Length != 0)
+                //Store methods separately
+                foreach (MethodDeclarationSyntax method in methods)
                 {
-                    //Store methods separately
-                    foreach (MethodDeclarationSyntax method in methods)
-                    {
-                        string name = method.Identifier.ValueText;
-                        string xmlSummary = GetXmlSummary(method);
-                        string content = (method.ToString().Replace(method.Body?.ToString() ?? Guid.NewGuid().ToString(), "").Trim()).Trim();
-                        string parent = node.Identifier.ValueText;
-                        CSharpKind parentKind = kind;
-                        List<string> dependencies = GetMethodDependencies(method);
-                        dependencies = dependencies.Distinct().ToList();
+                    string name = method.Identifier.ValueText;
+                    string xmlSummary = GetXmlSummary(method);
+                    string content = (method.ToString().Replace(method.Body?.ToString() ?? Guid.NewGuid().ToString(), "").Trim()).Trim();
+                    string parent = node.Identifier.ValueText;
+                    CSharpKind parentKind = kind;
+                    List<string> dependencies = GetMethodDependencies(method);
+                    dependencies = dependencies.Distinct().ToList();
 
-                        result.Add(new CSharpChunk(CSharpKind.Method, ns, parent, parentKind, name, xmlSummary, content, dependencies, method));
-                    }
+                    result.Add(new CSharpChunk(CSharpKind.Method, ns, parent, parentKind, name, xmlSummary, content, dependencies, method));
                 }
 
-                if (properties.Length != 0 || constants.Length != 0 || constructors.Length != 0)
+                //Store constructors separately
+                foreach (ConstructorDeclarationSyntax constructor in constructors.Where(x => x.ParameterList.Parameters.Count > 0))
+                {
+                    string name = constructor.Identifier.ValueText;
+                    string xmlSummary = GetXmlSummary(constructor);
+                    ConstructorDeclarationSyntax content = constructor.WithBody(null);
+                    string parent = node.Identifier.ValueText;
+                    CSharpKind parentKind = kind;
+                    var dependencies = constructor.ParameterList.Parameters.Select(x => x.Type?.ToString() ?? "unknown").ToList();
+                    result.Add(new CSharpChunk(CSharpKind.Constructor, ns, parent, parentKind, name, xmlSummary, content.ToString(), dependencies, constructor));
+                }
+
+                if (properties.Length != 0 || constants.Length != 0)
                 {
                     //Store the Type itself with everything but the Methods
                     string name = node.Identifier.ValueText;
@@ -138,15 +147,6 @@ namespace SimpleRag.Source.CSharp
                     StringBuilder sb = new();
                     sb.AppendLine($"public {kind.ToString().ToLowerInvariant()} {name}"); //Do this better (partial stuff support)!
                     sb.AppendLine("{");
-
-                    foreach (ConstructorDeclarationSyntax constructor in constructors)
-                    {
-                        sb.Append(GetXmlSummary(constructor));
-                        ConstructorDeclarationSyntax constructorWithoutBody = constructor.WithBody(null);
-                        sb.AppendLine(constructorWithoutBody + " { /*...*/ }");
-                        sb.AppendLine();
-                        dependencies.AddRange(constructor.ParameterList.Parameters.Select(x => x.Type?.ToString() ?? "unknown"));
-                    }
 
                     foreach (FieldDeclarationSyntax constant in constants)
                     {

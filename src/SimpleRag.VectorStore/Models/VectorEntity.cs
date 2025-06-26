@@ -26,7 +26,6 @@ public class VectorEntity
     [VectorStoreData]
     public required string? ContentId { get; init; }
 
-
     [VectorStoreData]
     public required string? ContentParent { get; init; }
 
@@ -35,6 +34,15 @@ public class VectorEntity
 
     [VectorStoreData]
     public required string? ContentName { get; set; }
+
+    [VectorStoreData]
+    public required string? ContentDependencies { get; set; }
+
+    [VectorStoreData]
+    public required string? ContentDescription { get; set; }
+
+    [VectorStoreData]
+    public required string? ContentReferences { get; set; }
 
     [VectorStoreData(IsIndexed = true)]
     public required string? ContentNamespace { get; init; }
@@ -48,7 +56,7 @@ public class VectorEntity
 
     public string GetContentCompareKey()
     {
-        string contentCompareKey = ContentId + SourceKind + ContentKind + ContentName + ContentParent + ContentParentKind + ContentNamespace + Content;
+        string contentCompareKey = ContentId + SourceKind + ContentKind + ContentName + ContentParent + ContentParentKind + ContentNamespace + ContentDependencies + ContentDescription + ContentReferences + Content;
         return contentCompareKey;
     }
 

@@ -102,6 +102,9 @@ public class MarkdownSourceCommand(
                     ContentParent = null,
                     ContentParentKind = null,
                     ContentNamespace = null,
+                    ContentDependencies = null,
+                    ContentDescription = null,
+                    ContentReferences = null
                 }));
             }
             else
@@ -120,6 +123,9 @@ public class MarkdownSourceCommand(
                     ContentParent = null,
                     ContentParentKind = null,
                     ContentNamespace = null,
+                    ContentDependencies = null,
+                    ContentDescription = null,
+                    ContentReferences = null
                 });
             }
         }

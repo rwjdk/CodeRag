@@ -10,4 +10,5 @@ public enum CSharpKind
     Class,
     Struct,
     Record,
+    Constructor
 }

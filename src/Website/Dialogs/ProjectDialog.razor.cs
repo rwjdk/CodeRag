@@ -81,7 +81,8 @@ public partial class ProjectDialog(
         {
             foreach (Guid sourceId in _sourceIdsPendingDeletion)
             {
-                await vectorStoreCommand.DeleteAsync(x => x.SourceId == sourceId.ToString());
+                string sourceIdAsString = sourceId.ToString();
+                await vectorStoreCommand.DeleteAsync(x => x.SourceId == sourceIdAsString);
             }
 
             _sourceIdsPendingDeletion.Clear();
@@ -185,7 +186,8 @@ public partial class ProjectDialog(
     {
         await BlazorUtils.PromptYesNoQuestion("Are you sure you wish to delete this project (THERE IS NO GOING BACK)?", async () =>
         {
-            await vectorStoreCommand.DeleteAsync(x => x.SourceCollectionId == Project.Id.ToString());
+            var project = Project.Id.ToString();
+            await vectorStoreCommand.DeleteAsync(x => x.SourceCollectionId == project);
             await projectCommand.DeleteProjectAsync(Project);
             Dialog.Close();
         });

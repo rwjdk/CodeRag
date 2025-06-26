@@ -27,6 +27,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sources", "Sources", "{26FE
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SimpleRag (To be promoted to nuget Packages)", "SimpleRag (To be promoted to nuget Packages)", "{4CBC8A2C-1EF9-4E50-8A5F-787EFEFB2288}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{93FDB230-17CD-4BC5-A2FF-4A8EADAF98CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpChunkerTests", "src\Tests\CSharpChunkerTests\CSharpChunkerTests.csproj", "{93798B58-1EAE-4C59-91A4-021147DDEB20}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +73,10 @@ Global
 		{0A966EDF-58AC-41F3-8BE9-E3EFDE3227CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A966EDF-58AC-41F3-8BE9-E3EFDE3227CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A966EDF-58AC-41F3-8BE9-E3EFDE3227CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93798B58-1EAE-4C59-91A4-021147DDEB20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93798B58-1EAE-4C59-91A4-021147DDEB20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93798B58-1EAE-4C59-91A4-021147DDEB20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93798B58-1EAE-4C59-91A4-021147DDEB20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -83,6 +91,7 @@ Global
 		{0A966EDF-58AC-41F3-8BE9-E3EFDE3227CD} = {26FE87FF-E97F-4954-8DC7-5F0D4A119A47}
 		{26FE87FF-E97F-4954-8DC7-5F0D4A119A47} = {4CBC8A2C-1EF9-4E50-8A5F-787EFEFB2288}
 		{4CBC8A2C-1EF9-4E50-8A5F-787EFEFB2288} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{93798B58-1EAE-4C59-91A4-021147DDEB20} = {93FDB230-17CD-4BC5-A2FF-4A8EADAF98CF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B39FD1F4-35AA-42F4-A9EF-32DDCE9C50D1}
