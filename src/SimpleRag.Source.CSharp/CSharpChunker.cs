@@ -3,7 +3,6 @@ using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using SimpleRag.Abstractions;
 using SimpleRag.Source.CSharp.Models;
 
 namespace SimpleRag.Source.CSharp
@@ -145,7 +144,27 @@ namespace SimpleRag.Source.CSharp
                     string name = node.Identifier.ValueText;
                     List<string> dependencies = [];
                     StringBuilder sb = new();
-                    sb.AppendLine($"public {kind.ToString().ToLowerInvariant()} {name}"); //Do this better (partial stuff support)!
+
+                    sb.Append($"public {kind.ToString().ToLowerInvariant()} {name}"); //Do this better (partial stuff support)!
+
+                    //Base Types and Interfaces
+                    if (node.BaseList != null)
+                    {
+                        bool first = true;
+                        foreach (var @base in node.BaseList.Types)
+                        {
+                            string separator = ", ";
+                            if (first)
+                            {
+                                separator = ": ";
+                                first = false;
+                            }
+
+                            sb.Append($"{separator}{@base.Type.ToString()} ");
+                        }
+                    }
+
+                    sb.AppendLine();
                     sb.AppendLine("{");
 
                     foreach (FieldDeclarationSyntax constant in constants)
