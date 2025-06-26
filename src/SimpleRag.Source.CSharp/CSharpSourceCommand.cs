@@ -1,3 +1,4 @@
+using System.Text;
 using JetBrains.Annotations;
 using SimpleRag.Abstractions;
 using SimpleRag.Abstractions.Models;
@@ -23,8 +24,8 @@ public class CSharpSourceCommand(
     /// Ingest a C# Source
     /// </summary>
     /// <param name="source">The Source to ingest</param>
-    /// <param name="contentFormat">The desired format of the Content to be vectorized. Use ContentKeywords struct to build up the string with keywords or leave null to use the default provided format</param>
-    public async Task IngestAsync(CSharpSource source, CSharpContentFormat? contentFormat = null)
+    /// <param name="contentFormatBuilder">Builder of the desired format of the Content to be vectorized or leave null to use the default provided format</param>
+    public async Task IngestAsync(CSharpSource source, Func<CSharpChunk, string>? contentFormatBuilder = null)
     {
         if (string.IsNullOrWhiteSpace(source.Path))
         {
@@ -74,19 +75,33 @@ public class CSharpSourceCommand(
 
         OnNotifyProgress($"{files.Length} Files was transformed into {codeEntities.Count} Code Entities for Vector Import. Preparing Embedding step...");
 
-        contentFormat ??= new CSharpContentFormat()
+        contentFormatBuilder ??= chunk =>
         {
-            Format = $"""
-                      <code kind="{ContentKeywords.Kind}" name="{ContentKeywords.Name}" namespace="{ContentKeywords.Namespace}" parent="{ContentKeywords.ParentKind}" parent="{ContentKeywords.Parent}">
-                        {ContentKeywords.XmlSummary} {ContentKeywords.Value}
-                        <dependencies>
-                            {ContentKeywords.Dependencies}    
-                        </dependencies>
-                        <used_by>
-                            {ContentKeywords.References}    
-                        </used_by>
-                      </code>
-                      """
+            StringBuilder sb = new();
+            string parentDetails = string.Empty;
+            if (!string.IsNullOrWhiteSpace(chunk.Parent))
+            {
+                parentDetails = $" parent=\"{chunk.ParentKindAsString}\" parent=\"{chunk.Parent}\"";
+            }
+
+            sb.AppendLine($"<code name=\"{chunk.Name}\" kind=\"{chunk.KindAsString}\" namespace=\"{chunk.Namespace}\"{parentDetails}>");
+            sb.AppendLine(chunk.XmlSummary + " " + chunk.Value);
+            if (chunk.Dependencies.Count > 0)
+            {
+                sb.AppendLine("<dependencies>");
+                sb.AppendLine(string.Join(Environment.NewLine, chunk.Dependencies.Select(x => "- " + x)));
+                sb.AppendLine("</dependencies>");
+            }
+
+            if (chunk.References?.Count > 0)
+            {
+                sb.AppendLine("<used_by>");
+                sb.AppendLine(string.Join(Environment.NewLine, chunk.References.Select(x => "- " + x.Path)));
+                sb.AppendLine("</used_by>");
+            }
+
+            sb.AppendLine("</code>");
+            return sb.ToString();
         };
 
         //Creating References
@@ -113,31 +128,7 @@ public class CSharpSourceCommand(
 
             OnNotifyProgress("Embedding Data", counter, codeEntities.Count);
 
-            //Replace content
-            string dependencies = string.Join(Environment.NewLine, codeEntity.Dependencies.Select(x => "- " + x));
-            if (string.IsNullOrWhiteSpace(dependencies))
-            {
-                dependencies = "- None";
-            }
-
-            string references = string.Join(Environment.NewLine, codeEntity.References?.Select(x => "- " + x.Path) ?? []);
-            if (string.IsNullOrWhiteSpace(references))
-            {
-                references = "- None";
-            }
-
-            var content = contentFormat.Format
-                .Replace(ContentKeywords.Parent, codeEntity.Parent)
-                .Replace(ContentKeywords.Namespace, codeEntity.Namespace)
-                .Replace(ContentKeywords.ParentKind, codeEntity.ParentKindAsString)
-                .Replace(ContentKeywords.Value, codeEntity.Value)
-                .Replace(ContentKeywords.Kind, codeEntity.KindAsString)
-                .Replace(ContentKeywords.Name, codeEntity.Name)
-                .Replace(ContentKeywords.XmlSummary, codeEntity.XmlSummary)
-                .Replace(ContentKeywords.Dependencies, dependencies)
-                .Replace(ContentKeywords.References, references)
-                .Replace(ContentKeywords.Path, codeEntity.Path)
-                .Replace(ContentKeywords.SourcePath, codeEntity.SourcePath);
+            string content = contentFormatBuilder.Invoke(codeEntity);
 
             VectorEntity entity = new()
             {
