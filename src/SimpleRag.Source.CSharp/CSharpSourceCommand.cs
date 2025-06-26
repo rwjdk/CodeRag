@@ -1,4 +1,3 @@
-using System.Text;
 using JetBrains.Annotations;
 using SimpleRag.Abstractions;
 using SimpleRag.Abstractions.Models;
