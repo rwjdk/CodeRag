@@ -1,0 +1,1 @@
+export const DefaultSinceMinutesAgo = 20160; // 14 days

@@ -1,0 +1,36 @@
+import { RelewiseClient, RelewiseClientOptions, RelewiseRequestOptions } from './relewise.client';
+import { ProductRecommendationResponse, ContentRecommendationResponse, ProductRecommendationResponseCollection, ProductRecommendationRequestCollection, ContentRecommendationResponseCollection, ContentRecommendationRequestCollection, PopularSearchTermsRecommendationRequest, SearchTermRecommendationResponse, ContentCategoryRecommendationRequestCollection, ContentCategoryRecommendationResponseCollection, ProductCategoryRecommendationRequestCollection, ProductCategoryRecommendationResponseCollection, PopularBrandsRecommendationRequest, BrandRecommendationResponse, PersonalBrandRecommendationRequest, PurchasedWithProductRequest, PersonalContentCategoryRecommendationRequest, PopularContentCategoriesRecommendationRequest, ContentCategoryRecommendationResponse, PersonalProductCategoryRecommendationRequest, PopularProductCategoriesRecommendationRequest, ProductCategoryRecommendationResponse, PopularContentsRequest, PersonalContentRecommendationRequest, ContentsViewedAfterViewingProductRequest, ContentsViewedAfterViewingMultipleProductsRequest, ContentsViewedAfterViewingMultipleContentsRequest, ContentsViewedAfterViewingContentRequest, SortVariantsRequest, SortProductsRequest, SimilarProductsRequest, SearchTermBasedProductRecommendationRequest, RecentlyViewedProductsRequest, PurchasedWithMultipleProductsRequest, PurchasedWithCurrentCartRequest, ProductsViewedAfterViewingProductRequest, ProductsViewedAfterViewingContentRequest, PopularProductsRequest, PersonalProductRecommendationRequest } from './models/data-contracts';
+export declare class Recommender extends RelewiseClient {
+    protected readonly datasetId: string;
+    protected readonly apiKey: string;
+    constructor(datasetId: string, apiKey: string, options?: RelewiseClientOptions);
+    recommendPopularSearchTerms(request: PopularSearchTermsRecommendationRequest, options?: RelewiseRequestOptions): Promise<SearchTermRecommendationResponse | undefined>;
+    recommendPersonalBrands(request: PersonalBrandRecommendationRequest, options?: RelewiseRequestOptions): Promise<BrandRecommendationResponse | undefined>;
+    recommendPopularBrands(request: PopularBrandsRecommendationRequest, options?: RelewiseRequestOptions): Promise<BrandRecommendationResponse | undefined>;
+    recommendPersonalContentCategories(request: PersonalContentCategoryRecommendationRequest, options?: RelewiseRequestOptions): Promise<ContentCategoryRecommendationResponse | undefined>;
+    recommendPopularContentCategories(request: PopularContentCategoriesRecommendationRequest, options?: RelewiseRequestOptions): Promise<ContentCategoryRecommendationResponse | undefined>;
+    recommendPersonalProductCategories(request: PersonalProductCategoryRecommendationRequest, options?: RelewiseRequestOptions): Promise<ProductCategoryRecommendationResponse | undefined>;
+    recommendPopularProductCategories(request: PopularProductCategoriesRecommendationRequest, options?: RelewiseRequestOptions): Promise<ProductCategoryRecommendationResponse | undefined>;
+    recommendPurchasedWithProduct(request: PurchasedWithProductRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    recommendPurchasedWithMultipleProducts(request: PurchasedWithMultipleProductsRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    sortVariants(request: SortVariantsRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    sortProducts(request: SortProductsRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    recommendSimilarProducts(request: SimilarProductsRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    recommendSearchTermBasedProducts(request: SearchTermBasedProductRecommendationRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    recentlyViewedProducts(request: RecentlyViewedProductsRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    recommendPurchasedWithCurrentCart(request: PurchasedWithCurrentCartRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    recommendProductsViewedAfterViewingProduct(request: ProductsViewedAfterViewingProductRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    recommendProductsViewedAfterViewingContent(request: ProductsViewedAfterViewingContentRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    recommendPopularProducts(request: PopularProductsRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    recommendPersonalProducts(request: PersonalProductRecommendationRequest, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponse | undefined>;
+    recommendPopularContents(request: PopularContentsRequest, options?: RelewiseRequestOptions): Promise<ContentRecommendationResponse | undefined>;
+    recommendPersonalContents(request: PersonalContentRecommendationRequest, options?: RelewiseRequestOptions): Promise<ContentRecommendationResponse | undefined>;
+    recommendContentsViewedAfterViewingProduct(request: ContentsViewedAfterViewingProductRequest, options?: RelewiseRequestOptions): Promise<ContentRecommendationResponse | undefined>;
+    recommendContentsViewedAfterViewingMultipleProducts(request: ContentsViewedAfterViewingMultipleProductsRequest, options?: RelewiseRequestOptions): Promise<ContentRecommendationResponse | undefined>;
+    recommendContentsViewedAfterViewingMultipleContents(request: ContentsViewedAfterViewingMultipleContentsRequest, options?: RelewiseRequestOptions): Promise<ContentRecommendationResponse | undefined>;
+    recommendContentsViewedAfterViewingContent(request: ContentsViewedAfterViewingContentRequest, options?: RelewiseRequestOptions): Promise<ContentRecommendationResponse | undefined>;
+    batchProductRecommendations(request: ProductRecommendationRequestCollection, options?: RelewiseRequestOptions): Promise<ProductRecommendationResponseCollection | undefined>;
+    batchContentRecommendations(request: ContentRecommendationRequestCollection, options?: RelewiseRequestOptions): Promise<ContentRecommendationResponseCollection | undefined>;
+    batchContentCategoryRecommendations(request: ContentCategoryRecommendationRequestCollection, options?: RelewiseRequestOptions): Promise<ContentCategoryRecommendationResponseCollection | undefined>;
+    batchProductCategoryRecommendations(request: ProductCategoryRecommendationRequestCollection, options?: RelewiseRequestOptions): Promise<ProductCategoryRecommendationResponseCollection | undefined>;
+}
