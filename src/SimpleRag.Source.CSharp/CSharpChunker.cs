@@ -110,6 +110,7 @@ namespace SimpleRag.Source.CSharp
                 PropertyDeclarationSyntax[] properties = GetPublicProperties(node.Members);
                 MethodDeclarationSyntax[] methods = GetPublicMethods(node.Members);
                 FieldDeclarationSyntax[] constants = GetPublicConstants(node.Members);
+                ConversionOperatorDeclarationSyntax[] implicitOperators = GetPublicImplicitOperators(node.Members);
                 ConstructorDeclarationSyntax[] constructors = GetPublicConstructors(node.Members);
                 //todo - Support more types (https://github.com/rwjdk/CodeRag/issues/1)
 
@@ -140,14 +141,20 @@ namespace SimpleRag.Source.CSharp
                     result.Add(new CSharpChunk(CSharpKind.Constructor, ns, parent, parentKind, name, xmlSummary, content.ToString(), dependencies, constructor));
                 }
 
-                if (properties.Length != 0 || constants.Length != 0)
+                if (properties.Length != 0 || constants.Length != 0 || implicitOperators.Length != 0)
                 {
                     //Store the Type itself with everything but the Methods
                     string name = node.Identifier.ValueText;
                     List<string> dependencies = [];
                     StringBuilder sb = new();
 
-                    sb.Append($"public {kind.ToString().ToLowerInvariant()} {name}"); //Do this better (partial stuff support)!
+                    sb.Append("public ");
+                    if (IsStatic(node.Modifiers))
+                    {
+                        sb.Append("static ");
+                    }
+
+                    sb.Append($"{kind.ToString().ToLowerInvariant()} {name}"); //Do this better (partial stuff support)!
 
                     //Base Types and Interfaces
                     if (node.BaseList != null)
@@ -187,6 +194,16 @@ namespace SimpleRag.Source.CSharp
                         sb.AppendLine();
                         TypeSyntax type = property.Type;
                         dependencies.Add(type.ToString());
+                    }
+
+                    foreach (ConversionOperatorDeclarationSyntax @operator in implicitOperators)
+                    {
+                        string xmlSummary = GetXmlSummary(@operator);
+                        sb.Append(xmlSummary);
+                        string value = (@operator.ToString().Replace(@operator.Body?.ToString() ?? Guid.NewGuid().ToString(), "").Trim()).Trim();
+                        sb.AppendLine(value);
+                        sb.AppendLine();
+                        dependencies.AddRange(@operator.ParameterList.Parameters.Select(x => x.Type?.ToString() ?? "unknown").ToList());
                     }
 
                     sb.AppendLine("}");
@@ -268,6 +285,11 @@ namespace SimpleRag.Source.CSharp
             return modifiers.Any(m => m.IsKind(SyntaxKind.ConstKeyword));
         }
 
+        private static bool IsStatic(SyntaxTokenList modifiers)
+        {
+            return modifiers.Any(m => m.IsKind(SyntaxKind.StaticKeyword));
+        }
+
         private static PropertyDeclarationSyntax[] GetPublicProperties(SyntaxList<MemberDeclarationSyntax> members)
         {
             return members.OfType<PropertyDeclarationSyntax>().Where(x => IsPublic(x.Modifiers)).ToArray();
@@ -317,7 +339,7 @@ namespace SimpleRag.Source.CSharp
             return parent switch
             {
                 ClassDeclarationSyntax @class => @class.Identifier.Text,
-                RecordDeclarationSyntax @record => @record.Identifier.Text,
+                RecordDeclarationSyntax record => record.Identifier.Text,
                 StructDeclarationSyntax @struct => @struct.Identifier.Text,
                 InterfaceDeclarationSyntax @interface => @interface.Identifier.Text,
                 _ => string.Empty
@@ -334,6 +356,11 @@ namespace SimpleRag.Source.CSharp
                 InterfaceDeclarationSyntax => CSharpKind.Interface,
                 _ => CSharpKind.None
             };
+        }
+
+        private static ConversionOperatorDeclarationSyntax[] GetPublicImplicitOperators(SyntaxList<MemberDeclarationSyntax> members)
+        {
+            return members.OfType<ConversionOperatorDeclarationSyntax>().Where(x => IsPublic(x.Modifiers)).ToArray();
         }
     }
 }

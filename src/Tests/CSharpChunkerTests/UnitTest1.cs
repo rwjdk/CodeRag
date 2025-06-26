@@ -31,4 +31,22 @@ public class UnitTest1
         CSharpChunker chunker = new();
         List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
     }
+
+    [Fact]
+    public void Test4()
+    {
+        string code = File.ReadAllText("TestFiles\\StaticClass.cs");
+
+        CSharpChunker chunker = new();
+        List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
+    }
+
+
+    [Fact]
+    public void Test5()
+    {
+        string code = File.ReadAllText("TestFiles\\Operators.cs");
+        CSharpChunker chunker = new();
+        List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
+    }
 }
