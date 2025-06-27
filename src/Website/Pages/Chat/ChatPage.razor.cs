@@ -6,7 +6,6 @@ using Microsoft.JSInterop;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using MudBlazor;
-using Shared;
 using Shared.Ai;
 using Shared.Ai.Queries;
 using Shared.EntityFramework.DbModels;

@@ -93,7 +93,7 @@ public class CSharpSourceCommand(
                 sb.AppendLine("</dependencies>");
             }
 
-            if (chunk.References?.Count > 0)
+            if (chunk.References is { Count: > 0 })
             {
                 sb.AppendLine("<used_by>");
                 sb.AppendLine(string.Join(Environment.NewLine, chunk.References.Select(x => "- " + x.Path)));
@@ -144,7 +144,7 @@ public class CSharpSourceCommand(
                 ContentName = codeEntity.Name,
                 ContentNamespace = codeEntity.Namespace,
                 ContentDependencies = codeEntity.Dependencies.Count == 0 ? null : string.Join(";", codeEntity.Dependencies),
-                ContentReferences = codeEntity.References?.Count == 0 ? null : string.Join(";", codeEntity.References?.Select(x => x.Path) ?? []),
+                ContentReferences = codeEntity.References is { Count: 0 } ? null : string.Join(";", codeEntity.References?.Select(x => x.Path) ?? []),
                 ContentDescription = codeEntity.XmlSummary,
                 Content = content,
             };

@@ -26,7 +26,7 @@ public class CSharpChunk(CSharpKind kind, string @namespace, string? parent, CSh
 
     public string KindAsString => Kind.ToString();
 
-    public string? ParentKindAsString => ParentKind.ToString();
+    public string? ParentKindAsString => ParentKind?.ToString();
 
     public string Path
     {

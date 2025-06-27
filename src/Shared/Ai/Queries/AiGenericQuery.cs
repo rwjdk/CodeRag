@@ -20,14 +20,14 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery ve
 {
     internal SearchTool ImportDocumentationSearchPlugin(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, Kernel kernel)
     {
-        var docsTool = new SearchTool(vectorStoreQuery, project.Id.ToString(), CSharpSourceCommand.SourceKind, maxNumberOfAnswersBackFromDocumentationSearch, this);
+        var docsTool = new SearchTool(vectorStoreQuery, project.Id.ToString(), MarkdownSourceCommand.SourceKind, maxNumberOfAnswersBackFromDocumentationSearch, this);
         kernel.ImportPluginFromObject(docsTool, Constants.Tools.Markdown);
         return docsTool;
     }
 
     internal SearchTool ImportCodeSearchPlugin(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, Kernel kernel)
     {
-        var codePlugin = new SearchTool(vectorStoreQuery, project.Id.ToString(), MarkdownSourceCommand.SourceKind, maxNumberOfAnswersBackFromSourceCodeSearch, this);
+        var codePlugin = new SearchTool(vectorStoreQuery, project.Id.ToString(), CSharpSourceCommand.SourceKind, maxNumberOfAnswersBackFromSourceCodeSearch, this);
         kernel.ImportPluginFromObject(codePlugin, Constants.Tools.CSharp);
         return codePlugin;
     }

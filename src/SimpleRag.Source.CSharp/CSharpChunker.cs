@@ -337,30 +337,41 @@ namespace SimpleRag.Source.CSharp
         private static List<string> RemoveDuplicateAndTrivialDependencies(List<string> dependencies)
         {
             dependencies = dependencies.Distinct().ToList();
-            // List of basic C# types to remove, including common collection types and date/time types
-            HashSet<string> trivialTypes = new(StringComparer.OrdinalIgnoreCase)
-            {
+
+            // Base types to remove
+            string[] baseTypes =
+            [
                 "Stream", "Exception", "CancellationToken", "string", "int", "long", "short", "byte", "bool", "char", "float", "double", "decimal",
                 "uint", "ulong", "ushort", "sbyte", "object", "dynamic", "void",
-                "string[]", "int[]", "long[]", "short[]", "byte[]", "bool[]", "char[]", "float[]", "double[]", "decimal[]",
-                "uint[]", "ulong[]", "ushort[]", "sbyte[]", "object[]", "dynamic[]",
-                "List<string>", "List<int>", "List<long>", "List<short>", "List<byte>", "List<bool>", "List<char>", "List<float>", "List<double>", "List<decimal>",
-                "List<uint>", "List<ulong>", "List<ushort>", "List<sbyte>", "List<object>", "List<dynamic>",
-                "IEnumerable<string>", "IEnumerable<int>", "IEnumerable<long>", "IEnumerable<short>", "IEnumerable<byte>", "IEnumerable<bool>", "IEnumerable<char>", "IEnumerable<float>", "IEnumerable<double>", "IEnumerable<decimal>",
-                "IEnumerable<uint>", "IEnumerable<ulong>", "IEnumerable<ushort>", "IEnumerable<sbyte>", "IEnumerable<object>", "IEnumerable<dynamic>",
-                "IList<string>", "IList<int>", "IList<long>", "IList<short>", "IList<byte>", "IList<bool>", "IList<char>", "IList<float>", "IList<double>", "IList<decimal>",
-                "IList<uint>", "IList<ulong>", "IList<ushort>", "IList<sbyte>", "IList<object>", "IList<dynamic>",
-                "ICollection<string>", "ICollection<int>", "ICollection<long>", "ICollection<short>", "ICollection<byte>", "ICollection<bool>", "ICollection<char>", "ICollection<float>", "ICollection<double>", "ICollection<decimal>",
-                "ICollection<uint>", "ICollection<ulong>", "ICollection<ushort>", "ICollection<sbyte>", "ICollection<object>", "ICollection<dynamic>",
-                // Date and time types
-                "DateTime", "DateOnly", "TimeOnly", "DateTimeOffset",
-                "DateTime?", "DateOnly?", "TimeOnly?", "DateTimeOffset?",
-                "DateTime[]", "DateOnly[]", "TimeOnly[]", "DateTimeOffset[]",
-                "List<DateTime>", "List<DateOnly>", "List<TimeOnly>", "List<DateTimeOffset>",
-                "IEnumerable<DateTime>", "IEnumerable<DateOnly>", "IEnumerable<TimeOnly>", "IEnumerable<DateTimeOffset>",
-                "IList<DateTime>", "IList<DateOnly>", "IList<TimeOnly>", "IList<DateTimeOffset>",
-                "ICollection<DateTime>", "ICollection<DateOnly>", "ICollection<TimeOnly>", "ICollection<DateTimeOffset>"
-            };
+                "DateTime", "DateOnly", "TimeOnly", "DateTimeOffset"
+            ];
+            // Collection type templates
+            string[] collectionTemplates =
+            [
+                "{0}[]",
+                "List<{0}>",
+                "ReadOnlyList<{0}>",
+                "IEnumerable<{0}>",
+                "IList<{0}>",
+                "ICollection<{0}>"
+            ];
+
+            HashSet<string> trivialTypes = new(StringComparer.OrdinalIgnoreCase);
+
+            // Add base types
+            foreach (var type in baseTypes)
+            {
+                trivialTypes.Add(type);
+
+                // Add nullable forms
+                trivialTypes.Add($"{type}?");
+
+                // Add collection forms
+                foreach (var collection in collectionTemplates)
+                {
+                    trivialTypes.Add(string.Format(collection, type));
+                }
+            }
 
             // Remove nullable, array, and generic collection forms as well
             return dependencies
@@ -380,7 +391,7 @@ namespace SimpleRag.Source.CSharp
         }
 
 
-        private string GetParentFromNesting(SyntaxNode? parent)
+        private string? GetParentFromNesting(SyntaxNode? parent)
         {
             return parent switch
             {
@@ -388,7 +399,7 @@ namespace SimpleRag.Source.CSharp
                 RecordDeclarationSyntax record => record.Identifier.Text,
                 StructDeclarationSyntax @struct => @struct.Identifier.Text,
                 InterfaceDeclarationSyntax @interface => @interface.Identifier.Text,
-                _ => string.Empty
+                _ => null
             };
         }
 
