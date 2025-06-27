@@ -143,8 +143,8 @@ public class CSharpSourceCommand(
                 ContentParentKind = codeEntity.ParentKindAsString,
                 ContentName = codeEntity.Name,
                 ContentNamespace = codeEntity.Namespace,
-                ContentDependencies = string.Join(";", codeEntity.Dependencies),
-                ContentReferences = string.Join(";", codeEntity.References?.Select(x => x.Path) ?? []),
+                ContentDependencies = codeEntity.Dependencies.Count == 0 ? null : string.Join(";", codeEntity.Dependencies),
+                ContentReferences = codeEntity.References?.Count == 0 ? null : string.Join(";", codeEntity.References?.Select(x => x.Path) ?? []),
                 ContentDescription = codeEntity.XmlSummary,
                 Content = content,
             };

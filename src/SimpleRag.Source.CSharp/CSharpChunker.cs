@@ -125,7 +125,6 @@ namespace SimpleRag.Source.CSharp
                     string parent = node.Identifier.ValueText;
                     CSharpKind parentKind = kind;
                     List<string> dependencies = GetMethodDependencies(method);
-                    dependencies = dependencies.Distinct().ToList();
                     result.Add(new CSharpChunk(CSharpKind.Method, ns, parent, parentKind, name, xmlSummary, content, dependencies, method));
                 }
 
@@ -138,6 +137,7 @@ namespace SimpleRag.Source.CSharp
                     string parent = node.Identifier.ValueText;
                     CSharpKind parentKind = kind;
                     var dependencies = constructor.ParameterList.Parameters.Select(x => x.Type?.ToString() ?? "unknown").ToList();
+                    dependencies = RemoveDuplicateAndTrivialDependencies(dependencies);
                     result.Add(new CSharpChunk(CSharpKind.Constructor, ns, parent, parentKind, name, xmlSummary, content.ToString(), dependencies, constructor));
                 }
 
@@ -209,7 +209,7 @@ namespace SimpleRag.Source.CSharp
                     sb.AppendLine("}");
                     var parent = GetParentFromNesting(node.Parent);
                     CSharpKind parentKind = GetParentType(node.Parent);
-                    dependencies = dependencies.Distinct().ToList();
+                    dependencies = RemoveDuplicateAndTrivialDependencies(dependencies);
                     result.Add(new CSharpChunk(kind, ns, parent, parentKind, name, GetXmlSummary(node), sb.ToString(), dependencies, node));
                 }
             }
@@ -330,7 +330,53 @@ namespace SimpleRag.Source.CSharp
         {
             List<string> result = [];
             result.AddRange(method.ParameterList.Parameters.Select(p => p.Type?.ToString() ?? "unknown"));
+            result = RemoveDuplicateAndTrivialDependencies(result);
             return result;
+        }
+
+        private static List<string> RemoveDuplicateAndTrivialDependencies(List<string> dependencies)
+        {
+            dependencies = dependencies.Distinct().ToList();
+            // List of basic C# types to remove, including common collection types and date/time types
+            HashSet<string> trivialTypes = new(StringComparer.OrdinalIgnoreCase)
+            {
+                "Stream", "Exception", "CancellationToken", "string", "int", "long", "short", "byte", "bool", "char", "float", "double", "decimal",
+                "uint", "ulong", "ushort", "sbyte", "object", "dynamic", "void",
+                "string[]", "int[]", "long[]", "short[]", "byte[]", "bool[]", "char[]", "float[]", "double[]", "decimal[]",
+                "uint[]", "ulong[]", "ushort[]", "sbyte[]", "object[]", "dynamic[]",
+                "List<string>", "List<int>", "List<long>", "List<short>", "List<byte>", "List<bool>", "List<char>", "List<float>", "List<double>", "List<decimal>",
+                "List<uint>", "List<ulong>", "List<ushort>", "List<sbyte>", "List<object>", "List<dynamic>",
+                "IEnumerable<string>", "IEnumerable<int>", "IEnumerable<long>", "IEnumerable<short>", "IEnumerable<byte>", "IEnumerable<bool>", "IEnumerable<char>", "IEnumerable<float>", "IEnumerable<double>", "IEnumerable<decimal>",
+                "IEnumerable<uint>", "IEnumerable<ulong>", "IEnumerable<ushort>", "IEnumerable<sbyte>", "IEnumerable<object>", "IEnumerable<dynamic>",
+                "IList<string>", "IList<int>", "IList<long>", "IList<short>", "IList<byte>", "IList<bool>", "IList<char>", "IList<float>", "IList<double>", "IList<decimal>",
+                "IList<uint>", "IList<ulong>", "IList<ushort>", "IList<sbyte>", "IList<object>", "IList<dynamic>",
+                "ICollection<string>", "ICollection<int>", "ICollection<long>", "ICollection<short>", "ICollection<byte>", "ICollection<bool>", "ICollection<char>", "ICollection<float>", "ICollection<double>", "ICollection<decimal>",
+                "ICollection<uint>", "ICollection<ulong>", "ICollection<ushort>", "ICollection<sbyte>", "ICollection<object>", "ICollection<dynamic>",
+                // Date and time types
+                "DateTime", "DateOnly", "TimeOnly", "DateTimeOffset",
+                "DateTime?", "DateOnly?", "TimeOnly?", "DateTimeOffset?",
+                "DateTime[]", "DateOnly[]", "TimeOnly[]", "DateTimeOffset[]",
+                "List<DateTime>", "List<DateOnly>", "List<TimeOnly>", "List<DateTimeOffset>",
+                "IEnumerable<DateTime>", "IEnumerable<DateOnly>", "IEnumerable<TimeOnly>", "IEnumerable<DateTimeOffset>",
+                "IList<DateTime>", "IList<DateOnly>", "IList<TimeOnly>", "IList<DateTimeOffset>",
+                "ICollection<DateTime>", "ICollection<DateOnly>", "ICollection<TimeOnly>", "ICollection<DateTimeOffset>"
+            };
+
+            // Remove nullable, array, and generic collection forms as well
+            return dependencies
+                .Where(dep =>
+                {
+                    var typeName = dep.Trim();
+                    // Remove nullable marker
+                    if (typeName.EndsWith("?"))
+                        typeName = typeName.TrimEnd('?');
+                    // Remove array brackets
+                    typeName = typeName.TrimEnd('[', ']');
+                    // Remove whitespace in generics
+                    typeName = typeName.Replace(" ", "");
+                    return !trivialTypes.Contains(typeName);
+                })
+                .ToList();
         }
 
 
