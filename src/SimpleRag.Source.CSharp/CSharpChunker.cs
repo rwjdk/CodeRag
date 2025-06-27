@@ -154,6 +154,11 @@ namespace SimpleRag.Source.CSharp
                         sb.Append("static ");
                     }
 
+                    if (IsAbstract(node.Modifiers))
+                    {
+                        sb.Append("abstract ");
+                    }
+
                     sb.Append($"{kind.ToString().ToLowerInvariant()} {name}"); //Do this better (partial stuff support)!
 
                     //Base Types and Interfaces
@@ -288,6 +293,11 @@ namespace SimpleRag.Source.CSharp
         private static bool IsStatic(SyntaxTokenList modifiers)
         {
             return modifiers.Any(m => m.IsKind(SyntaxKind.StaticKeyword));
+        }
+
+        private static bool IsAbstract(SyntaxTokenList modifiers)
+        {
+            return modifiers.Any(m => m.IsKind(SyntaxKind.AbstractKeyword));
         }
 
         private static PropertyDeclarationSyntax[] GetPublicProperties(SyntaxList<MemberDeclarationSyntax> members)
