@@ -37,10 +37,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\SimpleRag.Abstractions\SimpleRag.Abstractions.csproj" />
-	  <ProjectReference Include="..\SimpleRag.Source.CSharp\SimpleRag.Source.CSharp.csproj" />
-	  <ProjectReference Include="..\SimpleRag.Source.Markdown\SimpleRag.Source.Markdown.csproj" />
-	  <ProjectReference Include="..\SimpleRag.VectorStore\SimpleRag.VectorStorage.csproj" />
+	  <ProjectReference Include="..\SimpleRag\SimpleRag.csproj" />
 	</ItemGroup>
 
 </Project>

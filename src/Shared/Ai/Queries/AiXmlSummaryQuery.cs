@@ -1,7 +1,8 @@
 using JetBrains.Annotations;
 using Shared.Ai.StructuredOutputModels;
 using Shared.EntityFramework.DbModels;
-using SimpleRag.Abstractions;
+using SimpleRag;
+using SimpleRag.Interfaces;
 
 namespace Shared.Ai.Queries;
 

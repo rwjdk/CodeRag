@@ -5,13 +5,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
 using MudBlazor;
+using Shared;
 using Shared.Ai;
 using Shared.EntityFramework.DbModels;
 using Website.Models;
 using Shared.Ai.Queries;
-using SimpleRag.Abstractions.Models;
-using SimpleRag.Source.CSharp;
-using SimpleRag.Source.CSharp.Models;
+using SimpleRag.DataSources.CSharp;
+using SimpleRag.DataSources.CSharp.Models;
 
 namespace Website.Pages.XmlSummariesGeneration;
 
@@ -109,7 +109,7 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
 
         foreach (var file in dirInfo.GetFiles("*.cs"))
         {
-            if (_selectedSource!.AsRagFileSource().IgnoreFile(file.FullName))
+            if (_selectedSource!.AsFileContentGithubSource().IgnoreFile(file.FullName))
             {
                 continue;
             }

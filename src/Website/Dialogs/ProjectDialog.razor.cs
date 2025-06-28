@@ -2,12 +2,12 @@
 using BlazorUtilities.Helpers;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using Shared;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
-using SimpleRag.Abstractions;
-using SimpleRag.Abstractions.Models;
-using SimpleRag.Source.CSharp;
-using SimpleRag.Source.Markdown;
+using SimpleRag;
+using SimpleRag.DataSources.CSharp;
+using SimpleRag.DataSources.Markdown;
 using SimpleRag.VectorStorage;
 using Website.Models;
 
@@ -15,8 +15,8 @@ namespace Website.Dialogs;
 
 public partial class ProjectDialog(
     ProjectCommand projectCommand,
-    CSharpSourceCommand cSharpSourceCommand,
-    MarkdownSourceCommand ingestionMarkdownCommand,
+    CSharpDataSourceCommand cSharpSourceCommand,
+    MarkdownDataSourceCommand ingestionMarkdownCommand,
     VectorStoreCommand vectorStoreCommand) : IDisposable
 {
     private int _current;
@@ -140,10 +140,28 @@ public partial class ProjectDialog(
             switch (source.Kind)
             {
                 case SourceKind.CSharp:
-                    await cSharpSourceCommand.IngestAsync(source.AsCSharpSource(Project));
+                    switch (source.Location)
+                    {
+                        case SourceLocation.GitHub:
+                            await cSharpSourceCommand.IngestGitHubAsync(source.AsCSharpSourceGitHub(Project));
+                            break;
+                        default:
+                            await cSharpSourceCommand.IngestLocalAsync(source.AsCSharpSourceLocal(Project));
+                            break;
+                    }
+
                     break;
                 case SourceKind.Markdown:
-                    await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSource(Project));
+                    switch (source.Location)
+                    {
+                        case SourceLocation.GitHub:
+                            await ingestionMarkdownCommand.IngestGitHubAsync(source.AsMarkdownSourceGitHub(Project));
+                            break;
+                        default:
+                            await ingestionMarkdownCommand.IngestLocalAsync(source.AsMarkdownSourceLocal(Project));
+                            break;
+                    }
+
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

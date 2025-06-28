@@ -1,5 +1,5 @@
 ﻿using Shared.Ai;
-using SimpleRag.Abstractions;
+using SimpleRag.Interfaces;
 using Website.Models;
 
 namespace Website.Extensions;

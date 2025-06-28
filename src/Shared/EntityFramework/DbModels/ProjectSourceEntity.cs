@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using SimpleRag.Abstractions.Models;
-using SimpleRag.FileRetrieval.Models;
-using SimpleRag.Source.CSharp.Models;
-using SimpleRag.Source.Markdown.Models;
+using SimpleRag.DataSources.CSharp.Models;
+using SimpleRag.DataSources.Markdown.Models;
+using SimpleRag.FileContent.Models;
 
 namespace Shared.EntityFramework.DbModels;
 
@@ -88,30 +87,51 @@ public class ProjectSourceEntity
         };
     }
 
-    public RawFileSource AsRagFileSource()
+    public FileContentSourceGitHub AsFileContentGithubSource()
     {
-        return new RawFileSource
+        return new FileContentSourceGitHub
         {
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            Location = Location,
             GitHubOwner = GitHubOwner,
             GitHubRepo = GitHubRepo,
             GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
         };
     }
 
-    public CSharpSource AsCSharpSource(ProjectEntity project)
+    public FileContentSourceLocal AsFileContentLocalSource()
     {
-        return new CSharpSource
+        return new FileContentSourceLocal
+        {
+            Recursive = Recursive,
+            Path = Path,
+            FileIgnorePatterns = FileIgnorePatterns,
+        };
+    }
+
+    public CSharpDataSourceLocal AsCSharpSourceLocal(ProjectEntity project)
+    {
+        return new CSharpDataSourceLocal
         {
             CollectionId = project.Id.ToString(),
             Id = Id.ToString(),
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            Location = Location,
+            IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
+        };
+    }
+
+    public CSharpDataSourceGitHub AsCSharpSourceGitHub(ProjectEntity project)
+    {
+        return new CSharpDataSourceGitHub
+        {
+            CollectionId = project.Id.ToString(),
+            Id = Id.ToString(),
+            Recursive = Recursive,
+            Path = Path,
+            FileIgnorePatterns = FileIgnorePatterns,
             GitHubOwner = GitHubOwner,
             GitHubRepo = GitHubRepo,
             GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
@@ -119,16 +139,35 @@ public class ProjectSourceEntity
         };
     }
 
-    public MarkdownSource AsMarkdownSource(ProjectEntity project)
+    public MarkdownDataSourceLocal AsMarkdownSourceLocal(ProjectEntity project)
     {
-        return new MarkdownSource
+        return new MarkdownDataSourceLocal
         {
             CollectionId = project.Id.ToString(),
             Id = Id.ToString(),
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            Location = Location,
+            IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
+            MarkdownIgnoreCommentedOutContent = MarkdownIgnoreCommentedOutContent,
+            MarkdownIgnoreImages = MarkdownIgnoreImages,
+            MarkdownIgnoreMicrosoftLearnNoneCsharpContent = MarkdownIgnoreMicrosoftLearnNoneCsharpContent,
+            MarkdownOnlyChunkIfMoreThanThisNumberOfLines = MarkdownOnlyChunkIfMoreThanThisNumberOfLines,
+            MarkdownLevelsToChunk = MarkdownLevelsToChunk,
+            MarkdownChunkLineIgnorePatterns = MarkdownChunkLineIgnorePatterns,
+            MarkdownChunkIgnoreIfLessThanThisAmountOfChars = MarkdownChunkIgnoreIfLessThanThisAmountOfChars
+        };
+    }
+
+    public MarkdownDataSourceGitHub AsMarkdownSourceGitHub(ProjectEntity project)
+    {
+        return new MarkdownDataSourceGitHub
+        {
+            CollectionId = project.Id.ToString(),
+            Id = Id.ToString(),
+            Recursive = Recursive,
+            Path = Path,
+            FileIgnorePatterns = FileIgnorePatterns,
             GitHubOwner = GitHubOwner,
             GitHubRepo = GitHubRepo,
             GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,

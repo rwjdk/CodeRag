@@ -9,7 +9,7 @@ using MudBlazor;
 using Shared.Ai;
 using Shared.Ai.Queries;
 using Shared.EntityFramework.DbModels;
-using SimpleRag.Abstractions;
+using SimpleRag;
 using SimpleRag.VectorStorage.Models;
 using Website.Dialogs;
 

@@ -1,10 +1,10 @@
 ﻿using JetBrains.Annotations;
 using Octokit;
+using Shared;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
-using SimpleRag.Abstractions;
-using SimpleRag.Abstractions.Models;
 using SimpleRag.Integrations.GitHub;
+using SimpleRag.Interfaces;
 using Website.Models;
 
 namespace Website.Services;

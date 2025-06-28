@@ -2,23 +2,14 @@ using Blazored.LocalStorage;
 using BlazorUtilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 using MudBlazor.Services;
 using Shared.Ai;
 using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 using Microsoft.AspNetCore.Mvc;
-using SimpleRag.FileRetrieval.Extensions;
-using SimpleRag.FileRetrieval.Models;
-using SimpleRag.Integrations.GitHub;
-using SimpleRag.Integrations.GitHub.Extensions;
-using SimpleRag.Source.CSharp;
-using SimpleRag.Source.CSharp.Extensions;
-using SimpleRag.Source.Markdown;
-using SimpleRag.Source.Markdown.Extensions;
+using SimpleRag.Extensions;
 using SimpleRag.VectorStorage;
-using SimpleRag.VectorStorage.Extensions;
 using Website;
 using Website.Extensions;
 using Website.Models;
@@ -33,6 +24,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
 builder.Services.AddBlazorShared();
+
 builder.Services.AddBlazoredLocalStorage();
 if (configuration != null)
 {
@@ -43,15 +35,10 @@ if (configuration != null)
     builder.Services.AddSingleton(new AiConfiguration(configuration.Endpoint, configuration.Key, configuration.ChatModels));
     builder.Services.AddDbContextFactory<SqlDbContext>(options => { options.UseSqlServer(configuration.SqlServerConnectionString); });
 
-    builder.Services.AddSimpleRagVectorStore(new VectorStoreConfiguration(Shared.Constants.VectorCollections.VectorSources, 50), options => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions
+    builder.Services.AddSimpleRagWithGithubIntegration(new VectorStoreConfiguration(Shared.Constants.VectorCollections.VectorSources, 50), options => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions
     {
         EmbeddingGenerator = options.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>()
-    }));
-
-    builder.Services.AddSimpleRagCSharpSource();
-    builder.Services.AddSimpleRagMarkdownSource();
-    builder.Services.AddSimpleRagFileRetrieval();
-    builder.Services.AddSimpleRagGithubIntegration(configuration.GitHubToken);
+    }), configuration.GitHubToken);
 }
 
 

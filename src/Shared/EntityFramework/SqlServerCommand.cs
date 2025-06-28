@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
-using SimpleRag.Abstractions;
+using SimpleRag.Interfaces;
 
 namespace Shared.EntityFramework;
 

@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Shared.Ai.StructuredOutputModels;
 using Shared.EntityFramework.DbModels;
-using SimpleRag.Abstractions;
+using SimpleRag.Interfaces;
 
 namespace Shared.Ai.Queries;
 

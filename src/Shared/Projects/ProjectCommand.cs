@@ -2,7 +2,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
-using SimpleRag.Abstractions;
+using SimpleRag.Interfaces;
 
 namespace Shared.Projects;
 

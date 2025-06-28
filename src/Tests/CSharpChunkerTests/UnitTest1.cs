@@ -1,5 +1,5 @@
-using SimpleRag.Source.CSharp;
-using SimpleRag.Source.CSharp.Models;
+using SimpleRag.DataSources.CSharp;
+using SimpleRag.DataSources.CSharp.Models;
 
 namespace CSharpChunkerTests;
 

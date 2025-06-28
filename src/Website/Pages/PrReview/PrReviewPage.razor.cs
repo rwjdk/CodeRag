@@ -1,6 +1,7 @@
 ﻿using BlazorUtilities;
 using Microsoft.AspNetCore.Components;
 using Octokit;
+using Shared;
 using Shared.Ai;
 using Shared.Ai.Queries;
 using Shared.Ai.StructuredOutputModels;
@@ -9,7 +10,7 @@ using SimpleRag.Integrations.GitHub;
 
 namespace Website.Pages.PrReview;
 
-public partial class PrReviewPage(GitHubQuery gitHubQuery, GitHubCommand gitHubCommand, AiPullRequestReviewQuery aiPullRequestReviewQuery)
+public partial class PrReviewPage(GitHubPullRequestQuery gitHubQuery, GitHubPullRequestCommand gitHubCommand, AiPullRequestReviewQuery aiPullRequestReviewQuery)
 {
     [CascadingParameter]
     public required BlazorUtils BlazorUtils { get; set; }
