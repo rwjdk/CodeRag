@@ -4,11 +4,10 @@ namespace SimpleRag.DataSources.Markdown.Models;
 
 public abstract class MarkdownSource : DataSource
 {
-    public required bool MarkdownIgnoreCommentedOutContent { get; set; }
-    public required bool MarkdownIgnoreImages { get; set; }
-    public required bool MarkdownIgnoreMicrosoftLearnNoneCsharpContent { get; set; }
-    public required int? MarkdownOnlyChunkIfMoreThanThisNumberOfLines { get; set; }
-    public required int MarkdownLevelsToChunk { get; set; }
-    public required string? MarkdownChunkLineIgnorePatterns { get; set; }
-    public required int? MarkdownChunkIgnoreIfLessThanThisAmountOfChars { get; set; }
+    public bool IgnoreCommentedOutContent { get; set; } = true;
+    public bool IgnoreImages { get; set; } = true;
+    public int? OnlyChunkIfMoreThanThisNumberOfLines { get; set; } = 25;
+    public int LevelsToChunk { get; set; } = 2;
+    public string? ChunkLineIgnorePatterns { get; set; }
+    public int? IgnoreChunkIfLessThanThisAmountOfChars { get; set; } = 25;
 }

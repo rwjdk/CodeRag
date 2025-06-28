@@ -65,37 +65,29 @@ public class MarkdownDataSourceCommand(
 
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(rawFile.Path);
             var content = rawFile.Content;
-            if (source.MarkdownIgnoreCommentedOutContent)
+            if (source.IgnoreCommentedOutContent)
             {
                 //Remove Any Commented out parts
                 content = Regex.Replace(content, "<!--[\\s\\S]*?-->", string.Empty);
             }
 
-            if (source.MarkdownIgnoreImages)
+            if (source.IgnoreImages)
             {
                 //Remove Any Images
                 content = Regex.Replace(content, @"!\[.*?\]\(.*?\)", string.Empty);
-            }
-
-            if (source.MarkdownIgnoreMicrosoftLearnNoneCsharpContent)
-            {
-                content = Regex.Replace(content, "\\A---\\s*[\\s\\S]*?\\s*---\\s*", string.Empty); //Top MD Section
-                content = Regex.Replace(content, ":::\\s*zone\\s+pivot=\"programming-language-python\"\\s*[\\s\\S]*?\\s*:::\\s*zone-end", string.Empty);
-                content = Regex.Replace(content, ":::\\s*zone\\s+pivot=\"programming-language-java\"\\s*[\\s\\S]*?\\s*:::\\s*zone-end", string.Empty);
-                content = Regex.Replace(content, @"^::: zone pivot=""programming-language-csharp"".*$|^::: zone-end.*$", "", RegexOptions.Multiline);
             }
 
             var newLine = Environment.NewLine;
             content = Regex.Replace(content, @"\r\n[\r\n]+|\r[\r]+|\n[\n]+", newLine + newLine);
             content = content.Trim();
 
-            if (numberOfLine > source.MarkdownOnlyChunkIfMoreThanThisNumberOfLines)
+            if (numberOfLine > source.OnlyChunkIfMoreThanThisNumberOfLines)
             {
                 //Chunk larger files
                 MarkdownChunk[] chunks = chunker.GetChunks(content,
-                    source.MarkdownLevelsToChunk,
-                    source.MarkdownChunkLineIgnorePatterns,
-                    source.MarkdownChunkIgnoreIfLessThanThisAmountOfChars);
+                    source.LevelsToChunk,
+                    source.ChunkLineIgnorePatterns,
+                    source.IgnoreChunkIfLessThanThisAmountOfChars);
 
                 entries.AddRange(chunks.Select(x => new VectorEntity
                 {
