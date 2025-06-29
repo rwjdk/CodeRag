@@ -27,10 +27,10 @@ public class ProjectIngestionService(ProjectCommand projectCommand, MarkdownData
                 switch (source.Location)
                 {
                     case SourceLocation.GitHub:
-                        await ingestionCSharpCommand.IngestGitHubAsync(source.AsCSharpSourceGitHub(project));
+                        await ingestionCSharpCommand.IngestAsync(source.AsCSharpSourceGitHub(project));
                         break;
                     default:
-                        await ingestionCSharpCommand.IngestLocalAsync(source.AsCSharpSourceLocal(project));
+                        await ingestionCSharpCommand.IngestAsync(source.AsCSharpSourceLocal(project));
                         break;
                 }
 
@@ -39,10 +39,10 @@ public class ProjectIngestionService(ProjectCommand projectCommand, MarkdownData
                 switch (source.Location)
                 {
                     case SourceLocation.GitHub:
-                        await ingestionMarkdownCommand.IngestGitHubAsync(source.AsMarkdownSourceGitHub(project));
+                        await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSourceGitHub(project));
                         break;
                     default:
-                        await ingestionMarkdownCommand.IngestLocalAsync(source.AsMarkdownSourceLocal(project));
+                        await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSourceLocal(project));
                         break;
                 }
 

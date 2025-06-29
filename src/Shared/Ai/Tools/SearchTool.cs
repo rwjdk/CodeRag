@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using SimpleRag;
+using SimpleRag.Models;
 using SimpleRag.VectorStorage;
 using SimpleRag.VectorStorage.Models;
 
@@ -12,7 +13,7 @@ internal class SearchTool(VectorStoreQuery vectorStoreQuery, string projectId, s
     [KernelFunction]
     public async Task<string> Search(string searchQuery)
     {
-        SearchResult result = await vectorStoreQuery.Search(searchQuery, numberOfResultsBack, entity => entity.SourceKind == sourceKind && entity.SourceCollectionId == projectId);
+        SearchResult result = await vectorStoreQuery.SearchAsync(searchQuery, numberOfResultsBack, entity => entity.SourceKind == sourceKind && entity.SourceCollectionId == projectId);
         ProgressNotification notification = new(DateTimeOffset.UtcNow, $"{sourceKind} Search Called with Query '{searchQuery}' ({result.Entities.Length} Results)")
         {
             Arguments = result.Entities

@@ -1,11 +1,10 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.Extensions.VectorData;
-using SimpleRag.Interfaces;
 using SimpleRag.VectorStorage.Models;
 
 namespace SimpleRag.VectorStorage;
 
-public class VectorStoreQuery(VectorStore vectorStore, VectorStoreConfiguration vectorStoreConfiguration) : IScopedService
+public class VectorStoreQuery(VectorStore vectorStore, VectorStoreConfiguration vectorStoreConfiguration)
 {
     private bool _creationEnsured;
 

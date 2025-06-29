@@ -8,6 +8,7 @@ using Shared.Projects;
 using SimpleRag;
 using SimpleRag.DataSources.CSharp;
 using SimpleRag.DataSources.Markdown;
+using SimpleRag.Models;
 using SimpleRag.VectorStorage;
 using Website.Models;
 
@@ -143,10 +144,10 @@ public partial class ProjectDialog(
                     switch (source.Location)
                     {
                         case SourceLocation.GitHub:
-                            await cSharpSourceCommand.IngestGitHubAsync(source.AsCSharpSourceGitHub(Project));
+                            await cSharpSourceCommand.IngestAsync(source.AsCSharpSourceGitHub(Project));
                             break;
                         default:
-                            await cSharpSourceCommand.IngestLocalAsync(source.AsCSharpSourceLocal(Project));
+                            await cSharpSourceCommand.IngestAsync(source.AsCSharpSourceLocal(Project));
                             break;
                     }
 
@@ -155,10 +156,10 @@ public partial class ProjectDialog(
                     switch (source.Location)
                     {
                         case SourceLocation.GitHub:
-                            await ingestionMarkdownCommand.IngestGitHubAsync(source.AsMarkdownSourceGitHub(Project));
+                            await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSourceGitHub(Project));
                             break;
                         default:
-                            await ingestionMarkdownCommand.IngestLocalAsync(source.AsMarkdownSourceLocal(Project));
+                            await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSourceLocal(Project));
                             break;
                     }
 

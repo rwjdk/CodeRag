@@ -3,6 +3,7 @@ using Shared.Ai.StructuredOutputModels;
 using Shared.EntityFramework.DbModels;
 using SimpleRag;
 using SimpleRag.Interfaces;
+using SimpleRag.Models;
 
 namespace Shared.Ai.Queries;
 

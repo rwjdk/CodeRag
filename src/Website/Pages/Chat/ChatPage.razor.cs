@@ -10,6 +10,7 @@ using Shared.Ai;
 using Shared.Ai.Queries;
 using Shared.EntityFramework.DbModels;
 using SimpleRag;
+using SimpleRag.Models;
 using SimpleRag.VectorStorage.Models;
 using Website.Dialogs;
 

@@ -25,9 +25,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\SimpleRag\src\SimpleRag.csproj" />
 		<ProjectReference Include="..\BlazorUtils\BlazorUtilities.csproj" />
 		<ProjectReference Include="..\Shared\Shared.csproj" />
-		<ProjectReference Include="..\SimpleRag\SimpleRag.csproj" />
 	</ItemGroup>
 
 </Project>

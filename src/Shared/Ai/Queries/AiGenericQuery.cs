@@ -11,6 +11,7 @@ using SimpleRag;
 using SimpleRag.DataSources.CSharp;
 using SimpleRag.DataSources.Markdown;
 using SimpleRag.Interfaces;
+using SimpleRag.Models;
 using SimpleRag.VectorStorage;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 

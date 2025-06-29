@@ -149,13 +149,12 @@ public class ProjectSourceEntity
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
             IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
-            MarkdownIgnoreCommentedOutContent = MarkdownIgnoreCommentedOutContent,
-            MarkdownIgnoreImages = MarkdownIgnoreImages,
-            MarkdownIgnoreMicrosoftLearnNoneCsharpContent = MarkdownIgnoreMicrosoftLearnNoneCsharpContent,
-            MarkdownOnlyChunkIfMoreThanThisNumberOfLines = MarkdownOnlyChunkIfMoreThanThisNumberOfLines,
-            MarkdownLevelsToChunk = MarkdownLevelsToChunk,
-            MarkdownChunkLineIgnorePatterns = MarkdownChunkLineIgnorePatterns,
-            MarkdownChunkIgnoreIfLessThanThisAmountOfChars = MarkdownChunkIgnoreIfLessThanThisAmountOfChars
+            IgnoreCommentedOutContent = MarkdownIgnoreCommentedOutContent,
+            IgnoreImages = MarkdownIgnoreImages,
+            OnlyChunkIfMoreThanThisNumberOfLines = MarkdownOnlyChunkIfMoreThanThisNumberOfLines,
+            LevelsToChunk = MarkdownLevelsToChunk,
+            ChunkLineIgnorePatterns = MarkdownChunkLineIgnorePatterns,
+            IgnoreChunkIfLessThanThisAmountOfChars = MarkdownChunkIgnoreIfLessThanThisAmountOfChars
         };
     }
 
@@ -172,13 +171,12 @@ public class ProjectSourceEntity
             GitHubRepo = GitHubRepo,
             GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
             IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
-            MarkdownIgnoreCommentedOutContent = MarkdownIgnoreCommentedOutContent,
-            MarkdownIgnoreImages = MarkdownIgnoreImages,
-            MarkdownIgnoreMicrosoftLearnNoneCsharpContent = MarkdownIgnoreMicrosoftLearnNoneCsharpContent,
-            MarkdownOnlyChunkIfMoreThanThisNumberOfLines = MarkdownOnlyChunkIfMoreThanThisNumberOfLines,
-            MarkdownLevelsToChunk = MarkdownLevelsToChunk,
-            MarkdownChunkLineIgnorePatterns = MarkdownChunkLineIgnorePatterns,
-            MarkdownChunkIgnoreIfLessThanThisAmountOfChars = MarkdownChunkIgnoreIfLessThanThisAmountOfChars
+            IgnoreCommentedOutContent = MarkdownIgnoreCommentedOutContent,
+            IgnoreImages = MarkdownIgnoreImages,
+            OnlyChunkIfMoreThanThisNumberOfLines = MarkdownOnlyChunkIfMoreThanThisNumberOfLines,
+            LevelsToChunk = MarkdownLevelsToChunk,
+            ChunkLineIgnorePatterns = MarkdownChunkLineIgnorePatterns,
+            IgnoreChunkIfLessThanThisAmountOfChars = MarkdownChunkIgnoreIfLessThanThisAmountOfChars
         };
     }
 }

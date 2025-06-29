@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SimpleRag\SimpleRag.csproj" />
+    <ProjectReference Include="..\..\..\..\SimpleRag\src\SimpleRag.csproj" />
   </ItemGroup>
 
   <ItemGroup>
