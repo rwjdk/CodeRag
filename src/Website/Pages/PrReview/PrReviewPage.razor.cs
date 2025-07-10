@@ -59,7 +59,7 @@ public partial class PrReviewPage(GitHubPullRequestQuery gitHubQuery, GitHubPull
     {
         using WorkingProgress workingProgress = BlazorUtils.StartWorking();
         string prDiff = await gitHubQuery.GetPrDiffAsync(_gitHubClient!, Project.GitHubOwner!, Project.GitHubRepo!, _selectedPullRequest!.Number);
-        _review = await aiPullRequestReviewQuery.GetGithubPullRequestReview(Project, _chatModel, prDiff, Project.PullRequestReviewInstructions ?? ProjectEntity.GeneratePullRequestReviewInstructions());
+        _review = await aiPullRequestReviewQuery.GetGitHubPullRequestReview(Project, _chatModel, prDiff, Project.PullRequestReviewInstructions ?? ProjectEntity.GeneratePullRequestReviewInstructions());
     }
 
     private async Task AddPrReviewComment()

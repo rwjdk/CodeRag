@@ -168,7 +168,7 @@ public partial class ProjectDialog(
                     throw new ArgumentOutOfRangeException();
             }
 
-            await projectCommand.UpdateLastGithubCommitDateAsync(source, syncStart);
+            await projectCommand.UpdateLastGitHubCommitDateAsync(source, syncStart);
             await projectCommand.UpdateLastSourceSyncDateAsync(source);
             _syncingSource = null;
             StateHasChanged();

@@ -10,7 +10,7 @@ using Website.Models;
 namespace Website.Services;
 
 [UsedImplicitly]
-public class UrlToProjectService(GitHubQuery gitHubQuery, ProjectQuery projectQuery, ProjectCommand projectCommand, ProjectIngestionService projectIngestionService) : IScopedService
+public class UrlToProjectService(GitHubPullRequestQuery gitHubQuery, ProjectQuery projectQuery, ProjectCommand projectCommand, ProjectIngestionService projectIngestionService) : IScopedService
 {
     public async Task<IResult> ConvertRepoUrlToProject(UrlToProjectServiceRequest request)
     {

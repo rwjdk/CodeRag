@@ -57,4 +57,12 @@ public class UnitTest1
         CSharpChunker chunker = new();
         List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
     }
+
+    [Fact]
+    public void Test7()
+    {
+        string code = File.ReadAllText("TestFiles\\ClassWithObsoleteConstructorsAndNothingElse.cs");
+        CSharpChunker chunker = new();
+        List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
+    }
 }

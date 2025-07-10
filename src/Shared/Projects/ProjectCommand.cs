@@ -66,7 +66,7 @@ public class ProjectCommand(SqlServerCommand sqlServerCommand) : IScopedService
         await context.SaveChangesAsync();
     }
 
-    public async Task UpdateLastGithubCommitDateAsync(ProjectSourceEntity source, DateTimeOffset date)
+    public async Task UpdateLastGitHubCommitDateAsync(ProjectSourceEntity source, DateTimeOffset date)
     {
         source.GitGubLastCommitTimestamp = date;
         var context = await sqlServerCommand.CreateDbContextAsync();

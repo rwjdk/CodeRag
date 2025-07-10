@@ -87,7 +87,7 @@ public class ProjectSourceEntity
         };
     }
 
-    public FileContentSourceGitHub AsFileContentGithubSource()
+    public FileContentSourceGitHub AsFileContentGitHubSource()
     {
         return new FileContentSourceGitHub
         {

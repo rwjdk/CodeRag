@@ -31,6 +31,9 @@
     <Compile Update="TestFiles\ClassWithBaseClassAndInterface.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
+    <Compile Update="TestFiles\ClassWithObsoleteConstructorsAndNothingElse.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
     <Compile Update="TestFiles\ClassWithConstructors.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>

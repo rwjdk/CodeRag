@@ -12,7 +12,7 @@ namespace Shared.Ai.Queries;
 [UsedImplicitly]
 public class AiPullRequestReviewQuery(AiGenericQuery aiGenericQuery) : IScopedService
 {
-    public async Task<Review> GetGithubPullRequestReview(ProjectEntity project, AiChatModel chatModel, string prDiffContent, string instructions)
+    public async Task<Review> GetGitHubPullRequestReview(ProjectEntity project, AiChatModel chatModel, string prDiffContent, string instructions)
     {
         Kernel kernel = aiGenericQuery.GetKernel(chatModel);
         if (project.ChatUseSourceCodeSearch)
