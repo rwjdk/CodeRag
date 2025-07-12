@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using SimpleRag.DataSources.CSharp.Models;
 using SimpleRag.DataSources.Markdown.Models;
 using SimpleRag.FileContent.Models;
+using SimpleRag.Integrations.GitHub;
 
 namespace Shared.EntityFramework.DbModels;
 
@@ -94,9 +95,12 @@ public class ProjectSourceEntity
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            GitHubOwner = GitHubOwner,
-            GitHubRepo = GitHubRepo,
-            GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
+            GitHubRepository = new GitHubRepository
+            {
+                Owner = GitHubOwner,
+                Name = GitHubRepo,
+                LastCommitTimestamp = GitGubLastCommitTimestamp
+            }
         };
     }
 
@@ -132,9 +136,12 @@ public class ProjectSourceEntity
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            GitHubOwner = GitHubOwner,
-            GitHubRepo = GitHubRepo,
-            GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
+            GitHubRepository = new GitHubRepository
+            {
+                Owner = GitHubOwner,
+                Name = GitHubRepo,
+                LastCommitTimestamp = GitGubLastCommitTimestamp
+            },
             IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
         };
     }
@@ -167,9 +174,12 @@ public class ProjectSourceEntity
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            GitHubOwner = GitHubOwner,
-            GitHubRepo = GitHubRepo,
-            GitHubLastCommitTimestamp = GitGubLastCommitTimestamp,
+            GitHubRepository = new GitHubRepository
+            {
+                Owner = GitHubOwner,
+                Name = GitHubRepo,
+                LastCommitTimestamp = GitGubLastCommitTimestamp
+            },
             IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
             IgnoreCommentedOutContent = MarkdownIgnoreCommentedOutContent,
             IgnoreImages = MarkdownIgnoreImages,
