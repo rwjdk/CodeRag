@@ -17,7 +17,7 @@ using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 namespace Shared.Ai.Queries;
 
 [UsedImplicitly]
-public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService
+public class AiGenericQuery(AiConfiguration aiConfiguration, IVectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService
 {
     internal SearchTool ImportDocumentationSearchPlugin(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, Kernel kernel)
     {

@@ -6,7 +6,7 @@ using SimpleRag.VectorStorage.Models;
 
 namespace Shared.Ai.Tools;
 
-internal class SearchTool(VectorStoreQuery vectorStoreQuery, string projectId, string sourceKind, int numberOfResultsBack, ProgressNotificationBase parent)
+internal class SearchTool(IVectorStoreQuery vectorStoreQuery, string projectId, string sourceKind, int numberOfResultsBack, ProgressNotificationBase parent)
 {
     [UsedImplicitly]
     [KernelFunction]
