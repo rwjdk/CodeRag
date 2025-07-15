@@ -11,7 +11,6 @@ using SimpleRag;
 using SimpleRag.DataSources.CSharp;
 using SimpleRag.DataSources.Markdown;
 using SimpleRag.Interfaces;
-using SimpleRag.Models;
 using SimpleRag.VectorStorage;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
@@ -22,14 +21,14 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, VectorStoreQuery ve
 {
     internal SearchTool ImportDocumentationSearchPlugin(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, Kernel kernel)
     {
-        var docsTool = new SearchTool(vectorStoreQuery, project.Id.ToString(), MarkdownDataSourceCommand.SourceKind, maxNumberOfAnswersBackFromDocumentationSearch, this);
+        var docsTool = new SearchTool(vectorStoreQuery, project.Id.ToString(), MarkdownDataSource.SourceKind, maxNumberOfAnswersBackFromDocumentationSearch, this);
         kernel.ImportPluginFromObject(docsTool, Constants.Tools.Markdown);
         return docsTool;
     }
 
     internal SearchTool ImportCodeSearchPlugin(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, Kernel kernel)
     {
-        var codePlugin = new SearchTool(vectorStoreQuery, project.Id.ToString(), CSharpDataSourceCommand.SourceKind, maxNumberOfAnswersBackFromSourceCodeSearch, this);
+        var codePlugin = new SearchTool(vectorStoreQuery, project.Id.ToString(), CSharpDataSource.SourceKind, maxNumberOfAnswersBackFromSourceCodeSearch, this);
         kernel.ImportPluginFromObject(codePlugin, Constants.Tools.CSharp);
         return codePlugin;
     }

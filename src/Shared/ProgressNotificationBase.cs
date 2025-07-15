@@ -1,4 +1,4 @@
-using SimpleRag.Models;
+using SimpleRag;
 
 namespace Shared;
 

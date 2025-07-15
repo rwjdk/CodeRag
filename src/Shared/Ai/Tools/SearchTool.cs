@@ -1,7 +1,6 @@
 using JetBrains.Annotations;
 using Microsoft.SemanticKernel;
 using SimpleRag;
-using SimpleRag.Models;
 using SimpleRag.VectorStorage;
 using SimpleRag.VectorStorage.Models;
 

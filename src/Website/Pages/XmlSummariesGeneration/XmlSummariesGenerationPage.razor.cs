@@ -109,7 +109,7 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
 
         foreach (var file in dirInfo.GetFiles("*.cs"))
         {
-            if (_selectedSource!.AsFileContentGitHubSource().IgnoreFile(file.FullName))
+            if (_selectedSource!.AsFileContentSource().IgnoreFile(file.FullName))
             {
                 continue;
             }

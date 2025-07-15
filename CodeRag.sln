@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpChunkerTests", "src\T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRag", "..\SimpleRag\src\SimpleRag.csproj", "{04594088-ABBB-1D36-CE52-05A073247BE1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend", "..\TrelloDotNet.Assistant\src\Backend\Backend.csproj", "{71761DFF-3696-F409-0630-88A2F6506E0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{04594088-ABBB-1D36-CE52-05A073247BE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{04594088-ABBB-1D36-CE52-05A073247BE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{04594088-ABBB-1D36-CE52-05A073247BE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71761DFF-3696-F409-0630-88A2F6506E0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71761DFF-3696-F409-0630-88A2F6506E0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71761DFF-3696-F409-0630-88A2F6506E0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71761DFF-3696-F409-0630-88A2F6506E0C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

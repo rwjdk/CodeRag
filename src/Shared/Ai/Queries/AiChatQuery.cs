@@ -6,9 +6,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Shared.Ai.StructuredOutputModels;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
-using SimpleRag;
 using SimpleRag.Interfaces;
-using SimpleRag.Models;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Shared.Ai.Queries;

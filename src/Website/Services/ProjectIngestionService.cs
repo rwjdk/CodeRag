@@ -4,12 +4,14 @@ using Shared.EntityFramework.DbModels;
 using Shared.Projects;
 using SimpleRag.DataSources.CSharp;
 using SimpleRag.DataSources.Markdown;
+using SimpleRag.Integrations.GitHub;
 using SimpleRag.Interfaces;
+using SimpleRag.VectorStorage;
 
 namespace Website.Services;
 
 [UsedImplicitly]
-public class ProjectIngestionService(ProjectCommand projectCommand, MarkdownDataSourceCommand ingestionMarkdownCommand, CSharpDataSourceCommand ingestionCSharpCommand) : IScopedService
+public class ProjectIngestionService(ProjectCommand projectCommand, IGitHubQuery gitHubQuery, ICSharpChunker cSharpChunker, IMarkdownChunker markdownChunker, IVectorStoreQuery vectorStoreQuery, IVectorStoreCommand vectorStoreCommand) : IScopedService
 {
     public async Task IngestAsync(ProjectEntity project)
     {
@@ -27,10 +29,10 @@ public class ProjectIngestionService(ProjectCommand projectCommand, MarkdownData
                 switch (source.Location)
                 {
                     case SourceLocation.GitHub:
-                        await ingestionCSharpCommand.IngestAsync(source.AsCSharpSourceGitHub(project));
+                        await source.AsCSharpSourceGitHub(project, gitHubQuery, cSharpChunker, vectorStoreQuery, vectorStoreCommand).IngestAsync();
                         break;
                     default:
-                        await ingestionCSharpCommand.IngestAsync(source.AsCSharpSourceLocal(project));
+                        await source.AsCSharpSourceLocal(project, cSharpChunker, vectorStoreQuery, vectorStoreCommand).IngestAsync();
                         break;
                 }
 
@@ -39,10 +41,10 @@ public class ProjectIngestionService(ProjectCommand projectCommand, MarkdownData
                 switch (source.Location)
                 {
                     case SourceLocation.GitHub:
-                        await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSourceGitHub(project));
+                        await source.AsMarkdownSourceGitHub(project, gitHubQuery, markdownChunker, vectorStoreQuery, vectorStoreCommand).IngestAsync();
                         break;
                     default:
-                        await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSourceLocal(project));
+                        await source.AsMarkdownSourceLocal(project, markdownChunker, vectorStoreQuery, vectorStoreCommand).IngestAsync();
                         break;
                 }
 
