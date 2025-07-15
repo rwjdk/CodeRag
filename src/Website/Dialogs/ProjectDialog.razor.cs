@@ -18,7 +18,7 @@ public partial class ProjectDialog(
     ProjectCommand projectCommand,
     CSharpDataSourceCommand cSharpSourceCommand,
     MarkdownDataSourceCommand ingestionMarkdownCommand,
-    VectorStoreCommand vectorStoreCommand) : IDisposable
+    VectorStoreCommand vectorStoreCommand)
 {
     private int _current;
     private string? _lastMessage;
@@ -37,18 +37,6 @@ public partial class ProjectDialog(
 
     [Parameter, EditorRequired]
     public required ProjectEntity Project { get; set; }
-
-    protected override void OnInitialized()
-    {
-        cSharpSourceCommand.NotifyProgress += NotifyProgress;
-        ingestionMarkdownCommand.NotifyProgress += NotifyProgress;
-    }
-
-    public void Dispose()
-    {
-        cSharpSourceCommand.NotifyProgress -= NotifyProgress;
-        ingestionMarkdownCommand.NotifyProgress -= NotifyProgress;
-    }
 
     private void NotifyProgress(ProgressNotification obj)
     {
@@ -144,10 +132,10 @@ public partial class ProjectDialog(
                     switch (source.Location)
                     {
                         case SourceLocation.GitHub:
-                            await cSharpSourceCommand.IngestAsync(source.AsCSharpSourceGitHub(Project));
+                            await cSharpSourceCommand.IngestAsync(source.AsCSharpSourceGitHub(Project), NotifyProgress);
                             break;
                         default:
-                            await cSharpSourceCommand.IngestAsync(source.AsCSharpSourceLocal(Project));
+                            await cSharpSourceCommand.IngestAsync(source.AsCSharpSourceLocal(Project), NotifyProgress);
                             break;
                     }
 
@@ -156,10 +144,10 @@ public partial class ProjectDialog(
                     switch (source.Location)
                     {
                         case SourceLocation.GitHub:
-                            await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSourceGitHub(Project));
+                            await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSourceGitHub(Project), NotifyProgress);
                             break;
                         default:
-                            await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSourceLocal(Project));
+                            await ingestionMarkdownCommand.IngestAsync(source.AsMarkdownSourceLocal(Project), NotifyProgress);
                             break;
                     }
 

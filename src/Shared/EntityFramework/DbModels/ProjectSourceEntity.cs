@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using SimpleRag.DataSourceProviders;
 using SimpleRag.DataSources.CSharp.Models;
 using SimpleRag.DataSources.Markdown.Models;
 using SimpleRag.FileContent.Models;
@@ -88,35 +89,39 @@ public class ProjectSourceEntity
         };
     }
 
-    public FileContentSourceGitHub AsFileContentGitHubSource()
+    public FileContentSource AsFileContentGitHubSource()
     {
-        return new FileContentSourceGitHub
+        return new FileContentSource
         {
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            GitHubRepository = new GitHubRepository
+            Provider = new DataSourceProviderGitHub
             {
-                Owner = GitHubOwner,
-                Name = GitHubRepo,
+                GitHubRepository = new GitHubRepository
+                {
+                    Owner = GitHubOwner,
+                    Name = GitHubRepo
+                },
                 LastCommitTimestamp = GitGubLastCommitTimestamp
             }
         };
     }
 
-    public FileContentSourceLocal AsFileContentLocalSource()
+    public FileContentSource AsFileContentLocalSource()
     {
-        return new FileContentSourceLocal
+        return new FileContentSource
         {
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
+            Provider = new DataSourceProviderLocal()
         };
     }
 
-    public CSharpDataSourceLocal AsCSharpSourceLocal(ProjectEntity project)
+    public CSharpDataSource AsCSharpSourceLocal(ProjectEntity project)
     {
-        return new CSharpDataSourceLocal
+        return new CSharpDataSource
         {
             CollectionId = project.Id.ToString(),
             Id = Id.ToString(),
@@ -124,31 +129,35 @@ public class ProjectSourceEntity
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
             IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
+            Provider = new DataSourceProviderLocal()
         };
     }
 
-    public CSharpDataSourceGitHub AsCSharpSourceGitHub(ProjectEntity project)
+    public CSharpDataSource AsCSharpSourceGitHub(ProjectEntity project)
     {
-        return new CSharpDataSourceGitHub
+        return new CSharpDataSource
         {
             CollectionId = project.Id.ToString(),
             Id = Id.ToString(),
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            GitHubRepository = new GitHubRepository
+            Provider = new DataSourceProviderGitHub
             {
-                Owner = GitHubOwner,
-                Name = GitHubRepo,
+                GitHubRepository = new GitHubRepository
+                {
+                    Owner = GitHubOwner,
+                    Name = GitHubRepo
+                },
                 LastCommitTimestamp = GitGubLastCommitTimestamp
             },
             IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
         };
     }
 
-    public MarkdownDataSourceLocal AsMarkdownSourceLocal(ProjectEntity project)
+    public MarkdownDataSource AsMarkdownSourceLocal(ProjectEntity project)
     {
-        return new MarkdownDataSourceLocal
+        return new MarkdownDataSource
         {
             CollectionId = project.Id.ToString(),
             Id = Id.ToString(),
@@ -161,23 +170,27 @@ public class ProjectSourceEntity
             OnlyChunkIfMoreThanThisNumberOfLines = MarkdownOnlyChunkIfMoreThanThisNumberOfLines,
             LevelsToChunk = MarkdownLevelsToChunk,
             ChunkLineIgnorePatterns = MarkdownChunkLineIgnorePatterns,
-            IgnoreChunkIfLessThanThisAmountOfChars = MarkdownChunkIgnoreIfLessThanThisAmountOfChars
+            IgnoreChunkIfLessThanThisAmountOfChars = MarkdownChunkIgnoreIfLessThanThisAmountOfChars,
+            Provider = new DataSourceProviderLocal()
         };
     }
 
-    public MarkdownDataSourceGitHub AsMarkdownSourceGitHub(ProjectEntity project)
+    public MarkdownDataSource AsMarkdownSourceGitHub(ProjectEntity project)
     {
-        return new MarkdownDataSourceGitHub
+        return new MarkdownDataSource
         {
             CollectionId = project.Id.ToString(),
             Id = Id.ToString(),
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            GitHubRepository = new GitHubRepository
+            Provider = new DataSourceProviderGitHub
             {
-                Owner = GitHubOwner,
-                Name = GitHubRepo,
+                GitHubRepository = new GitHubRepository
+                {
+                    Owner = GitHubOwner,
+                    Name = GitHubRepo
+                },
                 LastCommitTimestamp = GitGubLastCommitTimestamp
             },
             IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
