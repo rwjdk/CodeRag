@@ -104,9 +104,9 @@ public class ProjectSourceEntity
         };
     }
 
-    public CSharpDataSource AsCSharpSourceLocal(ProjectEntity project, ICSharpChunker chunker, IVectorStoreQuery vectorStoreQuery, IVectorStoreCommand vectorStoreCommand)
+    public CSharpDataSource AsCSharpSourceLocal(ProjectEntity project, IServiceProvider serviceProvider)
     {
-        return new CSharpDataSource(chunker, vectorStoreQuery, vectorStoreCommand)
+        return new CSharpDataSource(serviceProvider)
         {
             CollectionId = project.Id.ToString(),
             Id = Id.ToString(),
@@ -118,16 +118,16 @@ public class ProjectSourceEntity
         };
     }
 
-    public CSharpDataSource AsCSharpSourceGitHub(ProjectEntity project, IGitHubQuery gitHubQuery, ICSharpChunker chunker, IVectorStoreQuery vectorStoreQuery, IVectorStoreCommand vectorStoreCommand)
+    public CSharpDataSource AsCSharpSourceGitHub(ProjectEntity project, IServiceProvider serviceProvider)
     {
-        return new CSharpDataSource(chunker, vectorStoreQuery, vectorStoreCommand)
+        return new CSharpDataSource(serviceProvider)
         {
             CollectionId = project.Id.ToString(),
             Id = Id.ToString(),
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            FilesProvider = new GitHubFilesDataProvider(gitHubQuery)
+            FilesProvider = new GitHubFilesDataProvider(serviceProvider)
             {
                 GitHubRepository = new GitHubRepository
                 {
@@ -140,9 +140,9 @@ public class ProjectSourceEntity
         };
     }
 
-    public MarkdownDataSource AsMarkdownSourceLocal(ProjectEntity project, IMarkdownChunker chunker, IVectorStoreQuery vectorStoreQuery, IVectorStoreCommand vectorStoreCommand)
+    public MarkdownDataSource AsMarkdownSourceLocal(ProjectEntity project, IServiceProvider serviceProvider)
     {
-        return new MarkdownDataSource(chunker, vectorStoreQuery, vectorStoreCommand)
+        return new MarkdownDataSource(serviceProvider)
         {
             CollectionId = project.Id.ToString(),
             Id = Id.ToString(),
@@ -160,16 +160,16 @@ public class ProjectSourceEntity
         };
     }
 
-    public MarkdownDataSource AsMarkdownSourceGitHub(ProjectEntity project, IGitHubQuery gitHubQuery, IMarkdownChunker chunker, IVectorStoreQuery vectorStoreQuery, IVectorStoreCommand vectorStoreCommand)
+    public MarkdownDataSource AsMarkdownSourceGitHub(ProjectEntity project, IServiceProvider serviceProvider)
     {
-        return new MarkdownDataSource(chunker, vectorStoreQuery, vectorStoreCommand)
+        return new MarkdownDataSource(serviceProvider)
         {
             CollectionId = project.Id.ToString(),
             Id = Id.ToString(),
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            FilesProvider = new GitHubFilesDataProvider(gitHubQuery)
+            FilesProvider = new GitHubFilesDataProvider(serviceProvider)
             {
                 GitHubRepository = new GitHubRepository
                 {

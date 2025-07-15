@@ -6,23 +6,12 @@ using Shared;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
 using SimpleRag;
-using SimpleRag.DataSources.CSharp;
-using SimpleRag.DataSources.CSharp.Chunker;
-using SimpleRag.DataSources.Markdown;
-using SimpleRag.DataSources.Markdown.Chunker;
-using SimpleRag.Integrations.GitHub;
 using SimpleRag.VectorStorage;
 using Website.Models;
 
 namespace Website.Dialogs;
 
-public partial class ProjectDialog(
-    ProjectCommand projectCommand,
-    ICSharpChunker cSharpChunker,
-    IMarkdownChunker markdownChunker,
-    IGitHubQuery gitHubQuery,
-    IVectorStoreQuery vectorStoreQuery,
-    IVectorStoreCommand vectorStoreCommand)
+public partial class ProjectDialog(ProjectCommand projectCommand, IServiceProvider serviceProvider, VectorStoreCommand vectorStoreCommand)
 {
     private int _current;
     private string? _lastMessage;
@@ -130,7 +119,7 @@ public partial class ProjectDialog(
             _current = 0;
             _total = 0;
             using var workingProgress = BlazorUtils.StartWorking();
-            IngestionOptions ingestionOptions = new IngestionOptions
+            IngestionOptions ingestionOptions = new()
             {
                 OnProgressNotification = NotifyProgress
             };
@@ -140,10 +129,10 @@ public partial class ProjectDialog(
                     switch (source.Location)
                     {
                         case SourceLocation.GitHub:
-                            await source.AsCSharpSourceGitHub(Project, gitHubQuery, cSharpChunker, vectorStoreQuery, vectorStoreCommand).IngestAsync(ingestionOptions);
+                            await source.AsCSharpSourceGitHub(Project, serviceProvider).IngestAsync(ingestionOptions);
                             break;
                         case SourceLocation.Local:
-                            await source.AsCSharpSourceLocal(Project, cSharpChunker, vectorStoreQuery, vectorStoreCommand).IngestAsync(ingestionOptions);
+                            await source.AsCSharpSourceLocal(Project, serviceProvider).IngestAsync(ingestionOptions);
                             break;
                     }
 
@@ -152,10 +141,10 @@ public partial class ProjectDialog(
                     switch (source.Location)
                     {
                         case SourceLocation.GitHub:
-                            await source.AsMarkdownSourceGitHub(Project, gitHubQuery, markdownChunker, vectorStoreQuery, vectorStoreCommand).IngestAsync(ingestionOptions);
+                            await source.AsMarkdownSourceGitHub(Project, serviceProvider).IngestAsync(ingestionOptions);
                             break;
                         case SourceLocation.Local:
-                            await source.AsMarkdownSourceLocal(Project, markdownChunker, vectorStoreQuery, vectorStoreCommand).IngestAsync(ingestionOptions);
+                            await source.AsMarkdownSourceLocal(Project, serviceProvider).IngestAsync(ingestionOptions);
                             break;
                     }
 
