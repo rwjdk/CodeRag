@@ -10,8 +10,7 @@ using Shared.Ai;
 using Shared.EntityFramework.DbModels;
 using Website.Models;
 using Shared.Ai.Queries;
-using SimpleRag.DataSources.CSharp;
-using SimpleRag.DataSources.CSharp.Models;
+using SimpleRag.DataSources.CSharp.Chunker;
 
 namespace Website.Pages.XmlSummariesGeneration;
 
@@ -30,7 +29,7 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
     private MudTreeView<File>? _treeView;
     private string? _searchPhrase;
     private SummaryStatus _summaryStatus = SummaryStatus.MissingSummary;
-    private CSharpKind _kind = CSharpKind.Method;
+    private CSharpChunkKind _kind = CSharpChunkKind.Method;
     private File? _selectedItem;
     private RProgressBar? _progressBar;
     private AiChatModel? _chatModel;
@@ -135,7 +134,7 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
         }
     }
 
-    private async Task SwitchKind(CSharpKind kind)
+    private async Task SwitchKind(CSharpChunkKind kind)
     {
         _kind = kind;
         await Refresh();

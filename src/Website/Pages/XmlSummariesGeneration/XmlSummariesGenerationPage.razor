@@ -2,7 +2,7 @@
 @using Shared
 @using Shared.Ai
 @using Shared.EntityFramework.DbModels
-@using SimpleRag.DataSources.CSharp.Models
+@using SimpleRag.DataSources.CSharp.Chunker
 @using Website.Models
 <MudGrid Spacing="1" Class="align-items-center">
     <MudItem>
@@ -28,7 +28,7 @@
     <MudItem>
         @if (_selectedSource != null)
         {
-            <RSelectFromEnum Style="width: 150px" Label="Kind" T="CSharpKind" Value="_kind" ValuesToExclude="[CSharpKind.None]" ValueChanged="x => SwitchKind(x)"></RSelectFromEnum>
+            <RSelectFromEnum Style="width: 150px" Label="Kind" T="CSharpChunkKind" Value="_kind" ValuesToExclude="[CSharpChunkKind.None]" ValueChanged="x => SwitchKind(x)"></RSelectFromEnum>
         }
     </MudItem>
     <MudItem>

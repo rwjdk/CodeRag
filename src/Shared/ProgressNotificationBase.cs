@@ -8,20 +8,20 @@ namespace Shared;
 public class ProgressNotificationBase
 {
     /// <summary>Occurs when progress is reported.</summary>
-    public event Action<ProgressNotification>? NotifyProgress;
+    public event Action<Notification>? NotifyProgress;
 
     /// <summary>
     /// Raises a progress notification.
     /// </summary>
     protected void OnNotifyProgress(string message, int current = 0, int total = 0, string? details = null)
     {
-        NotifyProgress?.Invoke(new ProgressNotification(DateTimeOffset.UtcNow, message, current, total, details));
+        NotifyProgress?.Invoke(new Notification(DateTimeOffset.UtcNow, message, current, total, details));
     }
 
     /// <summary>
     /// Raises the specified notification.
     /// </summary>
-    public void OnNotifyProgress(ProgressNotification notification)
+    public void OnNotifyProgress(Notification notification)
     {
         NotifyProgress?.Invoke(notification);
     }

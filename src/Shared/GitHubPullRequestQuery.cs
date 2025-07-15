@@ -1,7 +1,6 @@
-using System.Text;
 using JetBrains.Annotations;
 using Octokit;
-using SimpleRag.Integrations.GitHub;
+using SimpleRag.Integrations.GitHub.Models;
 using SimpleRag.Interfaces;
 
 namespace Shared;

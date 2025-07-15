@@ -1,5 +1,4 @@
-using SimpleRag.DataSources.CSharp;
-using SimpleRag.DataSources.CSharp.Models;
+using SimpleRag.DataSources.CSharp.Chunker;
 
 namespace CSharpChunkerTests;
 

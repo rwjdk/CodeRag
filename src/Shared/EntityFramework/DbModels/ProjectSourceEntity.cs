@@ -3,8 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 using SimpleRag.DataProviders;
 using SimpleRag.DataProviders.Models;
 using SimpleRag.DataSources.CSharp;
+using SimpleRag.DataSources.CSharp.Chunker;
 using SimpleRag.DataSources.Markdown;
+using SimpleRag.DataSources.Markdown.Chunker;
 using SimpleRag.Integrations.GitHub;
+using SimpleRag.Integrations.GitHub.Models;
 using SimpleRag.VectorStorage;
 
 namespace Shared.EntityFramework.DbModels;

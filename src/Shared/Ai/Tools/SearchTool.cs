@@ -13,7 +13,7 @@ internal class SearchTool(IVectorStoreQuery vectorStoreQuery, string projectId, 
     public async Task<string> Search(string searchQuery)
     {
         SearchResult result = await vectorStoreQuery.SearchAsync(searchQuery, numberOfResultsBack, entity => entity.SourceKind == sourceKind && entity.SourceCollectionId == projectId);
-        ProgressNotification notification = new(DateTimeOffset.UtcNow, $"{sourceKind} Search Called with Query '{searchQuery}' ({result.Entities.Length} Results)")
+        Notification notification = new(DateTimeOffset.UtcNow, $"{sourceKind} Search Called with Query '{searchQuery}' ({result.Entities.Length} Results)")
         {
             Arguments = result.Entities
         };

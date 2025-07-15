@@ -37,7 +37,7 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
     private double _scoreShouldBeLowerThanThisInSourceCodeSearch;
     private int _maxNumberOfAnswersBackFromDocumentationSearch;
     private double _scoreShouldBeLowerThanThisInDocumentSearch;
-    private readonly List<ProgressNotification> _log = [];
+    private readonly List<Notification> _log = [];
 
     protected override void OnParametersSet()
     {
@@ -74,7 +74,7 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
         _scoreShouldBeLowerThanThisInDocumentSearch = Project.ChatScoreShouldBeLowerThanThisInDocumentSearch;
     }
 
-    private void SemanticKernelQueryNotifyProgress(ProgressNotification obj)
+    private void SemanticKernelQueryNotifyProgress(Notification obj)
     {
         _log.Add(obj);
         InvokeAsync(StateHasChanged).ConfigureAwait(false);

@@ -7,7 +7,9 @@ using Shared.EntityFramework.DbModels;
 using Shared.Projects;
 using SimpleRag;
 using SimpleRag.DataSources.CSharp;
+using SimpleRag.DataSources.CSharp.Chunker;
 using SimpleRag.DataSources.Markdown;
+using SimpleRag.DataSources.Markdown.Chunker;
 using SimpleRag.Integrations.GitHub;
 using SimpleRag.VectorStorage;
 using Website.Models;
@@ -40,14 +42,14 @@ public partial class ProjectDialog(
     [Parameter, EditorRequired]
     public required ProjectEntity Project { get; set; }
 
-    private void NotifyProgress(ProgressNotification obj)
+    private void NotifyProgress(Notification obj)
     {
         _lastMessage = obj.Message;
         if (obj is { Total: > 0, Current: > 0 })
         {
             _lastMessage = $"{obj.Current}/{obj.Total}: {_lastMessage}";
-            _total = obj.Total;
-            _current = obj.Current;
+            _total = obj.Total.Value;
+            _current = obj.Current.Value;
         }
 
         if (_current % 10 == 0 || _current == _total)

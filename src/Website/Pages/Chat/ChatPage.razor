@@ -95,7 +95,7 @@
                     <h3>Details for last request</h3>
                     <MudDataGrid Dense Striped Items="_log" ColumnResizeMode="ResizeMode.Column" Height="calc(100vh - 500px)" SortMode="SortMode.None" Filterable="false">
                         <Columns>
-                            <HierarchyColumn T="ProgressNotification" ButtonDisabledFunc="x=> x.Arguments == null" />
+                            <HierarchyColumn T="Notification" ButtonDisabledFunc="x=> x.Arguments == null" />
                             <PropertyColumn Property="x => x.Timestamp.DateTime.ToShortTimeString()" Title="Time" />
                             <PropertyColumn Property="x => x.Message" />
                         </Columns>
