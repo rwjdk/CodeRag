@@ -113,7 +113,7 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
                 continue;
             }
 
-            List<CSharpChunk> entities = cSharpChunker.GetCodeEntities(System.IO.File.ReadAllText(file.FullName)).Where(x => x.Kind == _kind).ToList();
+            List<CSharpChunk> entities = cSharpChunker.GetChunks(System.IO.File.ReadAllText(file.FullName)).Where(x => x.Kind == _kind).ToList();
             var matches = entities.Where(x => x.Kind == _kind);
             switch (_summaryStatus)
             {

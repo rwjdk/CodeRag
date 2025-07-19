@@ -10,7 +10,7 @@ public class UnitTest1
         string code = File.ReadAllText("TestFiles\\ClassWithConstructors.cs");
 
         CSharpChunker chunker = new();
-        List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
+        List<CSharpChunk> chunks = chunker.GetChunks(code);
     }
 
     [Fact]
@@ -19,7 +19,7 @@ public class UnitTest1
         string code = File.ReadAllText("TestFiles\\ClassWithBaseClassAndInterface.cs");
 
         CSharpChunker chunker = new();
-        List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
+        List<CSharpChunk> chunks = chunker.GetChunks(code);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public class UnitTest1
         string code = File.ReadAllText("TestFiles\\ClassWithNestedObjects.cs");
 
         CSharpChunker chunker = new();
-        List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
+        List<CSharpChunk> chunks = chunker.GetChunks(code);
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class UnitTest1
         string code = File.ReadAllText("TestFiles\\StaticClass.cs");
 
         CSharpChunker chunker = new();
-        List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
+        List<CSharpChunk> chunks = chunker.GetChunks(code);
     }
 
 
@@ -46,7 +46,7 @@ public class UnitTest1
     {
         string code = File.ReadAllText("TestFiles\\Operators.cs");
         CSharpChunker chunker = new();
-        List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
+        List<CSharpChunk> chunks = chunker.GetChunks(code);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public class UnitTest1
     {
         string code = File.ReadAllText("TestFiles\\AbstractClass.cs");
         CSharpChunker chunker = new();
-        List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
+        List<CSharpChunk> chunks = chunker.GetChunks(code);
     }
 
     [Fact]
@@ -62,6 +62,6 @@ public class UnitTest1
     {
         string code = File.ReadAllText("TestFiles\\ClassWithObsoleteConstructorsAndNothingElse.cs");
         CSharpChunker chunker = new();
-        List<CSharpChunk> chunks = chunker.GetCodeEntities(code);
+        List<CSharpChunk> chunks = chunker.GetChunks(code);
     }
 }

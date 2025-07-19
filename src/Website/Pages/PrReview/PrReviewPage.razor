@@ -6,7 +6,7 @@
         <h1>AI Reviews</h1>
     </MudItem>
     <MudSpacer />
-    @if (gitHubQuery.IsGitHubTokenProvided && !string.IsNullOrWhiteSpace(Project.GitHubOwner) && !string.IsNullOrWhiteSpace(Project.GitHubRepo) && _pullRequests != null)
+    @if (!string.IsNullOrWhiteSpace(Project.GitHubOwner) && !string.IsNullOrWhiteSpace(Project.GitHubRepo) && _pullRequests != null)
     {
         <MudItem>
             <RSelect Disabled="BlazorUtils.IsWorking" T="PullRequest" Items="_pullRequests" Label="Pull Request to Review" @bind-Value="_selectedPullRequest" ToStringFunc="@(x=> $"#{x!.Number} - {x.Title}")" Style="width: 500px" />
@@ -17,7 +17,7 @@
     </MudItem>
 </MudGrid>
 
-@if (!gitHubQuery.IsGitHubTokenProvided || string.IsNullOrWhiteSpace(Project.GitHubOwner) || string.IsNullOrWhiteSpace(Project.GitHubRepo))
+@if (string.IsNullOrWhiteSpace(Project.GitHubOwner) || string.IsNullOrWhiteSpace(Project.GitHubRepo))
 {
     <MudAlert Severity="Severity.Warning">This feature require that you have provided and GitHubToken + define GitHub Owner and Repo in the Project Settings</MudAlert>
 }

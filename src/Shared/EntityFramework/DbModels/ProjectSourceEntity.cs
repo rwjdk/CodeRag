@@ -130,11 +130,7 @@ public class ProjectSourceEntity
             FileIgnorePatterns = FileIgnorePatterns,
             FilesProvider = new GitHubFilesDataProvider(serviceProvider)
             {
-                GitHubRepository = new GitHubRepository
-                {
-                    Owner = GitHubOwner,
-                    Name = GitHubRepo
-                },
+                GitHubRepository = new GitHubRepository(GitHubOwner!, GitHubRepo!),
                 LastCommitTimestamp = GitGubLastCommitTimestamp
             },
             IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
@@ -185,11 +181,7 @@ public class ProjectSourceEntity
     {
         return new GitHubFilesDataProvider(serviceProvider)
         {
-            GitHubRepository = new GitHubRepository
-            {
-                Owner = GitHubOwner,
-                Name = GitHubRepo
-            },
+            GitHubRepository = new GitHubRepository(GitHubOwner!, GitHubRepo!),
             LastCommitTimestamp = GitGubLastCommitTimestamp
         };
     }

@@ -41,7 +41,7 @@ public partial class PrReviewPage(GitHubPullRequestQuery gitHubQuery, GitHubPull
     {
         try
         {
-            if (!gitHubQuery.IsGitHubTokenProvided || string.IsNullOrWhiteSpace(Project.GitHubOwner) || string.IsNullOrWhiteSpace(Project.GitHubRepo))
+            if (string.IsNullOrWhiteSpace(Project.GitHubOwner) || string.IsNullOrWhiteSpace(Project.GitHubRepo))
             {
                 return;
             }

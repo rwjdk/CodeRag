@@ -8,18 +8,16 @@ namespace Shared;
 [UsedImplicitly]
 public class GitHubPullRequestQuery(GitHubCredentials credentials) : IScopedService
 {
-    public bool IsGitHubTokenProvided => !string.IsNullOrWhiteSpace(credentials.GitHubToken);
-
     public GitHubClient GetGitHubClient()
     {
-        if (string.IsNullOrWhiteSpace(credentials.GitHubToken))
+        if (string.IsNullOrWhiteSpace(credentials.PersonalAccessToken))
         {
             throw new Exception("The optional GitHubToken configuration variable is not set so can't interact with GitHubApi");
         }
 
         return new GitHubClient(new ProductHeaderValue("CodeRag"))
         {
-            Credentials = new Credentials(credentials.GitHubToken)
+            Credentials = new Credentials(credentials.PersonalAccessToken)
         };
     }
 

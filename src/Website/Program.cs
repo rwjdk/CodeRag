@@ -9,6 +9,7 @@ using Shared.EntityFramework;
 using Shared.EntityFramework.DbModels;
 using Microsoft.AspNetCore.Mvc;
 using SimpleRag;
+using SimpleRag.Integrations.GitHub.Models;
 using SimpleRag.VectorStorage;
 using SimpleRag.VectorStorage.Models;
 using Website;
@@ -35,11 +36,12 @@ if (configuration != null)
     builder.Services.AddAzureOpenAIEmbeddingGenerator(configuration.EmbeddingDeploymentName, configuration.Endpoint, configuration.Key);
     builder.Services.AddSingleton(new AiConfiguration(configuration.Endpoint, configuration.Key, configuration.ChatModels));
     builder.Services.AddDbContextFactory<SqlDbContext>(options => { options.UseSqlServer(configuration.SqlServerConnectionString); });
+    builder.Services.AddSingleton(new GitHubCredentials(configuration.GitHubToken));
 
-    builder.Services.AddSimpleRagWithGitHubIntegration(new VectorStoreConfiguration(Shared.Constants.VectorCollections.VectorSources, 100), options => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions
+    builder.Services.AddSimpleRag(new VectorStoreConfiguration(Shared.Constants.VectorCollections.VectorSources, 100), options => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions
     {
         EmbeddingGenerator = options.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>()
-    }), configuration.GitHubToken);
+    }));
 }
 
 
