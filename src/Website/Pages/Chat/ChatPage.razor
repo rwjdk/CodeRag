@@ -68,11 +68,6 @@
                     <MudItem>
                         <MudSlider Disabled="_currentMessageIsProcessing" Min="1" Max="100" @bind-Value="_maxNumberOfAnswersBackFromSourceCodeSearch">Max Records (@_maxNumberOfAnswersBackFromSourceCodeSearch)</MudSlider>
                     </MudItem>
-                    <MudItem>
-                        <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
-                            <MudSlider Disabled="_currentMessageIsProcessing" Min="0" Max="1" Step="0.1" @bind-Value="_scoreShouldBeLowerThanThisInSourceCodeSearch">Max Score (@_scoreShouldBeLowerThanThisInSourceCodeSearch)</MudSlider>
-                        </MudTooltip>
-                    </MudItem>
                 </MudGrid>
                 <hr />
                 <div class="font-size-10">Documentation Search</div>
@@ -83,17 +78,22 @@
                     <MudItem>
                         <MudSlider Disabled="_currentMessageIsProcessing" Min="1" Max="100" @bind-Value="_maxNumberOfAnswersBackFromDocumentationSearch">Max Records (@_maxNumberOfAnswersBackFromDocumentationSearch)</MudSlider>
                     </MudItem>
+                </MudGrid>
+                <hr />
+                <div class="font-size-10">PDF Search</div>
+                <MudGrid>
                     <MudItem>
-                        <MudTooltip Text="Lower value restrict results back (0 = Exact Match)">
-                            <MudSlider Disabled="_currentMessageIsProcessing" Min="0" Max="1" Step="0.1" @bind-Value="_scoreShouldBeLowerThanThisInDocumentSearch">Max Score (@_scoreShouldBeLowerThanThisInDocumentSearch)</MudSlider>
-                        </MudTooltip>
+                        <RCheckBox Disabled="_currentMessageIsProcessing" @bind-Value="_usePdfSearch" Label="Use" />
+                    </MudItem>
+                    <MudItem>
+                        <MudSlider Disabled="_currentMessageIsProcessing" Min="1" Max="100" @bind-Value="_maxNumberOfAnswersBackFromPdfSearch">Max Records (@_maxNumberOfAnswersBackFromPdfSearch)</MudSlider>
                     </MudItem>
                 </MudGrid>
                 <hr />
                 @if (_log.Count != 0)
                 {
                     <h3>Details for last request</h3>
-                    <MudDataGrid Dense Striped Items="_log" ColumnResizeMode="ResizeMode.Column" Height="calc(100vh - 500px)" SortMode="SortMode.None" Filterable="false">
+                    <MudDataGrid Dense Striped Items="_log" ColumnResizeMode="ResizeMode.Column" Height="calc(100vh - 600px)" SortMode="SortMode.None" Filterable="false">
                         <Columns>
                             <HierarchyColumn T="Notification" ButtonDisabledFunc="x=> x.Arguments == null" />
                             <PropertyColumn Property="x => x.Timestamp.DateTime.ToShortTimeString()" Title="Time" />

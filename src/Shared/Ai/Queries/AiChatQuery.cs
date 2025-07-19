@@ -6,6 +6,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Shared.Ai.StructuredOutputModels;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
+using SimpleRag.DataSources.CSharp;
+using SimpleRag.DataSources.Markdown;
+using SimpleRag.DataSources.Pdf;
 using SimpleRag.Interfaces;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
@@ -28,16 +31,16 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
         string messageToSend,
         bool useSourceCodeSearch,
         bool useDocumentationSearch,
+        bool usePdfSearch,
         int maxNumberOfAnswersBackFromSourceCodeSearch,
-        double scoreShouldBeLowerThanThisInSourceCodeSearch,
         int maxNumberOfAnswersBackFromDocumentationSearch,
-        double scoreShouldBeLowerThanThisInDocumentSearch,
+        int maxNumberOfAnswersBackFromPdfSearch,
         ProjectEntity project)
     {
         long timestamp = Stopwatch.GetTimestamp();
         Kernel kernel = _aiGenericQuery.GetKernel(chatModel);
 
-        Intent intent = await _aiGenericQuery.GetStructuredOutputResponse<Intent>(project, chatModel, $"You are an expert in the Code Repo '{project.Name}' that analyze the users message to find out if it is just pleasantries or a question and elaborate on it", messageToSend, false, false, 0, 0, 0, 0);
+        Intent intent = await _aiGenericQuery.GetStructuredOutputResponse<Intent>(project, chatModel, $"You are an expert in the Code Repo '{project.Name}' that analyze the users message to find out if it is just pleasantries or a question and elaborate on it", messageToSend, false, false, 0, 0);
 
         List<ChatMessageContent> input = previousConversation.Select(x => new ChatMessageContent(x.Role, x.Content)).ToList();
 
@@ -47,16 +50,23 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
 
         if (useSourceCodeSearch && !intent.IsMessageJustPleasantries)
         {
-            SearchTool codeSearchTool = _aiGenericQuery.ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, kernel);
-            var result = await codeSearchTool.Search(intent.ElaboratedMessage);
+            SearchTool tool = _aiGenericQuery.ImportSearchPlugin(Constants.Tools.CSharp, CSharpDataSource.SourceKind, maxNumberOfAnswersBackFromSourceCodeSearch, project, kernel);
+            var result = await tool.Search(intent.ElaboratedMessage);
             input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Code: " + result));
         }
 
         if (useDocumentationSearch && !intent.IsMessageJustPleasantries)
         {
-            SearchTool docsSearch = _aiGenericQuery.ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, kernel);
-            string result = await docsSearch.Search(intent.ElaboratedMessage);
+            SearchTool tool = _aiGenericQuery.ImportSearchPlugin(Constants.Tools.Markdown, MarkdownDataSource.SourceKind, maxNumberOfAnswersBackFromDocumentationSearch, project, kernel);
+            string result = await tool.Search(intent.ElaboratedMessage);
             input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Documentation: " + result));
+        }
+
+        if (usePdfSearch && !intent.IsMessageJustPleasantries)
+        {
+            SearchTool tool = _aiGenericQuery.ImportSearchPlugin(Constants.Tools.Pdf, PdfDataSource.SourceKind, maxNumberOfAnswersBackFromPdfSearch, project, kernel);
+            string result = await tool.Search(intent.ElaboratedMessage);
+            input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant PDFs: " + result));
         }
 
         ChatCompletionAgent answerAgent = _aiGenericQuery.GetAgent(chatModel, project.GetFormattedDeveloperInstructions(), kernel);

@@ -6,20 +6,20 @@ using SimpleRag.Interfaces;
 namespace Shared;
 
 [UsedImplicitly]
-public class GitHubPullRequestQuery(GitHubConnection connection) : IScopedService
+public class GitHubPullRequestQuery(GitHubCredentials credentials) : IScopedService
 {
-    public bool IsGitHubTokenProvided => !string.IsNullOrWhiteSpace(connection.GitHubToken);
+    public bool IsGitHubTokenProvided => !string.IsNullOrWhiteSpace(credentials.GitHubToken);
 
     public GitHubClient GetGitHubClient()
     {
-        if (string.IsNullOrWhiteSpace(connection.GitHubToken))
+        if (string.IsNullOrWhiteSpace(credentials.GitHubToken))
         {
             throw new Exception("The optional GitHubToken configuration variable is not set so can't interact with GitHubApi");
         }
 
         return new GitHubClient(new ProductHeaderValue("CodeRag"))
         {
-            Credentials = new Credentials(connection.GitHubToken)
+            Credentials = new Credentials(credentials.GitHubToken)
         };
     }
 

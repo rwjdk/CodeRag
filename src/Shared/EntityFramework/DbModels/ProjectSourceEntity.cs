@@ -6,6 +6,7 @@ using SimpleRag.DataSources.CSharp;
 using SimpleRag.DataSources.CSharp.Chunker;
 using SimpleRag.DataSources.Markdown;
 using SimpleRag.DataSources.Markdown.Chunker;
+using SimpleRag.DataSources.Pdf;
 using SimpleRag.Integrations.GitHub;
 using SimpleRag.Integrations.GitHub.Models;
 using SimpleRag.VectorStorage;
@@ -169,15 +170,7 @@ public class ProjectSourceEntity
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
-            FilesProvider = new GitHubFilesDataProvider(serviceProvider)
-            {
-                GitHubRepository = new GitHubRepository
-                {
-                    Owner = GitHubOwner,
-                    Name = GitHubRepo
-                },
-                LastCommitTimestamp = GitGubLastCommitTimestamp
-            },
+            FilesProvider = GetGitHubProvider(serviceProvider),
             IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
             IgnoreCommentedOutContent = MarkdownIgnoreCommentedOutContent,
             IgnoreImages = MarkdownIgnoreImages,
@@ -185,6 +178,47 @@ public class ProjectSourceEntity
             LevelsToChunk = MarkdownLevelsToChunk,
             ChunkLineIgnorePatterns = MarkdownChunkLineIgnorePatterns,
             IgnoreChunkIfLessThanThisAmountOfChars = MarkdownChunkIgnoreIfLessThanThisAmountOfChars
+        };
+    }
+
+    private GitHubFilesDataProvider GetGitHubProvider(IServiceProvider serviceProvider)
+    {
+        return new GitHubFilesDataProvider(serviceProvider)
+        {
+            GitHubRepository = new GitHubRepository
+            {
+                Owner = GitHubOwner,
+                Name = GitHubRepo
+            },
+            LastCommitTimestamp = GitGubLastCommitTimestamp
+        };
+    }
+
+    public PdfDataSource AsPdfSourceGitHub(ProjectEntity project, IServiceProvider serviceProvider)
+    {
+        return new PdfDataSource(serviceProvider)
+        {
+            CollectionId = project.Id.ToString(),
+            Id = Id.ToString(),
+            FilesProvider = GetGitHubProvider(serviceProvider),
+            Path = Path,
+            FileIgnorePatterns = FileIgnorePatterns,
+            IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
+            Recursive = Recursive
+        };
+    }
+
+    public PdfDataSource AsPdfSourceLocal(ProjectEntity project, IServiceProvider serviceProvider)
+    {
+        return new PdfDataSource(serviceProvider)
+        {
+            CollectionId = project.Id.ToString(),
+            Id = Id.ToString(),
+            FilesProvider = new LocalFilesDataProvider(),
+            Path = Path,
+            FileIgnorePatterns = FileIgnorePatterns,
+            IgnoreFileIfMoreThanThisNumberOfLines = IgnoreFileIfMoreThanThisNumberOfLines,
+            Recursive = Recursive
         };
     }
 }

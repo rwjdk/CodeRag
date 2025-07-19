@@ -8,6 +8,7 @@ public static class Constants
     {
         public const string Markdown = "search_markdown";
         public const string CSharp = "source_csharp";
+        public const string Pdf = "source_pdf";
     }
 
     public static class VectorCollections

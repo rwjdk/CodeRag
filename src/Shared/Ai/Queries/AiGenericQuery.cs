@@ -10,6 +10,7 @@ using Shared.EntityFramework.DbModels;
 using SimpleRag;
 using SimpleRag.DataSources.CSharp;
 using SimpleRag.DataSources.Markdown;
+using SimpleRag.DataSources.Pdf;
 using SimpleRag.Interfaces;
 using SimpleRag.VectorStorage;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
@@ -19,18 +20,11 @@ namespace Shared.Ai.Queries;
 [UsedImplicitly]
 public class AiGenericQuery(AiConfiguration aiConfiguration, IVectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService
 {
-    internal SearchTool ImportDocumentationSearchPlugin(int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch, ProjectEntity project, Kernel kernel)
+    internal SearchTool ImportSearchPlugin(string toolName, string sourceKind, int maxNumberOfAnswersBack, ProjectEntity project, Kernel kernel)
     {
-        var docsTool = new SearchTool(vectorStoreQuery, project.Id.ToString(), MarkdownDataSource.SourceKind, maxNumberOfAnswersBackFromDocumentationSearch, this);
-        kernel.ImportPluginFromObject(docsTool, Constants.Tools.Markdown);
-        return docsTool;
-    }
-
-    internal SearchTool ImportCodeSearchPlugin(int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, ProjectEntity project, Kernel kernel)
-    {
-        var codePlugin = new SearchTool(vectorStoreQuery, project.Id.ToString(), CSharpDataSource.SourceKind, maxNumberOfAnswersBackFromSourceCodeSearch, this);
-        kernel.ImportPluginFromObject(codePlugin, Constants.Tools.CSharp);
-        return codePlugin;
+        var tool = new SearchTool(vectorStoreQuery, project.Id.ToString(), sourceKind, maxNumberOfAnswersBack, this);
+        kernel.ImportPluginFromObject(tool, toolName);
+        return tool;
     }
 
     internal ChatCompletionAgent GetAgent<T>(AiChatModel chatModel, string instructions, Kernel kernel)
@@ -113,18 +107,20 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, IVectorStoreQuery v
         return kernel;
     }
 
-    internal async Task<T> GetStructuredOutputResponse<T>(ProjectEntity project, AiChatModel chatModel, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch, int maxNumberOfAnswersBackFromSourceCodeSearch, double scoreShouldBeLowerThanThisInSourceCodeSearch, int maxNumberOfAnswersBackFromDocumentationSearch, double scoreShouldBeLowerThanThisInDocumentSearch)
+    internal async Task<T> GetStructuredOutputResponse<T>(ProjectEntity project, AiChatModel chatModel, string instructions, string input, bool useSourceCodeSearch, bool useDocumentationSearch, int maxNumberOfAnswersBackFromSourceCodeSearch, int maxNumberOfAnswersBackFromDocumentationSearch)
     {
         Kernel kernel = GetKernel(chatModel);
         if (useSourceCodeSearch)
         {
-            ImportCodeSearchPlugin(maxNumberOfAnswersBackFromSourceCodeSearch, scoreShouldBeLowerThanThisInSourceCodeSearch, project, kernel);
+            ImportSearchPlugin(Constants.Tools.CSharp, CSharpDataSource.SourceKind, maxNumberOfAnswersBackFromSourceCodeSearch, project, kernel);
         }
 
         if (useDocumentationSearch)
         {
-            ImportDocumentationSearchPlugin(maxNumberOfAnswersBackFromDocumentationSearch, scoreShouldBeLowerThanThisInDocumentSearch, project, kernel);
+            ImportSearchPlugin(Constants.Tools.Markdown, MarkdownDataSource.SourceKind, maxNumberOfAnswersBackFromDocumentationSearch, project, kernel);
         }
+
+        //todo - support PDF
 
         ChatCompletionAgent agent = GetAgent<T>(chatModel, instructions, kernel);
 

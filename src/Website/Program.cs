@@ -36,7 +36,7 @@ if (configuration != null)
     builder.Services.AddSingleton(new AiConfiguration(configuration.Endpoint, configuration.Key, configuration.ChatModels));
     builder.Services.AddDbContextFactory<SqlDbContext>(options => { options.UseSqlServer(configuration.SqlServerConnectionString); });
 
-    builder.Services.AddSimpleRagWithGitHubIntegration(new VectorStoreConfiguration(Shared.Constants.VectorCollections.VectorSources, 50), options => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions
+    builder.Services.AddSimpleRagWithGitHubIntegration(new VectorStoreConfiguration(Shared.Constants.VectorCollections.VectorSources, 100), options => new SqlServerVectorStore(configuration.SqlServerConnectionString, new SqlServerVectorStoreOptions
     {
         EmbeddingGenerator = options.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>()
     }), configuration.GitHubToken);

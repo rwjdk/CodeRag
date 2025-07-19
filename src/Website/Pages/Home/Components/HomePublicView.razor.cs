@@ -32,10 +32,10 @@ public partial class HomePublicView(AiChatQuery aiChatQuery, ProjectQuery projec
     private AiChatModel? _chatModel;
     private bool _useSourceCodeSearch = true;
     private bool _useDocumentationSearch = true;
+    private bool _usePdfSearch = true;
     private int _maxNumberOfAnswersBackFromSourceCodeSearch;
-    private double _scoreShouldBeLowerThanThisInSourceCodeSearch;
     private int _maxNumberOfAnswersBackFromDocumentationSearch;
-    private double _scoreShouldBeLowerThanThisInDocumentSearch;
+    private int _maxNumberOfAnswersBackFromPdfSearch;
     private ProjectEntity[]? _projects;
 
     protected override void OnParametersSet()
@@ -53,9 +53,9 @@ public partial class HomePublicView(AiChatQuery aiChatQuery, ProjectQuery projec
         _useSourceCodeSearch = Project.ChatUseSourceCodeSearch;
         _useDocumentationSearch = Project.ChatUseDocumentationSearch;
         _maxNumberOfAnswersBackFromSourceCodeSearch = Project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch;
-        _scoreShouldBeLowerThanThisInSourceCodeSearch = Project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch;
         _maxNumberOfAnswersBackFromDocumentationSearch = Project.ChatMaxNumberOfAnswersBackFromDocumentationSearch;
-        _scoreShouldBeLowerThanThisInDocumentSearch = Project.ChatScoreShouldBeLowerThanThisInDocumentSearch;
+        _usePdfSearch = true; //todo
+        _maxNumberOfAnswersBackFromPdfSearch = 20; //todo
     }
 
     private async Task SubmitIfEnter(KeyboardEventArgs args, string? messageToSend)
@@ -102,10 +102,10 @@ public partial class HomePublicView(AiChatQuery aiChatQuery, ProjectQuery projec
                     messageToSend,
                     _useSourceCodeSearch,
                     _useDocumentationSearch,
+                    _usePdfSearch,
                     _maxNumberOfAnswersBackFromSourceCodeSearch,
-                    _scoreShouldBeLowerThanThisInSourceCodeSearch,
                     _maxNumberOfAnswersBackFromDocumentationSearch,
-                    _scoreShouldBeLowerThanThisInDocumentSearch,
+                    _maxNumberOfAnswersBackFromPdfSearch,
                     Project);
                 if (output != null)
                 {

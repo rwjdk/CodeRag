@@ -20,9 +20,7 @@ public class AiXmlSummaryQuery(AiGenericQuery aiGenericQuery) : ProgressNotifica
             project.XmlSummariesUseSourceCodeSearch,
             project.ChatUseDocumentationSearch,
             project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch,
-            project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch,
-            project.ChatMaxNumberOfAnswersBackFromDocumentationSearch,
-            project.ChatScoreShouldBeLowerThanThisInDocumentSearch);
+            project.ChatMaxNumberOfAnswersBackFromDocumentationSearch);
         return response.XmlSummaryAsString;
     }
 

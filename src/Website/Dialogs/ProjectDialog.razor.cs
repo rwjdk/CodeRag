@@ -11,7 +11,7 @@ using Website.Models;
 
 namespace Website.Dialogs;
 
-public partial class ProjectDialog(ProjectCommand projectCommand, IServiceProvider serviceProvider, VectorStoreCommand vectorStoreCommand)
+public partial class ProjectDialog(ProjectCommand projectCommand, IServiceProvider serviceProvider, IVectorStoreCommand vectorStoreCommand)
 {
     private int _current;
     private string? _lastMessage;
@@ -145,6 +145,18 @@ public partial class ProjectDialog(ProjectCommand projectCommand, IServiceProvid
                             break;
                         case SourceLocation.Local:
                             await source.AsMarkdownSourceLocal(Project, serviceProvider).IngestAsync(ingestionOptions);
+                            break;
+                    }
+
+                    break;
+                case SourceKind.Pdf:
+                    switch (source.Location)
+                    {
+                        case SourceLocation.GitHub:
+                            await source.AsPdfSourceGitHub(Project, serviceProvider).IngestAsync(ingestionOptions);
+                            break;
+                        case SourceLocation.Local:
+                            await source.AsPdfSourceLocal(Project, serviceProvider).IngestAsync(ingestionOptions);
                             break;
                     }
 

@@ -5,6 +5,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Shared.Ai.StructuredOutputModels;
 using Shared.EntityFramework.DbModels;
+using SimpleRag.DataSources.CSharp;
+using SimpleRag.DataSources.Markdown;
 using SimpleRag.Interfaces;
 
 namespace Shared.Ai.Queries;
@@ -17,12 +19,12 @@ public class AiPullRequestReviewQuery(AiGenericQuery aiGenericQuery) : IScopedSe
         Kernel kernel = aiGenericQuery.GetKernel(chatModel);
         if (project.ChatUseSourceCodeSearch)
         {
-            aiGenericQuery.ImportCodeSearchPlugin(project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch, project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch, project, kernel);
+            aiGenericQuery.ImportSearchPlugin(Constants.Tools.CSharp, CSharpDataSource.SourceKind, project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch, project, kernel);
         }
 
         if (project.ChatUseDocumentationSearch)
         {
-            aiGenericQuery.ImportDocumentationSearchPlugin(project.ChatMaxNumberOfAnswersBackFromDocumentationSearch, project.ChatScoreShouldBeLowerThanThisInDocumentSearch, project, kernel);
+            aiGenericQuery.ImportSearchPlugin(Constants.Tools.Markdown, MarkdownDataSource.SourceKind, project.ChatMaxNumberOfAnswersBackFromDocumentationSearch, project, kernel);
         }
 
         ChatCompletionAgent agent = aiGenericQuery.GetAgent<Review>(chatModel, instructions, kernel);

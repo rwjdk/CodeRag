@@ -33,10 +33,10 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
     private AiChatModel? _chatModel;
     private bool _useSourceCodeSearch;
     private bool _useDocumentationSearch;
+    private bool _usePdfSearch;
     private int _maxNumberOfAnswersBackFromSourceCodeSearch;
-    private double _scoreShouldBeLowerThanThisInSourceCodeSearch;
     private int _maxNumberOfAnswersBackFromDocumentationSearch;
-    private double _scoreShouldBeLowerThanThisInDocumentSearch;
+    private int _maxNumberOfAnswersBackFromPdfSearch;
     private readonly List<Notification> _log = [];
 
     protected override void OnParametersSet()
@@ -69,9 +69,9 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
         _useSourceCodeSearch = Project.ChatUseSourceCodeSearch;
         _useDocumentationSearch = Project.ChatUseDocumentationSearch;
         _maxNumberOfAnswersBackFromSourceCodeSearch = Project.ChatMaxNumberOfAnswersBackFromSourceCodeSearch;
-        _scoreShouldBeLowerThanThisInSourceCodeSearch = Project.ChatScoreShouldBeLowerThanThisInSourceCodeSearch;
         _maxNumberOfAnswersBackFromDocumentationSearch = Project.ChatMaxNumberOfAnswersBackFromDocumentationSearch;
-        _scoreShouldBeLowerThanThisInDocumentSearch = Project.ChatScoreShouldBeLowerThanThisInDocumentSearch;
+        _usePdfSearch = true;
+        _maxNumberOfAnswersBackFromPdfSearch = 20;
     }
 
     private void SemanticKernelQueryNotifyProgress(Notification obj)
@@ -104,10 +104,10 @@ public partial class ChatPage(AiChatQuery aiChatQuery, IDialogService dialogServ
                     messageToSend,
                     _useSourceCodeSearch,
                     _useDocumentationSearch,
+                    _usePdfSearch,
                     _maxNumberOfAnswersBackFromSourceCodeSearch,
-                    _scoreShouldBeLowerThanThisInSourceCodeSearch,
                     _maxNumberOfAnswersBackFromDocumentationSearch,
-                    _scoreShouldBeLowerThanThisInDocumentSearch,
+                    _maxNumberOfAnswersBackFromPdfSearch,
                     Project);
                 if (output != null)
                 {
