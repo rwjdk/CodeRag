@@ -8,21 +8,18 @@ using OpenAI.Chat;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
 using SimpleRag;
-using SimpleRag.DataSources.CSharp;
-using SimpleRag.DataSources.Markdown;
-using SimpleRag.DataSources.Pdf;
+using SimpleRag.DataSources;
 using SimpleRag.Interfaces;
-using SimpleRag.VectorStorage;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace Shared.Ai.Queries;
 
 [UsedImplicitly]
-public class AiGenericQuery(AiConfiguration aiConfiguration, IVectorStoreQuery vectorStoreQuery) : ProgressNotificationBase, IScopedService
+public class AiGenericQuery(AiConfiguration aiConfiguration, Search search) : ProgressNotificationBase, IScopedService
 {
-    internal SearchTool ImportSearchPlugin(string toolName, string sourceKind, int maxNumberOfAnswersBack, ProjectEntity project, Kernel kernel)
+    internal SearchTool ImportSearchPlugin(string toolName, DataSourceKind sourceKind, int maxNumberOfAnswersBack, ProjectEntity project, Kernel kernel)
     {
-        var tool = new SearchTool(vectorStoreQuery, project.Id.ToString(), sourceKind, maxNumberOfAnswersBack, this);
+        var tool = new SearchTool(search, project.Id.ToString(), sourceKind, maxNumberOfAnswersBack, this);
         kernel.ImportPluginFromObject(tool, toolName);
         return tool;
     }
@@ -112,12 +109,12 @@ public class AiGenericQuery(AiConfiguration aiConfiguration, IVectorStoreQuery v
         Kernel kernel = GetKernel(chatModel);
         if (useSourceCodeSearch)
         {
-            ImportSearchPlugin(Constants.Tools.CSharp, CSharpDataSource.SourceKind, maxNumberOfAnswersBackFromSourceCodeSearch, project, kernel);
+            ImportSearchPlugin(Constants.Tools.CSharp, DataSourceKind.CSharp, maxNumberOfAnswersBackFromSourceCodeSearch, project, kernel);
         }
 
         if (useDocumentationSearch)
         {
-            ImportSearchPlugin(Constants.Tools.Markdown, MarkdownDataSource.SourceKind, maxNumberOfAnswersBackFromDocumentationSearch, project, kernel);
+            ImportSearchPlugin(Constants.Tools.Markdown, DataSourceKind.Markdown, maxNumberOfAnswersBackFromDocumentationSearch, project, kernel);
         }
 
         //todo - support PDF

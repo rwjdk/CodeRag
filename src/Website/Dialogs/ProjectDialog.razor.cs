@@ -6,6 +6,7 @@ using Shared;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
 using SimpleRag;
+using SimpleRag.DataSources;
 using SimpleRag.VectorStorage;
 using Website.Models;
 
@@ -78,7 +79,7 @@ public partial class ProjectDialog(ProjectCommand projectCommand, IServiceProvid
         }
     }
 
-    private async Task CreateNewSource(SourceKind kind)
+    private async Task CreateNewSource(DataSourceKind kind)
     {
         ProjectSourceEntity newSource = ProjectSourceEntity.Empty(Project, kind);
         DialogResult result = await Site.ShowProjectSourceDialogAsync(Project, newSource);
@@ -125,7 +126,7 @@ public partial class ProjectDialog(ProjectCommand projectCommand, IServiceProvid
             };
             switch (source.Kind)
             {
-                case SourceKind.CSharp:
+                case DataSourceKind.CSharp:
                     switch (source.Location)
                     {
                         case SourceLocation.GitHub:
@@ -137,7 +138,7 @@ public partial class ProjectDialog(ProjectCommand projectCommand, IServiceProvid
                     }
 
                     break;
-                case SourceKind.Markdown:
+                case DataSourceKind.Markdown:
                     switch (source.Location)
                     {
                         case SourceLocation.GitHub:
@@ -149,7 +150,7 @@ public partial class ProjectDialog(ProjectCommand projectCommand, IServiceProvid
                     }
 
                     break;
-                case SourceKind.Pdf:
+                case DataSourceKind.Pdf:
                     switch (source.Location)
                     {
                         case SourceLocation.GitHub:

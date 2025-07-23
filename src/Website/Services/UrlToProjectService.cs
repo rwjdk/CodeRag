@@ -3,7 +3,7 @@ using Octokit;
 using Shared;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
-using SimpleRag.Integrations.GitHub;
+using SimpleRag.DataSources;
 using SimpleRag.Interfaces;
 using Website.Models;
 
@@ -59,7 +59,7 @@ public class UrlToProjectService(GitHubPullRequestQuery gitHubQuery, ProjectQuer
                     new ProjectSourceEntity
                     {
                         Name = "C# Code",
-                        Kind = SourceKind.CSharp,
+                        Kind = DataSourceKind.CSharp,
                         Path = "/",
                         Recursive = true,
                         Location = SourceLocation.GitHub,
@@ -67,7 +67,7 @@ public class UrlToProjectService(GitHubPullRequestQuery gitHubQuery, ProjectQuer
                     new ProjectSourceEntity
                     {
                         Name = "Markdown",
-                        Kind = SourceKind.Markdown,
+                        Kind = DataSourceKind.Markdown,
                         Path = "/",
                         Recursive = true,
                         Location = SourceLocation.GitHub,

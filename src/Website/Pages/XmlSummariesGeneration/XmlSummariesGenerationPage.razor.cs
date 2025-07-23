@@ -10,6 +10,7 @@ using Shared.Ai;
 using Shared.EntityFramework.DbModels;
 using Website.Models;
 using Shared.Ai.Queries;
+using SimpleRag.DataSources;
 using SimpleRag.DataSources.CSharp.Chunker;
 
 namespace Website.Pages.XmlSummariesGeneration;
@@ -72,7 +73,7 @@ public partial class XmlSummariesGenerationPage(CSharpChunker cSharpChunker, AiX
         try
         {
             _chatModel = aiXmlSummaryQuery.GetChatModels().FirstOrDefault();
-            _sources = Project.Sources.Where(x => x.Kind == SourceKind.CSharp).ToArray();
+            _sources = Project.Sources.Where(x => x.Kind == DataSourceKind.CSharp).ToArray();
             _selectedSource = _sources.FirstOrDefault();
             if (_selectedSource is { Location: SourceLocation.Local }) //todo: Support GitHubLocation in XmlSummaries (https://github.com/rwjdk/CodeRag/issues/3)
             {

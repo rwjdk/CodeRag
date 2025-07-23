@@ -1,23 +1,22 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using JetBrains.Annotations;
 using SimpleRag.DataProviders;
 using SimpleRag.DataProviders.Models;
+using SimpleRag.DataSources;
 using SimpleRag.DataSources.CSharp;
-using SimpleRag.DataSources.CSharp.Chunker;
 using SimpleRag.DataSources.Markdown;
-using SimpleRag.DataSources.Markdown.Chunker;
 using SimpleRag.DataSources.Pdf;
-using SimpleRag.Integrations.GitHub;
 using SimpleRag.Integrations.GitHub.Models;
-using SimpleRag.VectorStorage;
 
 namespace Shared.EntityFramework.DbModels;
 
 [Table("ProjectSources")]
+[UsedImplicitly]
 public class ProjectSourceEntity
 {
     [Key]
-    public Guid Id { get; private set; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.NewGuid();
 
     public Guid ProjectEntityId { get; init; }
 
@@ -28,7 +27,7 @@ public class ProjectSourceEntity
     [MaxLength(100)]
     public required string Name { get; set; }
 
-    public required SourceKind Kind { get; init; }
+    public required DataSourceKind Kind { get; init; }
 
     public required SourceLocation Location { get; set; }
 
@@ -73,7 +72,7 @@ public class ProjectSourceEntity
     [NotMapped]
     public bool AddMode { get; set; }
 
-    public static ProjectSourceEntity Empty(ProjectEntity project, SourceKind kind)
+    public static ProjectSourceEntity Empty(ProjectEntity project, DataSourceKind kind)
     {
         return new ProjectSourceEntity
         {
@@ -109,8 +108,8 @@ public class ProjectSourceEntity
     {
         return new CSharpDataSource(serviceProvider)
         {
-            CollectionId = project.Id.ToString(),
-            Id = Id.ToString(),
+            CollectionId = new CollectionId(project.Id.ToString()),
+            Id = new SourceId(Id.ToString()),
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
@@ -123,8 +122,8 @@ public class ProjectSourceEntity
     {
         return new CSharpDataSource(serviceProvider)
         {
-            CollectionId = project.Id.ToString(),
-            Id = Id.ToString(),
+            CollectionId = new CollectionId(project.Id.ToString()),
+            Id = new SourceId(Id.ToString()),
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
@@ -141,8 +140,8 @@ public class ProjectSourceEntity
     {
         return new MarkdownDataSource(serviceProvider)
         {
-            CollectionId = project.Id.ToString(),
-            Id = Id.ToString(),
+            CollectionId = new CollectionId(project.Id.ToString()),
+            Id = new SourceId(Id.ToString()),
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
@@ -161,8 +160,8 @@ public class ProjectSourceEntity
     {
         return new MarkdownDataSource(serviceProvider)
         {
-            CollectionId = project.Id.ToString(),
-            Id = Id.ToString(),
+            CollectionId = new CollectionId(project.Id.ToString()),
+            Id = new SourceId(Id.ToString()),
             Recursive = Recursive,
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
@@ -190,8 +189,8 @@ public class ProjectSourceEntity
     {
         return new PdfDataSource(serviceProvider)
         {
-            CollectionId = project.Id.ToString(),
-            Id = Id.ToString(),
+            CollectionId = new CollectionId(project.Id.ToString()),
+            Id = new SourceId(Id.ToString()),
             FilesProvider = GetGitHubProvider(serviceProvider),
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,
@@ -204,8 +203,8 @@ public class ProjectSourceEntity
     {
         return new PdfDataSource(serviceProvider)
         {
-            CollectionId = project.Id.ToString(),
-            Id = Id.ToString(),
+            CollectionId = new CollectionId(project.Id.ToString()),
+            Id = new SourceId(Id.ToString()),
             FilesProvider = new LocalFilesDataProvider(),
             Path = Path,
             FileIgnorePatterns = FileIgnorePatterns,

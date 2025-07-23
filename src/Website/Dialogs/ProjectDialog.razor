@@ -1,4 +1,5 @@
 ﻿@using Shared
+@using SimpleRag.DataSources
 <MudDialog Style="max-width: 80% !important; min-width: 80% !important; max-height: 80% !important; min-height: 80% !important;">
     <DialogContent>
         <RTextField Label="Name" @bind-Value="@Project.Name" />
@@ -40,9 +41,9 @@
                         <RButton Disabled="BlazorUtils.IsWorking">New Source</RButton>
                     </ActivatorContent>
                     <ChildContent>
-                        <MudMenuItem Icon="@Icons.Material.Filled.Code" OnClick="()=> CreateNewSource(SourceKind.CSharp)">Create new C# Source</MudMenuItem>
-                        <MudMenuItem Icon="@Icons.Material.Filled.MenuBook" OnClick="() => CreateNewSource(SourceKind.Markdown)">Create new Markdown Source</MudMenuItem>
-                        <MudMenuItem Icon="@Icons.Material.Filled.DocumentScanner" OnClick="() => CreateNewSource(SourceKind.Pdf)">Create new PDF Source</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Code" OnClick="()=> CreateNewSource(DataSourceKind.CSharp)">Create new C# Source</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.MenuBook" OnClick="() => CreateNewSource(DataSourceKind.Markdown)">Create new Markdown Source</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.DocumentScanner" OnClick="() => CreateNewSource(DataSourceKind.Pdf)">Create new PDF Source</MudMenuItem>
                     </ChildContent>
                 </MudMenu>
             </MudTabPanel>

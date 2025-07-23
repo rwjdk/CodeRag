@@ -2,6 +2,7 @@
 using Shared;
 using Shared.EntityFramework.DbModels;
 using Shared.Projects;
+using SimpleRag.DataSources;
 using SimpleRag.Interfaces;
 
 namespace Website.Services;
@@ -21,7 +22,7 @@ public class ProjectIngestionService(ProjectCommand projectCommand, IServiceProv
     {
         switch (source.Kind)
         {
-            case SourceKind.CSharp:
+            case DataSourceKind.CSharp:
                 switch (source.Location)
                 {
                     case SourceLocation.GitHub:
@@ -33,7 +34,7 @@ public class ProjectIngestionService(ProjectCommand projectCommand, IServiceProv
                 }
 
                 break;
-            case SourceKind.Markdown:
+            case DataSourceKind.Markdown:
                 switch (source.Location)
                 {
                     case SourceLocation.GitHub:

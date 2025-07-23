@@ -1,4 +1,5 @@
 ﻿@using Shared
+@using SimpleRag.DataSources
 <MudDialog Style="max-width: 70% !important; min-width: 70% !important; max-height: 70% !important; min-height: 70% !important;">
     <DialogContent>
         <RTextField Label="Name" @bind-Value="@ProjectSource.Name" />
@@ -17,7 +18,7 @@
 
         @switch (ProjectSource.Kind)
         {
-            case SourceKind.Markdown:
+            case DataSourceKind.Markdown:
                 <RCheckBox Label="Markdown: Ignore commented out Content" @bind-Value="@ProjectSource.MarkdownIgnoreCommentedOutContent" />
                 <RCheckBox Label="Markdown: Ignore images" @bind-Value="@ProjectSource.MarkdownIgnoreImages" />
                 <RCheckBox Label="Markdown: Ignore Microsoft Learn None C# Content" @bind-Value="@ProjectSource.MarkdownIgnoreMicrosoftLearnNoneCsharpContent" />

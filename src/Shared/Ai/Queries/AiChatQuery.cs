@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Shared.Ai.StructuredOutputModels;
 using Shared.Ai.Tools;
 using Shared.EntityFramework.DbModels;
+using SimpleRag.DataSources;
 using SimpleRag.DataSources.CSharp;
 using SimpleRag.DataSources.Markdown;
 using SimpleRag.DataSources.Pdf;
@@ -50,21 +51,21 @@ public class AiChatQuery : ProgressNotificationBase, IScopedService, IDisposable
 
         if (useSourceCodeSearch && !intent.IsMessageJustPleasantries)
         {
-            SearchTool tool = _aiGenericQuery.ImportSearchPlugin(Constants.Tools.CSharp, CSharpDataSource.SourceKind, maxNumberOfAnswersBackFromSourceCodeSearch, project, kernel);
+            SearchTool tool = _aiGenericQuery.ImportSearchPlugin(Constants.Tools.CSharp, DataSourceKind.CSharp, maxNumberOfAnswersBackFromSourceCodeSearch, project, kernel);
             var result = await tool.Search(intent.ElaboratedMessage);
             input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Code: " + result));
         }
 
         if (useDocumentationSearch && !intent.IsMessageJustPleasantries)
         {
-            SearchTool tool = _aiGenericQuery.ImportSearchPlugin(Constants.Tools.Markdown, MarkdownDataSource.SourceKind, maxNumberOfAnswersBackFromDocumentationSearch, project, kernel);
+            SearchTool tool = _aiGenericQuery.ImportSearchPlugin(Constants.Tools.Markdown, DataSourceKind.Markdown, maxNumberOfAnswersBackFromDocumentationSearch, project, kernel);
             string result = await tool.Search(intent.ElaboratedMessage);
             input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant Documentation: " + result));
         }
 
         if (usePdfSearch && !intent.IsMessageJustPleasantries)
         {
-            SearchTool tool = _aiGenericQuery.ImportSearchPlugin(Constants.Tools.Pdf, PdfDataSource.SourceKind, maxNumberOfAnswersBackFromPdfSearch, project, kernel);
+            SearchTool tool = _aiGenericQuery.ImportSearchPlugin(Constants.Tools.Pdf, DataSourceKind.Pdf, maxNumberOfAnswersBackFromPdfSearch, project, kernel);
             string result = await tool.Search(intent.ElaboratedMessage);
             input.Add(new ChatMessageContent(AuthorRole.Assistant, "Relevant PDFs: " + result));
         }
