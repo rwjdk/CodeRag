@@ -16,7 +16,7 @@ internal class SearchTool(Search search, string projectId, DataSourceKind source
             new SearchOptions
             {
                 CollectionId = new CollectionId(projectId),
-                SourceKind = sourceKind,
+                SourceKind = sourceKind.ToString(),
                 NumberOfRecordsBack = numberOfResultsBack,
                 SearchQuery = searchQuery,
             });

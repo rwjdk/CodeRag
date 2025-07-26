@@ -1,4 +1,5 @@
 using SimpleRag.DataSources.CSharp.Chunker;
+using SimpleRag.DataSources.Markdown.Chunker;
 
 namespace CSharpChunkerTests;
 
@@ -20,6 +21,15 @@ public class UnitTest1
 
         CSharpChunker chunker = new();
         List<CSharpChunk> chunks = chunker.GetChunks(code);
+    }
+
+    [Fact]
+    public void Markdown()
+    {
+        string content = File.ReadAllText("TestFiles\\file1.md");
+
+        MarkdownChunker chunker = new();
+        var chunks = chunker.GetChunks(content);
     }
 
     [Fact]
